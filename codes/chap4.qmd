@@ -1,5 +1,0 @@
----
-title: "4 Extensions : non iversibilité et (ou) erreurs corrélées "
-toc: true
----
-
