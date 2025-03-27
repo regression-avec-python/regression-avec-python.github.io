@@ -1,0 +1,528 @@
+---
+title: "15 Comparaison des différentes méthodes en classification supervisée, étude de cas réels"
+toc: true
+---
+
+
+```{python}
+import pandas as pd; import numpy as np
+import matplotlib.pyplot as plt
+from sklearn.preprocessing import StandardScaler
+from sklearn.linear_model import LogisticRegression, \
+    LogisticRegressionCV
+from sklearn.pipeline import Pipeline
+from sklearn.model_selection import StratifiedKFold
+import sklearn.metrics as sklm
+from patsy import dmatrix
+
+import sys
+sys.path.append('../modules')
+import logistic_step_sk as lss 
+```
+
+#   Analyse des données `chd`
+
+```{python}
+don = pd.read_csv("../donnees/SAh.csv", header=0,  sep=",")
+don.rename(columns={"chd": "Y"},inplace=True)
+don.Y.value_counts()
+```
+
+```{python}
+Y = don["Y"].to_numpy()
+PROB = pd.DataFrame({"Y":Y,"log":0.0,"BIC":0.0,"AIC":0.0,
+                    "ridge":0.0,"lasso":0.0,"elast":0.0})
+```
+
+
+```{python}
+nb=10
+skf = StratifiedKFold(n_splits=nb, shuffle=True, random_state=123)
+```
+
+```{python}
+nomsvar = don.columns.difference(["Y"])
+formule = "~" + "+".join(nomsvar)
+X = dmatrix(formule, don, return_type="dataframe").\
+                                            iloc[:,1:].to_numpy()
+```
+
+```{python}
+def grille(X, y, type = "lasso", ng=400):
+    scalerX = StandardScaler().fit(X)
+    Xcr= scalerX.transform(X)
+    l0 = np.abs(Xcr.transpose().dot((y-y.mean()))).max()/X.shape[0]
+    llc = np.linspace(0,-4,ng)
+    ll = l0*10**llc
+    if type=="lasso":
+        Cs = 1/ 0.9/ X.shape[0] / (l0*10**(llc))
+    elif type=="ridge":
+        Cs = 1/ 0.9/ X.shape[0] / ((l0*10**(llc)) * 100)
+    elif type=="enet":
+        Cs = 1/ 0.9/ X.shape[0] / ((l0*10**(llc)) * 2)
+    return Cs
+```
+
+
+```{python}
+#| label: sah_cv_class
+
+for app_index, val_index in skf.split(X,Y):
+    Xapp = X[app_index,:]
+    Xtest = X[val_index,:]
+    Yapp = Y[app_index]
+    log = LogisticRegression(penalty=None,solver="newton-cholesky").fit(Xapp,Yapp)
+    PROB.loc[val_index,"log"] = log.predict_proba(Xtest)[:,1]
+    ### bic
+    choixbic = lss.LogisticRegressionSelectionFeatureIC(start=[], \
+        direction="forward",crit="bic").fit(Xapp,Yapp)
+    PROB.loc[val_index, "BIC"] = choixbic.predict_proba(Xtest)[:,1]
+    ### aic
+    choixaic = lss.LogisticRegressionSelectionFeatureIC(start=[], \
+        direction="forward",crit="aic").fit(Xapp,Yapp)
+    PROB.loc[val_index, "AIC"] = choixaic.predict_proba(Xtest)[:,1]
+    ### lasso
+    cr = StandardScaler()
+    Cs_lasso = grille(Xapp,Yapp, "lasso")
+    lassocv =  LogisticRegressionCV(cv=10, penalty="l1", n_jobs=10,\
+                 Cs=Cs_lasso,  solver="saga", max_iter=2000)
+    pipe_lassocv = Pipeline(steps=[("cr", cr), ("lassocv", lassocv)])
+    pipe_lassocv.fit(Xapp,Yapp)
+    PROB.loc[val_index,"lasso"] = pipe_lassocv.predict_proba(Xtest)[:,1]
+    ### elastic net
+    cr = StandardScaler()
+    Cs_enet = grille(Xapp,Yapp,"enet")
+    enetcv=LogisticRegressionCV(cv=10,penalty="elasticnet",n_jobs=10,\
+          l1_ratios=[0.5],Cs=Cs_enet,solver="saga",max_iter=2000)
+    pipe_enetcv = Pipeline(steps=[("cr", cr), ("enetcv", enetcv)])
+    pipe_enetcv.fit(Xapp,Yapp)
+    PROB.loc[val_index,"elast"] = pipe_enetcv.predict_proba(Xtest)[:,1] 
+    ### ridge
+    cr = StandardScaler()
+    Cs_ridge = grille(Xapp,Yapp,"ridge")
+    ridgecv = LogisticRegressionCV(cv=10, penalty="l2", \
+            Cs=Cs_ridge,  max_iter=1000)
+    pipe_ridgecv = Pipeline(steps=[("cr", cr), ("ridgecv", ridgecv)])
+    pipe_ridgecv.fit(Xapp,Yapp)
+    PROB.loc[val_index,"ridge"] = pipe_ridgecv.predict_proba(Xtest)[:,1]
+```
+
+```{python}
+round(PROB.iloc[0:4,:],3)
+```
+
+
+```{python}
+mc = pd.Series(0.0, index=PROB.columns[1:])
+s = 0.5
+for i in range(mc.shape[0]):
+    mc.iloc[i] = sklm.zero_one_loss(PROB.Y, PROB.iloc[:,i+1]>s)
+round(mc,3)
+```
+
+On ajoute les méthodes régularisées avec sélection du paramètre par opposé de la log-vraisemblance : 
+
+```{python}
+PROB = PROB.assign(LassoL=0.0)
+PROB = PROB.assign(RidgeL=0.0)
+PROB = PROB.assign(EnetL=0.0)
+for app_index, val_index in skf.split(X,Y):
+    Xapp = X[app_index,:-1]
+    Yapp = Y[app_index]
+    Xval = X[val_index,:-1]
+    # grille
+    Cs_lasso = grille(Xapp, Yapp, "lasso")
+    Cs_ridge = grille(Xapp, Yapp, "ridge")
+    Cs_enet = grille(Xapp, Yapp, "enet")
+    # instanciation
+    cr = StandardScaler()
+    lassocv =  LogisticRegressionCV(cv=10, penalty="l1", n_jobs=10, Cs=Cs_lasso,  solver="saga", max_iter=2000, scoring="neg_log_loss")
+    ridgecv = LogisticRegressionCV(cv=10, penalty="l2", n_jobs=10, Cs=Cs_ridge,  max_iter=1000, scoring="neg_log_loss")
+    enetcv = LogisticRegressionCV(cv=10, penalty="elasticnet", l1_ratios = [0.5], n_jobs=10, Cs=Cs_enet,  solver="saga", max_iter=2000, scoring="neg_log_loss")
+    pipe_lassocv = Pipeline(steps=[("cr", cr), ("lassocv", lassocv)])
+    pipe_ridgecv = Pipeline(steps=[("cr", cr), ("ridgecv", ridgecv)])
+    pipe_enetcv = Pipeline(steps=[("cr", cr), ("enet", enetcv)])
+    # fit brut
+    pipe_lassocv.fit(Xapp, Yapp)
+    pipe_ridgecv.fit(Xapp, Yapp)
+    pipe_enetcv.fit(Xapp, Yapp)
+    # prediction
+    PROB.loc[val_index,"LassoL"] = pipe_lassocv.predict_proba(Xval)[:,1]
+    PROB.loc[val_index,"RidgeL"] = pipe_ridgecv.predict_proba(Xval)[:,1]
+    PROB.loc[val_index,"EnetL"] = pipe_enetcv.predict_proba(Xval)[:,1]
+```
+
+et par AUC 
+
+```{python}
+PROB = PROB.assign(LassoA=0.0)
+PROB = PROB.assign(RidgeA=0.0)
+PROB = PROB.assign(EnetA=0.0)
+for app_index, val_index in skf.split(X,Y):
+    Xapp = X[app_index,:-1]
+    Yapp = Y[app_index]
+    Xval = X[val_index,:-1]
+    # grille
+    Cs_lasso = grille(Xapp, Yapp, "lasso")
+    Cs_ridge = grille(Xapp, Yapp, "ridge")
+    Cs_enet = grille(Xapp, Yapp, "enet")
+    # instanciation
+    cr = StandardScaler()
+    lassocv =  LogisticRegressionCV(cv=10, penalty="l1", n_jobs=10, Cs=Cs_lasso,  solver="saga", max_iter=2000, scoring="roc_auc")
+    ridgecv = LogisticRegressionCV(cv=10, penalty="l2", n_jobs=10, Cs=Cs_ridge,  max_iter=1000, scoring="roc_auc")
+    enetcv = LogisticRegressionCV(cv=10, penalty="elasticnet", l1_ratios = [0.5], n_jobs=10, Cs=Cs_enet,  solver="saga", max_iter=2000, scoring="roc_auc")
+    pipe_lassocv = Pipeline(steps=[("cr", cr), ("lassocv", lassocv)])
+    pipe_ridgecv = Pipeline(steps=[("cr", cr), ("ridgecv", ridgecv)])
+    pipe_enetcv = Pipeline(steps=[("cr", cr), ("enet", enetcv)])
+    # fit brut
+    pipe_lassocv.fit(Xapp, Yapp)
+    pipe_ridgecv.fit(Xapp, Yapp)
+    pipe_enetcv.fit(Xapp, Yapp)
+    # prediction
+    PROB.loc[val_index,"LassoA"] = pipe_lassocv.predict_proba(Xval)[:,1]
+    PROB.loc[val_index,"RidgeA"] = pipe_ridgecv.predict_proba(Xval)[:,1]
+    PROB.loc[val_index,"EnetA"] = pipe_enetcv.predict_proba(Xval)[:,1]
+
+```
+
+
+```{python}
+round(PROB.iloc[0:4,:],2)
+```
+
+
+```{python}
+auc = pd.Series(0.0, index=PROB.columns[1:])
+for i in range(auc.shape[0]):
+    auc.iloc[i] = sklm.roc_auc_score(PROB.Y, PROB.iloc[:,i+1])
+round(auc.sort_values(ascending=False)[:6],3)
+```
+
+
+```{python}
+#| echo: false
+#| eval: false
+centi = 1/2.54
+fig, ax = plt.subplots(1,1,figsize=(8*centi,8*centi))
+noms = auc.sort_values(ascending=False)
+for i, nom in enumerate(noms.index):
+    if i<4:
+        roc = sklm.RocCurveDisplay.from_predictions(PROB.Y, \
+            PROB.loc[:,nom], ax=ax, name=nom, plot_chance_level=(i==0))
+
+ax.legend(fontsize=6, loc='lower right', frameon=True)
+fig.tight_layout()
+nomimage = "roc_ad1.pdf"
+plt.savefig(nomimage, pad_inches=0) ; nomimage
+```
+
+
+```{python}
+fig, ax = plt.subplots(1,1)
+noms = auc.sort_values(ascending=False)
+for i, nom in enumerate(noms.index):
+    if i<4:
+        roc = sklm.RocCurveDisplay.from_predictions(PROB.Y, \
+            PROB.loc[:,nom], ax=ax, name=nom, plot_chance_level=(i==0))
+fig.tight_layout()
+```
+
+```{python}
+noms = PROB.columns[1:]
+matsB = pd.DataFrame({"seuil": pd.Series(0.0, index=noms)})
+s = .5
+for nom in noms:
+    matsB.loc[nom,"seuil"] = s
+    confmat = sklm.confusion_matrix(PROB.Y, PROB.loc[:,nom]>=s)
+    matsB.loc[nom, "tn"] = confmat[0,0]
+    matsB.loc[nom, "tp"] = confmat[1,1]
+    matsB.loc[nom, "fn"] = confmat[1,0]
+    matsB.loc[nom, "fp"] = confmat[0,1]
+    matsB.loc[nom,"sensitivity"] = confmat[1,1]/(confmat[1,1]+confmat[1,0])
+    matsB.loc[nom,"specificity"] = confmat[0,0]/(confmat[0,0]+confmat[0,1])
+    matsB.loc[nom,"accuracy"] = sklm.accuracy_score(PROB.Y, PROB.loc[:,nom]>=s)
+print(matsB.round(3))
+
+```
+```{python}
+matsN = pd.DataFrame({"seuil": pd.Series(0.0, index=noms)})
+nbr0 = don.Y.value_counts()[0]
+for nom in noms:
+    tmp = PROB.loc[:,nom].sort_values(ascending=True)
+    s = (tmp.iloc[nbr0-1]+tmp.iloc[nbr0])/2
+    confmat = sklm.confusion_matrix(PROB.Y, PROB.loc[:,nom]>=s)
+    matsN.loc[nom,"seuil"] = s
+    matsN.loc[nom, "tn"] = confmat[0,0]
+    matsN.loc[nom, "tp"] = confmat[1,1]
+    matsN.loc[nom, "fn"] = confmat[1,0]
+    matsN.loc[nom, "fp"] = confmat[0,1]
+    matsN.loc[nom,"sensitivity"] = confmat[1,1]/(confmat[1,1]+confmat[1,0])
+    matsN.loc[nom,"specificity"] = confmat[0,0]/(confmat[0,0]+confmat[0,1])
+    matsN.loc[nom,"accuracy"] = sklm.accuracy_score(PROB.Y, PROB.loc[:,nom]>=s)
+print(matsN.round(3))
+```
+
+
+```{python}
+matsY = pd.DataFrame({"seuil": pd.Series(0.0, index=noms)})
+for nom in noms:
+    fpr, tpr, thr  = sklm.roc_curve(PROB.Y, PROB.loc[:,nom])
+    ii = (tpr-fpr).argmax()
+    s = thr[ii]
+    matsY.loc[nom,"seuil"] = s
+    confmat = sklm.confusion_matrix(PROB.Y, PROB.loc[:,nom]>=s)
+    matsY.loc[nom, "tn"] = confmat[0,0]
+    matsY.loc[nom, "tp"] = confmat[1,1]
+    matsY.loc[nom, "fn"] = confmat[1,0]
+    matsY.loc[nom, "fp"] = confmat[0,1]
+    matsY.loc[nom,"sensitivity"] = tpr[ii]
+    matsY.loc[nom,"sensitivity"] = 1-fpr[ii]
+    matsY.loc[nom,"accuracy"] = sklm.accuracy_score(PROB.Y, PROB.loc[:,nom]>=s)
+print(matsY.round(3))
+
+```
+
+#   Feature engineering
+
+##  Interactions
+
+```{python}
+formuleI = "1 + (" + "+".join(nomsvar) + ")**2"
+PROB = pd.DataFrame({"Y":Y,"log":0.0,"BIC":0.0,"AIC":0.0,
+                    "ridge":0.0,"lasso":0.0,"elast":0.0})
+
+
+Xinter = dmatrix(formuleI, don, return_type="dataframe").iloc[:,1:].to_numpy()
+Xinter.shape
+```
+
+```{python}
+cr = StandardScaler()
+lassocv =  LogisticRegressionCV(cv=10, penalty="l1", n_jobs=10, Cs=Cs_lasso,  solver="saga", max_iter=2000)
+enetcv = LogisticRegressionCV(cv=10, penalty="elasticnet", l1_ratios = [0.5], n_jobs=10,  Cs=Cs_enet, solver="saga", max_iter=2000)
+ridgecv = LogisticRegressionCV(cv=10, penalty="l2", n_jobs=10, Cs=Cs_ridge,  max_iter=1000)
+pipe_lassocv = Pipeline(steps=[("cr", cr), ("lassocv", lassocv)])
+pipe_enetcv = Pipeline(steps=[("cr", cr), ("enetcv", enetcv)])
+pipe_ridgecv = Pipeline(steps=[("cr", cr), ("ridgecv", ridgecv)])
+
+nb=10
+skf = StratifiedKFold(n_splits=nb, shuffle=True, random_state=1234)
+
+```
+
+
+```{python}
+for app_index, val_index in skf.split(X,Y):
+    Xapp = Xinter[app_index,:]
+    Xtest = Xinter[val_index,:]
+    Yapp = Y[app_index]
+    ### log
+    log = LogisticRegression(penalty=None,solver="newton-cholesky").fit(Xapp,Yapp)
+    PROB.loc[val_index,"log"] = log.predict_proba(Xtest)[:,1]
+    ### bic
+    choixbic = lss.LogisticRegressionSelectionFeatureIC(start=[], \
+        direction="forward",crit="bic").fit(Xapp,Yapp)
+    PROB.loc[val_index, "BIC"] = choixbic.predict_proba(Xtest)[:,1]
+    ### aic
+    choixaic = lss.LogisticRegressionSelectionFeatureIC(start=[], \
+        direction="forward",crit="aic").fit(Xapp,Yapp)
+    PROB.loc[val_index, "AIC"] = choixaic.predict_proba(Xtest)[:,1]
+    ### lasso
+    cr = StandardScaler()
+    Cs_lasso = grille(Xapp,Yapp, "lasso")
+    lassocv =  LogisticRegressionCV(cv=10, penalty="l1", n_jobs=10,\
+                 Cs=Cs_lasso,  solver="saga", max_iter=2000)
+    pipe_lassocv = Pipeline(steps=[("cr", cr), ("lassocv", lassocv)])
+    pipe_lassocv.fit(Xapp,Yapp)
+    PROB.loc[val_index,"lasso"] = pipe_lassocv.predict_proba(Xtest)[:,1]
+    ### elastic net
+    cr = StandardScaler()
+    Cs_enet = grille(Xapp,Yapp,"enet")
+    enetcv=LogisticRegressionCV(cv=10,penalty="elasticnet",n_jobs=10,\
+          l1_ratios=[0.5],Cs=Cs_enet,solver="saga",max_iter=2000)
+    pipe_enetcv = Pipeline(steps=[("cr", cr), ("enetcv", enetcv)])
+    pipe_enetcv.fit(Xapp,Yapp)
+    PROB.loc[val_index,"elast"] = pipe_enetcv.predict_proba(Xtest)[:,1] 
+    ### ridge
+    cr = StandardScaler()
+    Cs_ridge = grille(Xapp,Yapp,"ridge")
+    ridgecv = LogisticRegressionCV(cv=10, penalty="l2", \
+            Cs=Cs_ridge,  max_iter=1000)
+    pipe_ridgecv = Pipeline(steps=[("cr", cr), ("ridgecv", ridgecv)])
+    pipe_ridgecv.fit(Xapp,Yapp)
+    PROB.loc[val_index,"ridge"] = pipe_ridgecv.predict_proba(Xtest)[:,1]
+
+```
+
+```{python}
+mc = pd.Series(0.0, index=PROB.columns[1:])
+s = 0.5
+for i in range(mc.shape[0]):
+    mc.iloc[i] = sklm.zero_one_loss(PROB.Y, PROB.iloc[:,i+1]>s)
+
+round(mc.sort_values(ascending=True),3)
+```
+
+##  Polynôme
+
+```{python}
+Xquanti = don.drop(columns="Y").\
+                    select_dtypes(include=[np.number]).to_numpy()
+Xcar = Xquanti**2
+Xcub = Xquanti**3
+formule = "~" + "+".join(nomsvar)
+X = dmatrix(formule, don, return_type="dataframe").\
+                                            iloc[:,1:].to_numpy()
+Xpol = np.concatenate((X, Xcar, Xcub), axis=1)
+Xpol.shape
+```
+
+```{python}
+cr = StandardScaler()
+lassocv =  LogisticRegressionCV(cv=10, penalty="l1", n_jobs=10, Cs=Cs_lasso,  solver="saga", max_iter=2000)
+enetcv = LogisticRegressionCV(cv=10, penalty="elasticnet", l1_ratios = [0.5], n_jobs=10,  Cs=Cs_enet, solver="saga", max_iter=2000)
+ridgecv = LogisticRegressionCV(cv=10, penalty="l2", n_jobs=10, Cs=Cs_ridge,  max_iter=1000)
+pipe_lassocv = Pipeline(steps=[("cr", cr), ("lassocv", lassocv)])
+pipe_enetcv = Pipeline(steps=[("cr", cr), ("enetcv", enetcv)])
+pipe_ridgecv = Pipeline(steps=[("cr", cr), ("ridgecv", ridgecv)])
+
+nb=10
+skf = StratifiedKFold(n_splits=nb, shuffle=True, random_state=1234)
+```
+
+```{python}
+for app_index, val_index in skf.split(X,Y):
+    Xapp = Xpol[app_index,:]
+    Xtest = Xpol[val_index,:]
+    Yapp = Y[app_index]
+    ### log
+    log = LogisticRegression(penalty=None,solver="newton-cholesky").fit(Xapp,Yapp)
+    PROB.loc[val_index,"log"] = log.predict_proba(Xtest)[:,1]
+    ### bic
+    choixbic = lss.LogisticRegressionSelectionFeatureIC(start=[], \
+        direction="forward",crit="bic").fit(Xapp,Yapp)
+    PROB.loc[val_index, "BIC"] = choixbic.predict_proba(Xtest)[:,1]
+    ### aic
+    choixaic = lss.LogisticRegressionSelectionFeatureIC(start=[], \
+        direction="forward",crit="aic").fit(Xapp,Yapp)
+    PROB.loc[val_index, "AIC"] = choixaic.predict_proba(Xtest)[:,1]
+    ### lasso
+    cr = StandardScaler()
+    Cs_lasso = grille(Xapp,Yapp, "lasso")
+    lassocv =  LogisticRegressionCV(cv=10, penalty="l1", n_jobs=10,\
+                 Cs=Cs_lasso,  solver="saga", max_iter=2000)
+    pipe_lassocv = Pipeline(steps=[("cr", cr), ("lassocv", lassocv)])
+    pipe_lassocv.fit(Xapp,Yapp)
+    PROB.loc[val_index,"lasso"] = pipe_lassocv.predict_proba(Xtest)[:,1]
+    ### elastic net
+    cr = StandardScaler()
+    Cs_enet = grille(Xapp,Yapp,"enet")
+    enetcv=LogisticRegressionCV(cv=10,penalty="elasticnet",n_jobs=10,\
+          l1_ratios=[0.5],Cs=Cs_enet,solver="saga",max_iter=2000)
+    pipe_enetcv = Pipeline(steps=[("cr", cr), ("enetcv", enetcv)])
+    pipe_enetcv.fit(Xapp,Yapp)
+    PROB.loc[val_index,"elast"] = pipe_enetcv.predict_proba(Xtest)[:,1] 
+    ### ridge
+    cr = StandardScaler()
+    Cs_ridge = grille(Xapp,Yapp,"ridge")
+    ridgecv = LogisticRegressionCV(cv=10, penalty="l2", \
+            Cs=Cs_ridge,  max_iter=1000)
+    pipe_ridgecv = Pipeline(steps=[("cr", cr), ("ridgecv", ridgecv)])
+    pipe_ridgecv.fit(Xapp,Yapp)
+    PROB.loc[val_index,"ridge"] = pipe_ridgecv.predict_proba(Xtest)[:,1]
+
+```
+
+```{python}
+mc = pd.Series(0.0, index=PROB.columns[1:])
+s = 0.5
+for i in range(mc.shape[0]):
+    mc.iloc[i] = sklm.zero_one_loss(PROB.Y, PROB.iloc[:,i+1]>s)
+
+round(mc.sort_values(ascending=True),3)
+```
+
+##  Splines
+
+```{python}
+nomsquanti = don.columns[np.isin(don.dtypes, ["float64", \
+                          "int64"])].difference(["Y"])
+nomsquali = don.columns[np.isin(don.dtypes, ["object", \
+                          "category"])].difference(["Y"])
+formule = "~" + "+".join(nomsquali)
+Xspline = dmatrix(formule, don, return_type="dataframe").\
+                                           iloc[:,1:].to_numpy()
+for i in nomsquanti:
+    xi = don.loc[:,i].quantile([0.25, 0.5, 0.75])
+    formule = "-1 + bs(" + i + ",knots=xi, degree=3)"
+    BX = dmatrix(formule, don, return_type="dataframe").to_numpy()
+    Xspline = np.concatenate((Xspline, BX), axis=1)
+
+Xspline.shape
+```
+
+
+```{python}
+cr = StandardScaler()
+lassocv =  LogisticRegressionCV(cv=10, penalty="l1", n_jobs=10, Cs=Cs_lasso,  solver="saga", max_iter=2000)
+enetcv = LogisticRegressionCV(cv=10, penalty="elasticnet", l1_ratios = [0.5], n_jobs=10,  Cs=Cs_enet, solver="saga", max_iter=2000)
+ridgecv = LogisticRegressionCV(cv=10, penalty="l2", n_jobs=10, Cs=Cs_ridge,  max_iter=1000)
+pipe_lassocv = Pipeline(steps=[("cr", cr), ("lassocv", lassocv)])
+pipe_enetcv = Pipeline(steps=[("cr", cr), ("enetcv", enetcv)])
+pipe_ridgecv = Pipeline(steps=[("cr", cr), ("ridgecv", ridgecv)])
+
+nb=10
+skf = StratifiedKFold(n_splits=nb, shuffle=True, random_state=1234)
+```
+
+```{python}
+for app_index, val_index in skf.split(X,Y):
+    Xapp = Xspline[app_index,:]
+    Xtest = Xspline[val_index,:]
+    Yapp = Y[app_index]
+    ### log
+    log = LogisticRegression(penalty=None,solver="newton-cholesky").fit(Xapp,Yapp)
+    PROB.loc[val_index,"log"] = log.predict_proba(Xtest)[:,1]
+    ### bic
+    choixbic = lss.LogisticRegressionSelectionFeatureIC(start=[], \
+        direction="forward",crit="bic").fit(Xapp,Yapp)
+    PROB.loc[val_index, "BIC"] = choixbic.predict_proba(Xtest)[:,1]
+    ### aic
+    choixaic = lss.LogisticRegressionSelectionFeatureIC(start=[], \
+        direction="forward",crit="aic").fit(Xapp,Yapp)
+    PROB.loc[val_index, "AIC"] = choixaic.predict_proba(Xtest)[:,1]
+    ### lasso
+    cr = StandardScaler()
+    Cs_lasso = grille(Xapp,Yapp, "lasso")
+    lassocv =  LogisticRegressionCV(cv=10, penalty="l1", n_jobs=10,\
+                 Cs=Cs_lasso,  solver="saga", max_iter=2000)
+    pipe_lassocv = Pipeline(steps=[("cr", cr), ("lassocv", lassocv)])
+    pipe_lassocv.fit(Xapp,Yapp)
+    PROB.loc[val_index,"lasso"] = pipe_lassocv.predict_proba(Xtest)[:,1]
+    ### elastic net
+    cr = StandardScaler()
+    Cs_enet = grille(Xapp,Yapp,"enet")
+    enetcv=LogisticRegressionCV(cv=10,penalty="elasticnet",n_jobs=10,\
+          l1_ratios=[0.5],Cs=Cs_enet,solver="saga",max_iter=2000)
+    pipe_enetcv = Pipeline(steps=[("cr", cr), ("enetcv", enetcv)])
+    pipe_enetcv.fit(Xapp,Yapp)
+    PROB.loc[val_index,"elast"] = pipe_enetcv.predict_proba(Xtest)[:,1] 
+    ### ridge
+    cr = StandardScaler()
+    Cs_ridge = grille(Xapp,Yapp,"ridge")
+    ridgecv = LogisticRegressionCV(cv=10, penalty="l2", \
+            Cs=Cs_ridge,  max_iter=1000)
+    pipe_ridgecv = Pipeline(steps=[("cr", cr), ("ridgecv", ridgecv)])
+    pipe_ridgecv.fit(Xapp,Yapp)
+    PROB.loc[val_index,"ridge"] = pipe_ridgecv.predict_proba(Xtest)[:,1]
+
+```
+
+```{python}
+mc = pd.Series(0.0, index=PROB.columns[1:])
+s = 0.5
+for i in range(mc.shape[0]):
+    mc.iloc[i] = sklm.zero_one_loss(PROB.Y, PROB.iloc[:,i+1]>s)
+
+round(mc.sort_values(ascending=True),3)
+```

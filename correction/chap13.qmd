@@ -1,0 +1,158 @@
+---
+title: "13 Régression de Poisson"
+toc: true
+---
+
+::: {.content-hidden}
+{{< include ../macros.tex >}}
+:::
+
+```{python}
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+import statsmodels.api as sm
+import statsmodels.formula.api as smf
+from scipy.stats import chi2_contingency
+```
+
+::: {#exr-13-1 name="Questions de cours"}
+C, A, B, A, B, B, C, A
+:::
+
+::: {#exr-13-2}
+
+:::
+
+::: {#exr-13-3}
+
+:::
+
+::: {#exr-13-4 name="Stabilisation de la variance"}
+
+```{python}
+lambdas = np.arange(1, 21)
+sample_size = 1000000
+variances = []
+
+for lam in lambdas:
+    X = np.random.poisson(lam, sample_size)
+    Z = np.sqrt(X)
+    variance_Z = np.var(Z)
+    variances.append(variance_Z)
+
+plt.plot(lambdas, variances, marker='o')
+plt.axhline(y=0.25, color='r', linestyle='--', label='Variance théorique = 1/4')
+plt.xlabel('Lambda')
+plt.ylabel('Variance empirique de Z')
+plt.title('Variance empirique de Z = sqrt(X) en fonction de Lambda')
+plt.legend()
+plt.grid(True)
+plt.show()
+```
+:::
+
+::: {#exr-13-5 name="Stabilisation de la variance (suite)"}
+Lorsque $\lambda$ est grand, on utilise t'approximétion de Taylor à l'ordre 1 :
+$$
+\sqrt{X}\approx \sqrt{\lambda}+\frac{1}{2\sqrt{\lambda}}(X-\lambda).
+$$
+Comme $\V(X)=\lambda$, on déduit $\V(\sqrt{X})\approx 1/4$.
+:::
+
+::: {#exr-13-6 name="Malaria (suite)"}
+
+1.  
+    ```{python}
+    Malaria = pd.read_csv("../donnees/poissonData3.csv", header=0, sep=',')
+    compt = Malaria[["Sexe", "Nmalaria", "Age"]].groupby(["Sexe",\
+                    "Nmalaria"]).count()
+    sexe = list(compt.index.levels[0])
+    signe = [1, -1]
+    for i, val in enumerate(sexe):
+        plt.bar(compt.loc[val].index, signe[i] * compt.loc[val].Age)
+
+    ```
+
+    Les barres sont superposées : les filles puis les garçons. 
+    Comme on soustrait à la hauteur totale les garçons (argument `offset`), on a les effectifs des filles en dessous et ceux des garçons au dessus.
+2.  Les moyennes par groupe
+
+    ```{python}
+    print(Malaria[["Sexe", "Nmalaria"]].groupby(["Sexe"]).mean())
+    ```
+
+3. 
+    ```{python}
+    print(np.log(Malaria[["Sexe", "Nmalaria"]].groupby(["Sexe"]).mean().loc["F", :]))
+    print(np.log(Malaria[["Sexe", "Nmalaria"]].groupby(["Sexe"]).mean()).diff().iloc[1])
+    ```
+
+4.  Régression de Poisson
+    ```{python}
+    modSexe = smf.glm("Nmalaria ~ 1 + Sexe", data=Malaria, family=sm.families.Poisson()).fit()
+    modSexe.summary()
+    ```
+
+    Nous retrouvons que le coefficient constant (`Intercept`) est le logarithme népérien de la moyenne du nombre de visites chez les filles. La modalité fille est la première modalité de la variable `Sexe` par ordre alphabétique et constitue la modalité de référence. Le coefficient constant est ici le logarithme (qui est la fonction de lien) de la moyenne du nombre de visites chez les filles. L'effet `M` est ici la différence des logarithmes ce que nous retrouvons dans le second coefficient.
+:::
+
+::: {#exr-13-7 name="Table de contingence et loi de Poisson"}
+
+1.  
+    ```{python}
+    data_crosstab = pd.crosstab(Malaria['Prev'],Malaria['Sexe'],margins = False) 
+    print(data_crosstab) 
+    ```
+
+2.  
+    ```{python}
+    res = chi2_contingency(data_crosstab)
+    res.pvalue
+    ```
+
+3.
+    ```{python}
+    Malaria["Sexe"] = Malaria["Sexe"].astype("category")
+    Malaria["Prev"] = Malaria["Prev"].astype("category")
+
+    # Grouper les données par 'Sexe' et 'Prev' et calculer les effectifs et la somme de 'Nmalaria'
+    result = Malaria.groupby(['Sexe', 'Prev']).agg(effectif=('Nmalaria', 'size'), Y=('Nmalaria', 'sum')).reset_index()
+    print(result)
+    ```
+4.
+    ```{python}
+    mod1 = smf.glm("Nmalaria ~ -1 + Sexe:Prev", data = Malaria, family=sm.families.Poisson()).fit()
+    mod1.summary()
+    ```    
+
+    Le modèle possède autant de paramètres que de points de design, il est donc saturé.
+    On retrouve les estimations à l'aide du tableau de la question précédente. Par 
+    exemple, on a pour le premier estimateur :
+
+    ```{python}
+    np.log(8/2)
+    ```
+
+5.  
+    ```{python}
+    mod2 = smf.glm("Nmalaria ~ -1 + Sexe + Prev", data = Malaria, family=sm.families.Poisson()).fit()
+    mod2.summary()
+    ```
+
+    Ce modèle n'est pas saturé. Il est identique au modèle
+    ```{python}
+    #| eval: false
+    smf.glm("Nmalaria ~ Sexe + Prev", data = Malaria, family=sm.families.Poisson()).fit()
+    ```
+
+    mais propose une paramétrisation différente.
+
+6.  On calcule les AIC :
+    ```{python}
+    print(mod1.aic)
+    print(mod2.aic)
+    ```
+
+    On privilégie le modèle 1 pour ce critère. Le résultat ne contredit pas celui de la question 2 puisqu'une interaction n'est pas liée à l'indépendance entre 2 variables.
+:::

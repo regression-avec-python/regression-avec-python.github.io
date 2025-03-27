@@ -1,0 +1,143 @@
+---
+title: "10 Régression sur composantes : PCR et PLS"
+toc: true
+---
+
+
+```{python}
+import pandas as pd; import numpy as np
+import matplotlib.pyplot as plt
+import statsmodels.formula.api as smf
+from sklearn.preprocessing import StandardScaler
+from sklearn.decomposition import PCA
+from sklearn.linear_model import LinearRegression
+from sklearn.cross_decomposition import PLSRegression
+from sklearn.pipeline import Pipeline
+from sklearn.model_selection import GridSearchCV, KFold
+from sklearn.metrics import mean_squared_error
+import sys
+sys.path.append('../modules')
+from ols_step_sk import LinearRegressionSelectionFeatureIC
+```
+
+#   Régression sur composantes principales (PCR)
+
+```{python}
+ozone = pd.read_csv("../donnees/ozone.txt", header = 0, sep = ";", index_col=0).iloc[:,:10]
+X = ozone.iloc[:,1:10]
+y = ozone.iloc[:,:1]
+reg = smf.ols('O3 ~ T12 + T15 + Ne12 + N12 + S12 + E12 + W12 + Vx + O3v', data=ozone).fit()
+reg.summary()
+```
+
+
+```{python}
+mod_lin9v = LinearRegression()
+mod_lin9v.fit(X,y)
+np.round(mod_lin9v.coef_,2)
+```
+
+
+```{python}
+reg_bic = LinearRegressionSelectionFeatureIC(crit="bic")
+reg_bic.fit(X, y)
+X.columns[reg_bic.selected_features_]
+```
+
+
+```{python}
+cr = StandardScaler()
+acp = PCA(n_components=9)
+pipe_acp = Pipeline(steps=[("cr", cr), ("acp", acp)])
+pipe_acp.fit(X)
+Xortho = pipe_acp.fit_transform(X)
+reg_bic.fit(Xortho, y)
+varsel = reg_bic.selected_features_
+varsel
+```
+
+```{python}
+step_cr = pipe_acp.named_steps["cr"]
+stdX = step_cr.scale_
+meanX = step_cr.mean_
+coef_pcr =reg_bic.coef_
+step_acp = pipe_acp.named_steps["acp"]
+P = step_acp.components_[reg_bic.selected_features_,]
+betafinpcr = P.T.dot(coef_pcr.T)[:,0]/stdX
+intercept = y.mean(axis=0) - meanX.dot(betafinpcr.T)
+np.round(np.append(intercept, betafinpcr),2)
+```
+
+
+```{python}
+cr = StandardScaler()
+acp = PCA()
+reg = LinearRegression()
+pipe_pcr = Pipeline(steps=[("cr", cr), ("acp", acp), ("reg", reg)])
+param_grid_pcr = { "acp__n_components" : list(range(1,10))}
+kf = KFold(n_splits=4, shuffle=True, random_state=0)
+cv_pcr = GridSearchCV(pipe_pcr, param_grid_pcr, cv=kf, scoring = 'neg_mean_squared_error', n_jobs=3).fit(X, y)
+```
+
+
+```{python}
+import matplotlib.cm as cm
+colors = cm.Set1(range(1))
+colors2 = colors
+colors2[:,3] = colors2[:,3] -0.7
+fig, ax1 = plt.subplots(1, 1)
+ax1.errorbar(list(range(1,10)), -cv_pcr.cv_results_["mean_test_score"],
+             cv_pcr.cv_results_["std_test_score"]/kf.n_splits**0.5 , capsize=10,  c=colors[0], ecolor=colors2[0])
+fig.tight_layout()
+```
+
+
+```{python}
+bestpcr =  cv_pcr.best_estimator_
+cv_pcr.best_params_
+step_reg = bestpcr.named_steps["reg"]
+coef_pcr = step_reg.coef_
+step_cr =  bestpcr.named_steps["cr"]
+stdX = step_cr.scale_
+meanX = step_cr.mean_
+step_acp = bestpcr.named_steps["acp"]
+P = step_acp.components_
+betafinpcr = P.T.dot(coef_pcr.T)[:,0]/stdX
+intercept = y.mean(axis=0) - meanX.dot(betafinpcr.T)
+np.round(np.append(intercept, betafinpcr),2)
+```
+
+#   Régression aux moindres carrés partiels (PLS)
+
+```{python}
+regpls = PLSRegression()
+param_grid_pls = { "n_components" : list(range(1,10))}
+kf = KFold(n_splits=4, shuffle=True, random_state=0)
+cv_pls = GridSearchCV(regpls, param_grid_pls, cv=kf, scoring = 'neg_mean_squared_error').fit(X, y)
+```
+
+```{python}
+colors = cm.Set1(range(1))
+colors2 = colors
+colors2[:,3] = colors2[:,3] -0.6
+fig, ax1 = plt.subplots(1, 1)
+ax1.errorbar(list(range(1,10)), -cv_pls.cv_results_["mean_test_score"],  cv_pls.cv_results_["std_test_score"]/kf.n_splits**0.5 ,  capsize=10, c=colors[0], ecolor=colors2[0])
+fig.tight_layout()
+```
+
+```{python}
+bestpls =  cv_pls.best_estimator_
+cv_pls.best_params_
+bestpls.fit(X,y)
+bestpls.coef_
+```
+
+
+```{python}
+scalerX = StandardScaler().fit(X)
+stdX = scalerX.scale_
+meanX = scalerX.mean_
+betafinpls = bestpls.coef_[:,0]/stdX
+intercept = y.mean(axis=0) - meanX.dot(betafinpls.T)
+np.append(intercept, betafinpls)
+```

@@ -1,0 +1,77 @@
+---
+title: "8 Choix de variables"
+toc: true
+---
+
+
+
+```{python}
+import pandas as pd; import numpy as np
+import matplotlib.pyplot as plt
+import statsmodels.formula.api as smf
+import statsmodels.api as sm
+
+import sys
+sys.path.append('../modules')  # Ajoute le répertoire 'modules' au chemin de recherche des modules
+import choixolsstats
+```
+
+# Introduction
+
+# Notations
+
+# Choix incorrects des variables
+
+# Critères classiques de choix de modèles
+
+# Procédure de sélection
+
+# Exemple : la concentration en ozone
+
+```{python}
+ozone = pd.read_csv("../donnees/ozone.txt", header = 0, sep = ";")
+ozone["vent"] = ozone["vent"].astype("category")
+```
+
+
+```{python}
+upper = "O3 ~ T12 + T15 + Ne12 + N12 + S12 + E12 + W12 + Vx + O3v"
+mustbe = "1"
+modcomplet = smf.ols(upper + "+" + mustbe, data=ozone).fit()
+modsel = choixolsstats.bestols(ozone, upper=upper, mustbe=mustbe)
+modsel['Cp'] = modsel['SSR']/modcomplet.mse_resid - modcomplet.nobs + 2 *  modsel['nb_var']
+```
+```{python}
+modsel.sort_values(by=["BIC","nb_var"]).iloc[:4,[1,3]]
+```
+
+
+```{python}
+modsel.sort_values(by=["AIC","nb_var"]).iloc[:4,[1,2]]
+```
+
+```{python}
+modsel.sort_values(by=["Cp","nb_var"]).iloc[:5,[1,7]]
+```
+
+
+```{python}
+modsel.sort_values(by=["R2adj","nb_var"],ascending=False). \
+  iloc[:4,[1,6]]
+```
+
+
+```{python}
+modsel.sort_values(by=["R2","nb_var"], ascending=False). \
+    iloc[:4,[1,5]]
+```
+
+
+```{python}
+selec = modsel.sort_values(by=["BIC","nb_var"]).iloc[:1,[1,3]]
+formule = "O3 ~ 1 +" + "+".join(selec.iloc[0,0])
+modsel = smf.ols(formule, data=ozone).fit()
+```
+
+
+

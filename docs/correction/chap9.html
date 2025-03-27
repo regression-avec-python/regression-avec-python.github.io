@@ -1,0 +1,1161 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="fr" xml:lang="fr"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.5.57">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>Régularisation des moindres carrés : ridge, lasso, elastic-net – Régression avec Python</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { display: inline-block; text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../">
+<link href="../correction/chap12.html" rel="next">
+<link href="../correction/chap8.html" rel="prev">
+<script src="../site_libs/quarto-html/quarto.js"></script>
+<script src="../site_libs/quarto-html/popper.min.js"></script>
+<script src="../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../site_libs/bootstrap/bootstrap.min.css" rel="stylesheet" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "Pas de résultats",
+    "search-matching-documents-text": "documents trouvés",
+    "search-copy-link-title": "Copier le lien vers la recherche",
+    "search-hide-matches-text": "Cacher les correspondances additionnelles",
+    "search-more-match-text": "correspondance de plus dans ce document",
+    "search-more-matches-text": "correspondances de plus dans ce document",
+    "search-clear-button-title": "Effacer",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Annuler",
+    "search-submit-button-title": "Envoyer",
+    "search-label": "Recherche"
+  }
+}</script>
+
+  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN") {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
+
+<link rel="stylesheet" href="../styles.css">
+</head>
+
+<body class="nav-sidebar floating nav-fixed">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a class="navbar-brand" href="../index.html">
+    <span class="navbar-title">Régression avec Python</span>
+    </a>
+  </div>
+            <div id="quarto-search" class="" title="Recherche"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Basculer la navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll me-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="../index.html"> 
+<span class="menu-text">Home</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../resume.html"> 
+<span class="menu-text">Résumé</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../donnees.html"> 
+<span class="menu-text">Données</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../codes/index.html"> 
+<span class="menu-text">Codes</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link active" href="../correction/index.html" aria-current="page"> 
+<span class="menu-text">Corrections</span></a>
+  </li>  
+</ul>
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="https://github.com/lrouviere/site_regression_python"> <i class="bi bi-github" role="img">
+</i> 
+<span class="menu-text">github</span></a>
+  </li>  
+</ul>
+          </div> <!-- /navcollapse -->
+            <div class="quarto-navbar-tools">
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+  <nav class="quarto-secondary-nav">
+    <div class="container-fluid d-flex">
+      <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Basculer la barre latérale" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+        <i class="bi bi-layout-text-sidebar-reverse"></i>
+      </button>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../correction/index.html">Corrections</a></li><li class="breadcrumb-item"><a href="../correction/chap8.html">III Réduction de dimension</a></li><li class="breadcrumb-item"><a href="../correction/chap9.html">Régularisation des moindres carrés : ridge, lasso, elastic-net</a></li></ol></nav>
+        <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Basculer la barre latérale" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
+        </a>
+    </div>
+  </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+  <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal quarto-sidebar-collapse-item sidebar-navigation floating overflow-auto">
+    <div class="sidebar-menu-container"> 
+    <ul class="list-unstyled mt-1">
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a href="../correction/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Corrections</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="true" aria-label="Basculer la section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-1" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="false">
+ <span class="menu-text">I Introduction au modèle linéaire</span></a>
+          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="false" aria-label="Basculer la section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-2" class="collapse list-unstyled sidebar-section depth2 ">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../correction/chap1.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">1 La régression linéaire simple</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../correction/chap2.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">2 La régression linéaire multiple</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../correction/chap3.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">3 Validation du modèle</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../correction/chap4.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">4 Extension : non-inversibilité et (ou) erreurs non corrélées</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../correction/chap5.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">5 Régression polynomiale et régression spline</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+          <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" role="navigation" aria-expanded="false">
+ <span class="menu-text">II Inférence</span></a>
+          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" role="navigation" aria-expanded="false" aria-label="Basculer la section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-3" class="collapse list-unstyled sidebar-section depth2 ">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../correction/chap6.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">6 Inférence dans le modèle gaussien</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../correction/chap7.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">7 Variables qualitatives : ANCOVA et ANOVA</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+          <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-4" role="navigation" aria-expanded="true">
+ <span class="menu-text">III Réduction de dimension</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-4" role="navigation" aria-expanded="true" aria-label="Basculer la section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-4" class="collapse list-unstyled sidebar-section depth2 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../correction/chap8.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">8 Choix de variables</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../correction/chap9.html" class="sidebar-item-text sidebar-link active">
+ <span class="menu-text">Régularisation des moindres carrés : ridge, lasso, elastic-net</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+          <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-5" role="navigation" aria-expanded="false">
+ <span class="menu-text">IV Le modèle linéaire généralisé</span></a>
+          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-5" role="navigation" aria-expanded="false" aria-label="Basculer la section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-5" class="collapse list-unstyled sidebar-section depth2 ">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../correction/chap12.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Régression logistique</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../correction/chap13.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">13 Régression de Poisson</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../correction/chap14.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">14 Régularisation de la vraisemblance</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../correction/chap16.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">16 Données déséquilibrées</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+      </ul>
+  </li>
+    </ul>
+    </div>
+</nav>
+<div id="quarto-sidebar-glass" class="quarto-sidebar-collapse-item" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item"></div>
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar zindex-bottom">
+        
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../correction/index.html">Corrections</a></li><li class="breadcrumb-item"><a href="../correction/chap8.html">III Réduction de dimension</a></li><li class="breadcrumb-item"><a href="../correction/chap9.html">Régularisation des moindres carrés : ridge, lasso, elastic-net</a></li></ol></nav>
+<div class="quarto-title">
+<h1 class="title">Régularisation des moindres carrés : ridge, lasso, elastic-net</h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<div id="b1bab4a9" class="cell" data-execution_count="1">
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> pandas <span class="im">as</span> pd</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> matplotlib.pyplot <span class="im">as</span> plt</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> statsmodels.api <span class="im">as</span> sm</span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> sklearn.linear_model <span class="im">import</span> Lasso, LassoCV</span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> sklearn.linear_model <span class="im">import</span> Lasso, lasso_path</span></code><button title="Copier vers le presse-papier" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div id="exr-9-1" class="theorem exercise">
+<p><span class="theorem-title"><strong>Exercice 1 (Questions de cours)</strong></span> A, B, B, B, A (pour un bon choix de <span class="math inline">\(\lambda\)</span>) et B, A, C et D.</p>
+</div>
+<div id="exr-9-2" class="theorem exercise">
+<p><span class="theorem-title"><strong>Exercice 2 (Projection et régression ridge)</strong></span> &nbsp;</p>
+</div>
+<div id="exr-9-3" class="theorem exercise">
+<p><span class="theorem-title"><strong>Exercice 3 (Variance des valeurs ajustées avec une régression ridge)</strong></span> &nbsp;</p>
+</div>
+<div id="exr-9-4" class="theorem exercise">
+<p><span class="theorem-title"><strong>Exercice 4 (Nombre effectif de paramètres de la régression ridge)</strong></span> &nbsp;</p>
+<ol type="1">
+<li><p>Rappelons que pour une valeur <span class="math inline">\(\kappa\)</span> donnée, le vecteur de coefficients de la régression ridge s’écrit <span class="math display">\[
+\hat \beta_{\mathrm{ridge}}(\kappa) = (X'X + \kappa I)^{-1}X'Y.
+\]</span> et donc l’ajustement par la régression ridge est <span class="math display">\[
+\hat Y_{\mathrm{ridge}}(\kappa)=X(X'X + \kappa I)^{-1}X'Y=H^*(\kappa)Y
+\]</span></p></li>
+<li><p>Soit <span class="math inline">\(U_i\)</span> le vecteur propre de <span class="math inline">\(A\)</span> associé à la valeur propre <span class="math inline">\(d^2_i\)</span>. Nous avons donc par définition que <span class="math display">\[
+\begin{eqnarray*}
+AU_i&amp;=&amp;d^2_iU_i\\
+AU_i+\lambda U_i&amp;=&amp;d^2_iU_i+\lambda U_i=(d^2_i+\lambda) U_i\\
+(A+\lambda I_p)U_i&amp;=&amp;(d^2_i+\lambda) U_i,
+\end{eqnarray*}
+\]</span> c’est-à-dire que <span class="math inline">\(U_i\)</span> est aussi vecteur propre de <span class="math inline">\(A+\lambda I_p\)</span> associé à la valeur propre <span class="math inline">\(\lambda+d^2_i\)</span>.</p></li>
+<li><p>Nous savons que <span class="math inline">\(X=QD P'\)</span> avec <span class="math inline">\(Q\)</span> et <span class="math inline">\(P\)</span> matrices orthogonales et <span class="math inline">\(D=\text{diag}(d_1,\dotsc,d_p)\)</span>. Puisque <span class="math inline">\(Q\)</span> est orthogonale, nous avons, par définition, <span class="math inline">\(Q'Q=I\)</span>. Nous avons donc que <span class="math inline">\(X'X=(QD P')'QD P'=PDQ'QDP'=PD^2P'\)</span>. Puisque <span class="math inline">\(P\)</span> est orthogonale <span class="math inline">\(P'P=I_p\)</span> et <span class="math inline">\(P^{-1}=P\)</span>. <span class="math display">\[
+\begin{eqnarray*}
+\text{tr}(X(X'X+\lambda I_p)^{-1}X')&amp;=&amp;\text{tr}((X'X+\lambda I_p)^{-1}X'X)\\
+&amp;=&amp;\text{tr}((PD^2P'+\lambda PP')^{-1}PD^2P')\\
+&amp;=&amp;\text{tr}((P(D+\lambda I_p )P')^{-1}PD^2P').
+\end{eqnarray*}
+\]</span> Ainsi <span class="math display">\[
+\begin{eqnarray*}
+\text{tr}(X(X'X+\lambda I_p)^{-1}X')&amp;=&amp;\text{tr}( (P')^{-1}(D+\lambda I_p )^{-1} P^{-1} PD^2P')\\
+&amp;=&amp;\text{tr}( (P')^{-1}(D+\lambda I_p )^{-1} D^2P')\\
+&amp;=&amp;\text{tr}( (D+\lambda I_p )^{-1} D^2).
+\end{eqnarray*}
+\]</span> Selon la définition de <span class="math inline">\(H^*(\kappa)\)</span>, nous savons que sa trace vaut donc <span class="math display">\[
+\begin{eqnarray*}
+\text{tr}( (D+\kappa I_p )^{-1} D^2).
+\end{eqnarray*}
+\]</span> Comme <span class="math inline">\(D\)</span> et <span class="math inline">\(I_p\)</span> sont des matrices diagonales, leur somme et produit sont simplement leur somme et produit terme à terme des éléments de la diagonale, et donc cette trace (somme des éléments de la diagonale) vaut <span class="math display">\[
+\sum_{i=1}^{p}{\frac{d_j^2}{d_j^2+\kappa}}.
+\]</span></p></li>
+</ol>
+</div>
+<div id="exr-9-5" class="theorem exercise">
+<p><span class="theorem-title"><strong>Exercice 5 (Estimateurs à rétrecissement - shrinkage)</strong></span> &nbsp;</p>
+<ol type="1">
+<li><p>Soit le modèle de régression <span class="math display">\[
+Y=X\beta+\varepsilon.
+\]</span> En le pré-multipliant par <span class="math inline">\(P\)</span>, nous avons <span class="math display">\[
+Z=PY=PX\beta+P\varepsilon=DQ\beta+\eta=D\gamma+\eta.
+\]</span> Puisque <span class="math inline">\(\varepsilon\sim\mathcal{N}(0,\sigma^2 I_n)\)</span> et <span class="math inline">\(P\)</span> fixé, nous avons que <span class="math inline">\(\eta=P\varepsilon\)</span> suit une loi normale de moyenne <span class="math inline">\(\mathbf E(\eta)=P\mathbf E(\varepsilon)=0\)</span> et de variance <span class="math inline">\(\mathop{\mathrm{V}}(\eta)=P\mathop{\mathrm{V}}(\varepsilon)P'=\sigma^2PP'=\sigma^2I_n\)</span>.</p>
+<p>Par définition, <span class="math inline">\(Z\)</span> vaut <span class="math inline">\(PY\)</span> et nous savons que <span class="math inline">\(Y\sim\mathcal{N}(X\beta,\sigma^2 I_n)\)</span>, donc <span class="math inline">\(Z\sim\mathcal{N}(PX\beta,\sigma^2 PP')\)</span>, c’est-à-dire <span class="math inline">\(Z\sim\mathcal{N}(DQ\beta,\sigma^2 I_n)\)</span> ou encore <span class="math inline">\(Z\sim\mathcal{N}(D\gamma,\sigma^2 I_n)\)</span>. En utilisant la valeur de <span class="math inline">\(D\)</span> nous avons <span class="math display">\[    
+\begin{eqnarray*}
+D\gamma&amp;=&amp;
+\begin{pmatrix}
+  \Delta \gamma\\
+0
+\end{pmatrix}.
+\end{eqnarray*}
+\]</span> Donc <span class="math inline">\(Z_{1:p}\sim\mathcal{N}(\Delta\gamma,\sigma^2I_p)\)</span>.</p></li>
+<li><p>Soit un estimateur de <span class="math inline">\(\beta\)</span> linéaire en <span class="math inline">\(Y\)</span>~: <span class="math inline">\(\hat \beta=AY\)</span>. Soit l’estimateur de <span class="math inline">\(\gamma=Q\beta\)</span> linéaire en <span class="math inline">\(Y\)</span>~: <span class="math inline">\(\hat\gamma=Q AY\)</span>. Pour calculer leur matrice de l’EQM, nous devons calculer leur biais et leur variance. Le biais de <span class="math inline">\(\hat \beta\)</span> est <span class="math display">\[
+B(\hat \beta)=\mathbf E(\hat \beta)-\beta=\mathbf E(AY)-\beta=A\mathbf E(Y)-\beta=AX\beta-\beta.
+\]</span> Le biais de <span class="math inline">\(\hat\gamma\)</span> s’écrit <span class="math display">\[
+B(\hat\gamma)=\mathbf E(\hat \gamma)-\gamma=\mathbf E(Q\hat \beta)-\gamma=Q\mathbf E(\hat \beta)-\gamma=QAX\beta-\gamma.
+\]</span> Comme <span class="math inline">\(\gamma=Q\beta\)</span> et <span class="math inline">\(Q'Q=I_p\)</span> nous avons <span class="math display">\[
+B(\hat\gamma)=QAXQ'\gamma-\gamma.
+\]</span> La variance de <span class="math inline">\(\hat \beta\)</span> s’écrit <span class="math display">\[
+\mathop{\mathrm{V}}(\hat \beta)=\mathop{\mathrm{V}}(AY)=A\mathop{\mathrm{V}}(Y)A'=\sigma^2 AA',
+\]</span> et celle de <span class="math inline">\(\hat \gamma\)</span> est <span class="math display">\[
+\mathop{\mathrm{V}}(\hat\gamma)=\mathop{\mathrm{V}}(Q\hat \beta)=Q\mathop{\mathrm{V}}(\hat \beta)Q'=\sigma^2 QAA'Q'.
+\]</span> Nous en déduisons que les matrices des EQM sont respectivement <span class="math display">\[
+\begin{eqnarray*}
+\mathop{\mathrm{EQM}}(\hat \beta)&amp;=&amp;(AX\beta-\beta)(AX\beta-\beta)'+\sigma^2 AA',\\
+\mathop{\mathrm{EQM}}(\hat \gamma)&amp;=&amp;(QAXQ'\gamma-\gamma)(QAXQ'\gamma-\gamma)' + \sigma^2 QAA'Q',
+\end{eqnarray*}
+\]</span> et enfin les traces de ces matrices s’écrivent <span class="math display">\[
+\begin{eqnarray*}
+\text{tr}(\mathop{\mathrm{EQM}}(\hat \beta))&amp;=&amp;(AX\beta-\beta)'(AX\beta-\beta)+\sigma^2\text{tr}(AA'),\\
+\text{tr}(\mathop{\mathrm{EQM}}(\hat \gamma))&amp;=&amp;(QAXQ'\gamma-\gamma)'(QAXQ'\gamma-\gamma)+ \sigma^2\text{tr}(AA').\\
+\end{eqnarray*}
+\]</span> Rappelons que <span class="math inline">\(\gamma=Q\beta\)</span> et que <span class="math inline">\(Q'Q=I_p\)</span>, nous avons donc <span class="math display">\[
+\begin{eqnarray*}
+\text{tr}(\mathop{\mathrm{EQM}}(\hat \gamma))&amp;=&amp;\gamma'(QAXQ'-I_p)'(QAXQ'-I_p)\gamma+ \sigma^2\text{tr}(AA')\\
+&amp;=&amp;\beta'(QAX - Q)'(QAX - Q)\beta+ \sigma^2\text{tr}(AA')\\
+&amp;=&amp;\beta'(AX-I_p)Q'Q(AX-I_p)\beta+ \sigma^2\text{tr}(AA')\\
+&amp;=&amp;\beta'(AX-I_p)(AX-I_p)\beta+ \sigma^2\text{tr}(AA')=\text{tr}(\mathop{\mathrm{EQM}}(\hat \beta)).
+\end{eqnarray*}
+\]</span> En conclusion, que l’on s’intéresse à un estimateur linéaire de <span class="math inline">\(\beta\)</span> ou à un estimateur linéaire de <span class="math inline">\(\gamma\)</span>, dès que l’on passe de l’un à l’autre en multipliant par <span class="math inline">\(Q\)</span> ou <span class="math inline">\(Q'\)</span>, matrice orthogonale, la trace de l’EQM est identique, c’est-à-dire que les performances globales des 2 estimateurs sont identiques.</p></li>
+<li><p>Nous avons le modèle de régression suivant~: <span class="math display">\[
+Z_{1:p}=\Delta\gamma+\eta_{1:p},
+\]</span> et donc, par définition de l’estimateur des MC, nous avons <span class="math display">\[
+\hat \gamma_{\mathrm{MC}}=(\Delta'\Delta)^{-1}\Delta'Z_{1:p}.
+\]</span> Comme <span class="math inline">\(\Delta\)</span> est une matrice diagonale, nous avons <span class="math display">\[
+\hat \gamma_{\mathrm{MC}}=\Delta^{-2}\Delta'Z_{1:p}=\Delta^{-1}Z_{1:p}.
+\]</span> Cet estimateur est d’expression très simple et il est toujours défini de manière unique, ce qui n’est pas forcément le cas de <span class="math inline">\(\hat \beta_{\mathrm{MC}}\)</span>.</p>
+<p>Comme <span class="math inline">\(Z_{1:p}\sim\mathcal{N}(\Delta\gamma,\sigma^2 I_p)\)</span> nous avons que <span class="math inline">\(\hat \gamma_{\mathrm{MC}}=\Delta^{-1}Z_{1:p}\)</span> suit une loi normale d’espérance <span class="math inline">\(\mathbf E(\Delta^{-1}Z_{1:p})=\Delta^{-1}\mathbf E(Z_{1:p})=\gamma\)</span> et de variance <span class="math inline">\(\mathop{\mathrm{V}}(\hat \gamma_{\mathrm{MC}})=\sigma^2\Delta^{-2}\)</span>. Puisque <span class="math inline">\(\hat \gamma_{\mathrm{MC}}\)</span> est un estimateur des MC, il est sans biais, ce qui est habituel.</p></li>
+<li><p>L’EQM de <span class="math inline">\(\hat \gamma_{\mathrm{MC}}\)</span>, estimateur sans biais, est simplement sa variance. Pour la <span class="math inline">\(i^e\)</span> coordonnée de <span class="math inline">\(\hat \gamma_{\mathrm{MC}}\)</span>, l’EQM est égal à l’élément <span class="math inline">\(i,i\)</span> de la matrice de variance <span class="math inline">\(\mathop{\mathrm{V}}(\hat \gamma_{\mathrm{MC}})\)</span>, c’est-à-dire <span class="math inline">\(\sigma^2/\delta_i^2\)</span>. La trace de l’EQM est alors simplement la somme, sur toutes les coordonnées <span class="math inline">\(i\)</span>, de cet EQM obtenu.</p></li>
+<li><p>Par définition <span class="math inline">\(\hat \gamma(c)=\text{diag}(c_i)Z_{1:p}\)</span> et nous savons que <span class="math inline">\(Z_{1:p}\sim\mathcal{N}(\Delta\gamma,\sigma^2 I_p).\)</span> Nous obtenons que <span class="math inline">\(\hat \gamma(c)\)</span> suit une loi normale d’espérance <span class="math inline">\(\mathbf E(\text{diag}(c_i)Z_{1:p})=\text{diag}(c_i)\Delta\gamma\)</span> et de variance <span class="math display">\[
+\mathop{\mathrm{V}}(\hat \gamma(c))= \text{diag}(c_i)\mathop{\mathrm{V}}(Z_{1:p})\text{diag}(c_i)'= \sigma^2\text{diag}(c_i^2).
+\]</span> La loi de <span class="math inline">\(\hat \gamma(c)\)</span> étant une loi normale de matrice de variance diagonale, nous en déduisons que les coordonnées de <span class="math inline">\(\hat \gamma(c)\)</span> sont indépendantes entre elles.</p></li>
+<li><p>Calculons l’EQM de la <span class="math inline">\(i^e\)</span> coordonnée de <span class="math inline">\(\hat \gamma(c)\)</span> <span class="math display">\[
+\mathop{\mathrm{EQM}}(\hat \gamma(c)_i)=\mathbf E(\hat \gamma(c)_i -\gamma)^2=\mathbf E(\hat \gamma(c)_i^2)+
+\mathbf E(\gamma_i^2)-2\mathbf E(\hat \gamma(c)_i \gamma_i).
+\]</span> Comme <span class="math inline">\(\gamma_i\)</span> et que <span class="math inline">\(\mathbf E(\hat \gamma(c)_i^2)=\mathop{\mathrm{V}}(\hat \gamma(c)_i^2)+\{\mathbf E(\hat \gamma(c)_i^2)\}^2\)</span>, nous avons <span class="math display">\[
+\begin{align*}
+\mathop{\mathrm{EQM}}(\hat \gamma(c)_i)&amp;=\sigma^2 c_i^2+(c_i\delta_i\gamma_i)^2+\gamma_i^2-2\gamma_i\mathbf E(\hat \gamma(c)_i)\\
+&amp;=\sigma^2 c_i^2+(c_i\delta_i\gamma_i)^2+\gamma_i^2-2\sigma^2 c_i\delta_i\gamma_i= \sigma^2c_i^2+\gamma_i^2(c_i\delta_i -1)^2.
+\end{align*}
+\]</span></p></li>
+<li><p>De manière évidente si <span class="math inline">\(\gamma_i^2\)</span> diminue, alors l’EQM de <span class="math inline">\(\hat \gamma(c)_i\)</span> diminue aussi. Calculons la valeur de l’EQM quand <span class="math inline">\(\gamma_i^2=\frac{\sigma^2}{\delta_i^2}\frac{(1/\delta_i)+c_i}{(1/\delta_i)-c_i}\)</span>. Nous avons, grâce à la question précédente, <span class="math display">\[
+\begin{eqnarray*}
+\mathop{\mathrm{EQM}}(\hat \gamma(c)_i)&amp;=&amp;\sigma^2 c_i^2+(c_i\delta_i -1)^2\frac{\sigma^2}{\delta_i^2}\frac{(1/\delta_i)+c_i}{(1/\delta_i)-c_i}\\
+&amp;=&amp;\sigma^2 c_i^2+\frac{\sigma^2}{\delta_i^2}(1 - c_i\delta_i)^2\frac{1+\delta_ic_i}{1-\delta_ic_i}\\
+&amp;=&amp;\sigma^2 c_i^2+\frac{\sigma^2}{\delta_i^2}(1 - c_i\delta_i)(1+\delta_ic_i)\\
+&amp;=&amp;\sigma^2 c_i^2+\frac{\sigma^2}{\delta_i^2}(1-\delta_i^2c_i^2)\\
+&amp;=&amp;\sigma^2 c_i^2+\frac{\sigma^2}{\delta_i^2}-\sigma^2c_i^2=\frac{\sigma^2}{\delta_i^2}\\
+&amp;=&amp;\mathop{\mathrm{EQM}}(\hat \gamma_{\mathrm{MC}}),
+\end{eqnarray*}
+\]</span> d’où la conclusion demandée.</p></li>
+<li><p>Par définition de <span class="math inline">\(\hat \gamma(c)\)</span>, nous avons <span class="math display">\[
+\begin{eqnarray*}
+\hat \gamma(c)&amp;=&amp;\text{diag}(c_i)Z_{1:p}=\text{diag}(\frac{\delta_i}{\delta_i^2+\kappa})Z_{1:p}\\
+&amp;=&amp;(\Delta'\Delta + \kappa I_p)^{-1}\Delta'Z_{1:p},
+\end{eqnarray*}
+\]</span> puisque <span class="math inline">\(\Delta\)</span> est diagonale. De plus nous avons <span class="math display">\[
+D =
+\bigl( \begin{smallmatrix}
+  \Delta\\
+0
+\end{smallmatrix}\bigr),
+\]</span> ce qui entraîne que <span class="math inline">\(D'D=\Delta'\Delta\)</span> et <span class="math inline">\(D'Z=\Delta' Z_{1:p}\)</span>. Nous obtenons donc <span class="math display">\[
+\hat \gamma(c)=(D'D+\kappa I_p)^{-1}D'Z.
+\]</span> Rappelons que <span class="math inline">\(D=PXQ'\)</span> avec <span class="math inline">\(P\)</span> et <span class="math inline">\(Q\)</span> matrices orthogonales, nous avons alors <span class="math display">\[
+\begin{eqnarray*}
+\hat \gamma(c)&amp;=&amp;(QX'P'PXQ' + \kappa I_p)^{-1} D'Z=(QX'XQ' + \kappa QQ')^{-1}D'Z\\
+&amp;=&amp;(Q(X'X  + \kappa I_p)Q')^{-1}D'Z=(Q')^{-1}(X'X  + \kappa I_p)^{-1}(Q)^{-1}D'Z\\
+&amp;=&amp;Q(X'X  + \kappa I_p)^{-1}Q'D'Z.
+\end{eqnarray*}
+\]</span> Comme <span class="math inline">\(Z=PY\)</span> et <span class="math inline">\(D=PXQ'\)</span>, nous avons <span class="math display">\[
+\hat \gamma(c)=Q(X'X  + \kappa I_p)^{-1}Q' QX'P' PY=Q(X'X  + \kappa I_p)^{-1}XY.
+\]</span> Enfin, nous savons que <span class="math inline">\(Q\hat\gamma=\hat \beta\)</span>, nous en déduisons que <span class="math inline">\(\hat\gamma=Q'\hat \beta\)</span> et donc que dans le cas particulier où <span class="math inline">\(c_i=\frac{\delta_i}{\delta_i^2+\kappa}\)</span> nous obtenons <span class="math display">\[
+\hat \beta=Q\hat \gamma(c)=(X'X  + \kappa I_p)^{-1}XY,
+\]</span> c’est-à-dire l’estimateur de la régression ridge.</p></li>
+</ol>
+</div>
+<div id="exr-9-6" class="theorem exercise">
+<p><span class="theorem-title"><strong>Exercice 6 (Coefficient constant et régression sous contraintes)</strong></span> &nbsp;</p>
+</div>
+<div id="exr-9-7" class="theorem exercise">
+<p><span class="theorem-title"><strong>Exercice 7 (Unicité pour la régression lasso, Giraud (2014))</strong></span> &nbsp;</p>
+</div>
+<div id="exr-9-8" class="theorem exercise">
+<p><span class="theorem-title"><strong>Exercice 8 (Traitement d’un signal)</strong></span> &nbsp;</p>
+<ol type="1">
+<li><div id="4fb3a631" class="cell" data-execution_count="2">
+<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>signal <span class="op">=</span> pd.read_csv(<span class="st">"../donnees/courbe_lasso.csv"</span>)</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>donnees <span class="op">=</span> pd.read_csv(<span class="st">"../donnees/echan_lasso.csv"</span>)</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>plt.figure(figsize<span class="op">=</span>(<span class="dv">10</span>, <span class="dv">6</span>))</span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>plt.plot(signal[<span class="st">'x'</span>], signal[<span class="st">'y'</span>], label<span class="op">=</span><span class="st">'Signal'</span>)</span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>plt.scatter(donnees[<span class="st">'X'</span>], donnees[<span class="st">'Y'</span>], color<span class="op">=</span><span class="st">'red'</span>, label<span class="op">=</span><span class="st">'Données'</span>)</span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>plt.xlabel(<span class="st">'x'</span>)</span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a>plt.ylabel(<span class="st">'y'</span>)</span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a>plt.legend()</span>
+<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a>plt.title(<span class="st">'Signal et Données'</span>)</span>
+<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a>plt.show()</span></code><button title="Copier vers le presse-papier" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="chap9_files/figure-html/cell-3-output-1.png" width="823" height="524" class="figure-img"></p>
+</figure>
+</div>
+</div>
+</div></li>
+<li><p>Nous cherchons à reconstruire le signal à partir de l’échantillon. Bien entendu, vu la forme du signal, un modèle linéaire de la forme <span class="math display">\[
+y_i=\beta_0+\beta_1x_i+\varepsilon_i
+\]</span> n’est pas approprié. De nombreuses approches en <strong>traitement du signal</strong> proposent d’utiliser une <code>base</code> ou <code>dictionnaire</code> représentée par une collection de fonctions <span class="math inline">\(\{\psi_j(x)\}_{j=1,\dots,K}\)</span> et de décomposer le signal dans cette base : <span class="math display">\[
+m(x)\approx \sum_{j=1}^K \beta_j\psi_j(x).
+\]</span> Pour un dictionnaire donné, on peut alors considérer un <strong>modèle linéaire</strong> <span id="eq-mod-lin-signal"><span class="math display">\[
+  y_i=\sum_{j=1}^K \beta_j\psi_j(x_i)+\varepsilon_i.
+\tag{1}\]</span></span> Le problème est toujours d’estimer les paramètres <span class="math inline">\(\beta_j\)</span> mais les variables sont maintenant définies par les éléments du dictionnaire. Il existe différents types de dictionnaire, dans cet exercice nous proposons de considérer la base de Fourier définie par <span class="math display">\[
+\psi_0(x)=1,\quad \psi_{2j-1}(x)=\cos(2j\pi x)\quad\text{et}\quad \psi_{2j}(x)=\sin(2j\pi x),\quad j=1,\dots,K.
+\]</span></p></li>
+<li><div id="1e9888f9" class="cell" data-execution_count="3">
+<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> mat_dict(K, x):</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Initialiser une matrice de zéros avec la taille appropriée</span></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>    res <span class="op">=</span> np.zeros((<span class="bu">len</span>(x), <span class="dv">2</span> <span class="op">*</span> K))</span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Remplir la matrice avec les valeurs cos et sin</span></span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> j <span class="kw">in</span> <span class="bu">range</span>(<span class="dv">1</span>, K <span class="op">+</span> <span class="dv">1</span>):</span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>        res[:, <span class="dv">2</span> <span class="op">*</span> j <span class="op">-</span> <span class="dv">2</span>] <span class="op">=</span> np.cos(<span class="dv">2</span> <span class="op">*</span> j <span class="op">*</span> np.pi <span class="op">*</span> x)</span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a>        res[:, <span class="dv">2</span> <span class="op">*</span> j <span class="op">-</span> <span class="dv">1</span>] <span class="op">=</span> np.sin(<span class="dv">2</span> <span class="op">*</span> j <span class="op">*</span> np.pi <span class="op">*</span> x)</span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Convertir la matrice en DataFrame pour un usage similaire à tibble</span></span>
+<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a>    res_df <span class="op">=</span> pd.DataFrame(res)</span>
+<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> res_df</span></code><button title="Copier vers le presse-papier" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div></li>
+<li><p>Il suffit d’ajuster le modèle linéaire où les variables explicatives sont données par le dictionnaire :</p>
+<div id="4eb18776" class="cell" data-execution_count="4">
+<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Créer le dictionnaire pour les données</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>D25 <span class="op">=</span> mat_dict(<span class="dv">25</span>, donnees[<span class="st">'X'</span>])</span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>D25[<span class="st">'Y'</span>] <span class="op">=</span> donnees[<span class="st">'Y'</span>]</span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a><span class="co"># Ajuster le modèle linéaire</span></span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>X <span class="op">=</span> sm.add_constant(D25.drop(columns<span class="op">=</span><span class="st">'Y'</span>))</span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a>y <span class="op">=</span> D25[<span class="st">'Y'</span>]</span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a>mod_lin <span class="op">=</span> sm.OLS(y, X).fit()</span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a><span class="co"># Créer le dictionnaire pour le signal</span></span>
+<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a>S25 <span class="op">=</span> mat_dict(<span class="dv">25</span>, signal[<span class="st">'x'</span>])</span>
+<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-13"><a href="#cb4-13" aria-hidden="true" tabindex="-1"></a><span class="co"># Faire des prédictions</span></span>
+<span id="cb4-14"><a href="#cb4-14" aria-hidden="true" tabindex="-1"></a>S25 <span class="op">=</span> sm.add_constant(S25)</span>
+<span id="cb4-15"><a href="#cb4-15" aria-hidden="true" tabindex="-1"></a>prev_MCO <span class="op">=</span> mod_lin.predict(S25)</span>
+<span id="cb4-16"><a href="#cb4-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-17"><a href="#cb4-17" aria-hidden="true" tabindex="-1"></a><span class="co"># Préparer les données pour le tracé</span></span>
+<span id="cb4-18"><a href="#cb4-18" aria-hidden="true" tabindex="-1"></a>signal1 <span class="op">=</span> signal.copy()</span>
+<span id="cb4-19"><a href="#cb4-19" aria-hidden="true" tabindex="-1"></a>signal1[<span class="st">'MCO'</span>] <span class="op">=</span> prev_MCO</span>
+<span id="cb4-20"><a href="#cb4-20" aria-hidden="true" tabindex="-1"></a>signal1 <span class="op">=</span> signal1.rename(columns<span class="op">=</span>{<span class="st">'y'</span>: <span class="st">'signal'</span>})</span>
+<span id="cb4-21"><a href="#cb4-21" aria-hidden="true" tabindex="-1"></a>signal2 <span class="op">=</span> signal1.melt(id_vars<span class="op">=</span>[<span class="st">'x'</span>], value_vars<span class="op">=</span>[<span class="st">'signal'</span>, <span class="st">'MCO'</span>], var_name<span class="op">=</span><span class="st">'meth'</span>, value_name<span class="op">=</span><span class="st">'y'</span>)</span>
+<span id="cb4-22"><a href="#cb4-22" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-23"><a href="#cb4-23" aria-hidden="true" tabindex="-1"></a><span class="co"># Tracer les résultats</span></span>
+<span id="cb4-24"><a href="#cb4-24" aria-hidden="true" tabindex="-1"></a>plt.figure(figsize<span class="op">=</span>(<span class="dv">10</span>, <span class="dv">6</span>))</span>
+<span id="cb4-25"><a href="#cb4-25" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> key, grp <span class="kw">in</span> signal2.groupby(<span class="st">'meth'</span>):</span>
+<span id="cb4-26"><a href="#cb4-26" aria-hidden="true" tabindex="-1"></a>    plt.plot(grp[<span class="st">'x'</span>], grp[<span class="st">'y'</span>], label<span class="op">=</span>key)</span>
+<span id="cb4-27"><a href="#cb4-27" aria-hidden="true" tabindex="-1"></a>plt.scatter(donnees[<span class="st">'X'</span>], donnees[<span class="st">'Y'</span>], color<span class="op">=</span><span class="st">'red'</span>, label<span class="op">=</span><span class="st">'Données'</span>)</span>
+<span id="cb4-28"><a href="#cb4-28" aria-hidden="true" tabindex="-1"></a>plt.ylim(<span class="op">-</span><span class="dv">2</span>, <span class="dv">2</span>)</span>
+<span id="cb4-29"><a href="#cb4-29" aria-hidden="true" tabindex="-1"></a>plt.xlabel(<span class="st">'x'</span>)</span>
+<span id="cb4-30"><a href="#cb4-30" aria-hidden="true" tabindex="-1"></a>plt.ylabel(<span class="st">'y'</span>)</span>
+<span id="cb4-31"><a href="#cb4-31" aria-hidden="true" tabindex="-1"></a>plt.legend()</span>
+<span id="cb4-32"><a href="#cb4-32" aria-hidden="true" tabindex="-1"></a>plt.title(<span class="st">'Signal et Données'</span>)</span>
+<span id="cb4-33"><a href="#cb4-33" aria-hidden="true" tabindex="-1"></a>plt.show()</span></code><button title="Copier vers le presse-papier" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="chap9_files/figure-html/cell-5-output-1.png" width="823" height="524" class="figure-img"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>Le signal estimé a tendance à surajuster les données. Cela vient du fait qu’on estime 51 paramètres avec seulement 60 observations.</p></li>
+<li><p>On regarde tout d’abord le <code>chemin de régularisation</code> des estimateurs <strong>lasso</strong></p>
+<div id="512fc2f5" class="cell" data-execution_count="5">
+<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>X_25 <span class="op">=</span> D25.drop(columns<span class="op">=</span><span class="st">'Y'</span>).values</span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>y_25 <span class="op">=</span> D25[<span class="st">'Y'</span>].values</span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Ajuster le modèle Lasso et obtenir le chemin de régularisation</span></span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>alphas, coefs, _ <span class="op">=</span> lasso_path(X_25, y_25, alphas<span class="op">=</span>np.logspace(<span class="op">-</span><span class="dv">4</span>, <span class="dv">0</span>, <span class="dv">100</span>))</span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a><span class="co"># Tracer le chemin de régularisation</span></span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a>plt.figure(figsize<span class="op">=</span>(<span class="dv">10</span>, <span class="dv">6</span>))</span>
+<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a><span class="co"># Tracer les coefficients pour chaque alpha</span></span>
+<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> coef <span class="kw">in</span> coefs:</span>
+<span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a>    plt.plot(<span class="op">-</span>np.log10(alphas), coef)</span>
+<span id="cb5-12"><a href="#cb5-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-13"><a href="#cb5-13" aria-hidden="true" tabindex="-1"></a>plt.xlabel(<span class="st">'-log(alpha)'</span>)</span>
+<span id="cb5-14"><a href="#cb5-14" aria-hidden="true" tabindex="-1"></a>plt.ylabel(<span class="st">'Coefficients'</span>)</span>
+<span id="cb5-15"><a href="#cb5-15" aria-hidden="true" tabindex="-1"></a>plt.title(<span class="st">'Lasso Paths'</span>)</span>
+<span id="cb5-16"><a href="#cb5-16" aria-hidden="true" tabindex="-1"></a>plt.axis(<span class="st">'tight'</span>)</span>
+<span id="cb5-17"><a href="#cb5-17" aria-hidden="true" tabindex="-1"></a>plt.show()</span></code><button title="Copier vers le presse-papier" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="chap9_files/figure-html/cell-6-output-1.png" width="823" height="523" class="figure-img"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>Il semble que quelques coefficients quittent la valeur 0 bien avant les autres. On effectue maintenant la validation croisée pour sélectionner le paramètre <span class="math inline">\(\lambda\)</span>.</p>
+<div id="d81f11f8" class="cell" data-execution_count="6">
+<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>lasso_cv <span class="op">=</span> LassoCV(cv<span class="op">=</span><span class="dv">10</span>, random_state<span class="op">=</span><span class="dv">1234</span>).fit(X_25, y_25)</span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a><span class="co"># Tracer les résultats de la validation croisée</span></span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>m_log_alphas <span class="op">=</span> <span class="op">-</span>np.log10(lasso_cv.alphas_)</span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>plt.figure(figsize<span class="op">=</span>(<span class="dv">10</span>, <span class="dv">6</span>))</span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a>plt.plot(m_log_alphas, lasso_cv.mse_path_, <span class="st">':'</span>)</span>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a>plt.plot(m_log_alphas, lasso_cv.mse_path_.mean(axis<span class="op">=-</span><span class="dv">1</span>), <span class="st">'k'</span>, label<span class="op">=</span><span class="st">'Average across the folds'</span>, linewidth<span class="op">=</span><span class="dv">2</span>)</span>
+<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a>plt.axvline(<span class="op">-</span>np.log10(lasso_cv.alpha_), linestyle<span class="op">=</span><span class="st">'--'</span>, color<span class="op">=</span><span class="st">'k'</span>, label<span class="op">=</span><span class="st">'alpha: CV estimate'</span>)</span>
+<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a>plt.xlabel(<span class="st">'-log(alpha)'</span>)</span>
+<span id="cb6-12"><a href="#cb6-12" aria-hidden="true" tabindex="-1"></a>plt.ylabel(<span class="st">'Mean square error'</span>)</span>
+<span id="cb6-13"><a href="#cb6-13" aria-hidden="true" tabindex="-1"></a>plt.title(<span class="st">'Lasso CV Paths'</span>)</span>
+<span id="cb6-14"><a href="#cb6-14" aria-hidden="true" tabindex="-1"></a>plt.legend()</span>
+<span id="cb6-15"><a href="#cb6-15" aria-hidden="true" tabindex="-1"></a>plt.axis(<span class="st">'tight'</span>)</span>
+<span id="cb6-16"><a href="#cb6-16" aria-hidden="true" tabindex="-1"></a>plt.show()</span></code><button title="Copier vers le presse-papier" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="chap9_files/figure-html/cell-7-output-1.png" width="812" height="523" class="figure-img"></p>
+</figure>
+</div>
+</div>
+</div>
+<div id="9ae50fe5" class="cell" data-execution_count="7">
+<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>S25 <span class="op">=</span> mat_dict(<span class="dv">25</span>, signal[<span class="st">'x'</span>])</span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>prev_lasso <span class="op">=</span> lasso_cv.predict(S25)</span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>signal1[<span class="st">'lasso'</span>] <span class="op">=</span> prev_lasso</span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>signal1 <span class="op">=</span> signal1.rename(columns<span class="op">=</span>{<span class="st">'y'</span>: <span class="st">'signal'</span>})</span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>signal2 <span class="op">=</span> signal1.melt(id_vars<span class="op">=</span>[<span class="st">'x'</span>], value_vars<span class="op">=</span>[<span class="st">'signal'</span>,<span class="st">'MCO'</span> ,<span class="st">'lasso'</span>], var_name<span class="op">=</span><span class="st">'meth'</span>, value_name<span class="op">=</span><span class="st">'y'</span>)</span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a><span class="co"># Tracer les résultats</span></span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a>plt.figure(figsize<span class="op">=</span>(<span class="dv">10</span>, <span class="dv">6</span>))</span>
+<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> key, grp <span class="kw">in</span> signal2.groupby(<span class="st">'meth'</span>):</span>
+<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a>    plt.plot(grp[<span class="st">'x'</span>], grp[<span class="st">'y'</span>], label<span class="op">=</span>key)</span>
+<span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a>plt.scatter(donnees[<span class="st">'X'</span>], donnees[<span class="st">'Y'</span>], color<span class="op">=</span><span class="st">'red'</span>, label<span class="op">=</span><span class="st">'Données'</span>)</span>
+<span id="cb7-11"><a href="#cb7-11" aria-hidden="true" tabindex="-1"></a>plt.ylim(<span class="op">-</span><span class="dv">2</span>, <span class="dv">2</span>)  <span class="co"># Fixer les limites de l'axe des ordonnées</span></span>
+<span id="cb7-12"><a href="#cb7-12" aria-hidden="true" tabindex="-1"></a>plt.xlabel(<span class="st">'x'</span>)</span>
+<span id="cb7-13"><a href="#cb7-13" aria-hidden="true" tabindex="-1"></a>plt.ylabel(<span class="st">'y'</span>)</span>
+<span id="cb7-14"><a href="#cb7-14" aria-hidden="true" tabindex="-1"></a>plt.legend()</span>
+<span id="cb7-15"><a href="#cb7-15" aria-hidden="true" tabindex="-1"></a>plt.title(<span class="st">'Signal et Données avec Lasso'</span>)</span>
+<span id="cb7-16"><a href="#cb7-16" aria-hidden="true" tabindex="-1"></a>plt.show()</span></code><button title="Copier vers le presse-papier" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="chap9_files/figure-html/cell-8-output-1.png" width="823" height="524" class="figure-img"></p>
+</figure>
+</div>
+</div>
+</div></li>
+</ol>
+</div>
+<div id="exr-9-9" class="theorem exercise">
+<p><span class="theorem-title"><strong>Exercice 9 (GridSearchCV)</strong></span> &nbsp;</p>
+</div>
+<div id="exr-9-10" class="theorem exercise">
+<p><span class="theorem-title"><strong>Exercice 10 (Variablilité de la validation croisée <span class="math inline">\(K\)</span> blocs)</strong></span> &nbsp;</p>
+<ol type="1">
+<li><p>Il suffit d’écrire <span class="math display">\[
+\bar{\mathcal{R}}=\frac{1}{n}\sum_{k=1}^K \sum_{i\in\mathcal I_k}(y_i-\hat m_k(x_i))^2=\frac{1}{K}\sum_{k=1}^K\frac{n}{K}\sum_{i\in\mathcal I_k}(y_i-\hat m_k(x_i))^2.
+\]</span></p></li>
+<li><p>Les données étant i.i.d. et les blocs étant de taille égale, on a <span class="math inline">\(\mathop{\mathrm{V}}(\mathcal R_1)=\mathop{\mathrm{V}}(\mathcal R_2)=\dots=\mathop{\mathrm{V}}(\mathcal R_K)\)</span>. On obtient donc le résutat demandé en négligeant les covariances.</p></li>
+<li><p>On estime la variance d’un bloc <span class="math inline">\(\mathop{\mathrm{V}}(\mathcal R_1)\)</span> par la variance empirique des erreurs sur chaque bloc : <span class="math display">\[
+\frac{1}{K-1}\sum_{k=1}^K(\mathcal{R}_k - \bar{\mathcal{R}})^{2}.
+\]</span> En utilisant la question précédente, on estime la variance de <span class="math inline">\(\bar{\mathcal{R}}\)</span> par <span class="math display">\[
+\mathop{\mathrm{V}}(\bar{\mathcal{R}}) = \frac{1}{K(K-1)}\sum_{k=1}^K(\mathcal{R}_k - \bar{\mathcal{R}})^{2}.
+\]</span></p></li>
+</ol>
+</div>
+
+
+
+<a onclick="window.scrollTo(0, 0); return false;" role="button" id="quarto-back-to-top"><i class="bi bi-arrow-up"></i> Retour au sommet</a></main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const isCodeAnnotation = (el) => {
+    for (const clz of el.classList) {
+      if (clz.startsWith('code-annotation-')) {                     
+        return true;
+      }
+    }
+    return false;
+  }
+  const onCopySuccess = function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copié");
+    let tooltip;
+    if (window.bootstrap) {
+      button.setAttribute("data-bs-toggle", "tooltip");
+      button.setAttribute("data-bs-placement", "left");
+      button.setAttribute("data-bs-title", "Copié");
+      tooltip = new bootstrap.Tooltip(button, 
+        { trigger: "manual", 
+          customClass: "code-copy-button-tooltip",
+          offset: [0, -8]});
+      tooltip.show();    
+    }
+    setTimeout(function() {
+      if (tooltip) {
+        tooltip.hide();
+        button.removeAttribute("data-bs-title");
+        button.removeAttribute("data-bs-toggle");
+        button.removeAttribute("data-bs-placement");
+      }
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  }
+  const getTextToCopy = function(trigger) {
+      const codeEl = trigger.previousElementSibling.cloneNode(true);
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+  }
+  const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+    text: getTextToCopy
+  });
+  clipboard.on('success', onCopySuccess);
+  if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+    // For code content inside modals, clipBoardJS needs to be initialized with a container option
+    // TODO: Check when it could be a function (https://github.com/zenorocha/clipboard.js/issues/860)
+    const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+      text: getTextToCopy,
+      container: window.document.getElementById('quarto-embedded-source-code-modal')
+    });
+    clipboardModal.on('success', onCopySuccess);
+  }
+    var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+    var mailtoRegex = new RegExp(/^mailto:/);
+      var filterRegex = new RegExp('/' + window.location.host + '/');
+    var isInternal = (href) => {
+        return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+    }
+    // Inspect non-navigation links and adorn them if external
+ 	var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+    for (var i=0; i<links.length; i++) {
+      const link = links[i];
+      if (!isInternal(link.href)) {
+        // undo the damage that might have been done by quarto-nav.js in the case of
+        // links that we want to consider external
+        if (link.dataset.originalHref !== undefined) {
+          link.href = link.dataset.originalHref;
+        }
+      }
+    }
+  function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+    const config = {
+      allowHTML: true,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start',
+    };
+    if (contentFn) {
+      config.content = contentFn;
+    }
+    if (onTriggerFn) {
+      config.onTrigger = onTriggerFn;
+    }
+    if (onUntriggerFn) {
+      config.onUntrigger = onUntriggerFn;
+    }
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      if (note) {
+        return note.innerHTML;
+      } else {
+        return "";
+      }
+    });
+  }
+  const xrefs = window.document.querySelectorAll('a.quarto-xref');
+  const processXRef = (id, note) => {
+    // Strip column container classes
+    const stripColumnClz = (el) => {
+      el.classList.remove("page-full", "page-columns");
+      if (el.children) {
+        for (const child of el.children) {
+          stripColumnClz(child);
+        }
+      }
+    }
+    stripColumnClz(note)
+    if (id === null || id.startsWith('sec-')) {
+      // Special case sections, only their first couple elements
+      const container = document.createElement("div");
+      if (note.children && note.children.length > 2) {
+        container.appendChild(note.children[0].cloneNode(true));
+        for (let i = 1; i < note.children.length; i++) {
+          const child = note.children[i];
+          if (child.tagName === "P" && child.innerText === "") {
+            continue;
+          } else {
+            container.appendChild(child.cloneNode(true));
+            break;
+          }
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(container);
+        }
+        return container.innerHTML
+      } else {
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        return note.innerHTML;
+      }
+    } else {
+      // Remove any anchor links if they are present
+      const anchorLink = note.querySelector('a.anchorjs-link');
+      if (anchorLink) {
+        anchorLink.remove();
+      }
+      if (window.Quarto?.typesetMath) {
+        window.Quarto.typesetMath(note);
+      }
+      // TODO in 1.5, we should make sure this works without a callout special case
+      if (note.classList.contains("callout")) {
+        return note.outerHTML;
+      } else {
+        return note.innerHTML;
+      }
+    }
+  }
+  for (var i=0; i<xrefs.length; i++) {
+    const xref = xrefs[i];
+    tippyHover(xref, undefined, function(instance) {
+      instance.disable();
+      let url = xref.getAttribute('href');
+      let hash = undefined; 
+      if (url.startsWith('#')) {
+        hash = url;
+      } else {
+        try { hash = new URL(url).hash; } catch {}
+      }
+      if (hash) {
+        const id = hash.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note !== null) {
+          try {
+            const html = processXRef(id, note.cloneNode(true));
+            instance.setContent(html);
+          } finally {
+            instance.enable();
+            instance.show();
+          }
+        } else {
+          // See if we can fetch this
+          fetch(url.split('#')[0])
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.getElementById(id);
+            if (note !== null) {
+              const html = processXRef(id, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      } else {
+        // See if we can fetch a full url (with no hash to target)
+        // This is a special case and we should probably do some content thinning / targeting
+        fetch(url)
+        .then(res => res.text())
+        .then(html => {
+          const parser = new DOMParser();
+          const htmlDoc = parser.parseFromString(html, "text/html");
+          const note = htmlDoc.querySelector('main.content');
+          if (note !== null) {
+            // This should only happen for chapter cross references
+            // (since there is no id in the URL)
+            // remove the first header
+            if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+              note.children[0].remove();
+            }
+            const html = processXRef(null, note);
+            instance.setContent(html);
+          } 
+        }).finally(() => {
+          instance.enable();
+          instance.show();
+        });
+      }
+    }, function(instance) {
+    });
+  }
+      let selectedAnnoteEl;
+      const selectorForAnnotation = ( cell, annotation) => {
+        let cellAttr = 'data-code-cell="' + cell + '"';
+        let lineAttr = 'data-code-annotation="' +  annotation + '"';
+        const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+        return selector;
+      }
+      const selectCodeLines = (annoteEl) => {
+        const doc = window.document;
+        const targetCell = annoteEl.getAttribute("data-target-cell");
+        const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+        const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+        const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+        const lineIds = lines.map((line) => {
+          return targetCell + "-" + line;
+        })
+        let top = null;
+        let height = null;
+        let parent = null;
+        if (lineIds.length > 0) {
+            //compute the position of the single el (top and bottom and make a div)
+            const el = window.document.getElementById(lineIds[0]);
+            top = el.offsetTop;
+            height = el.offsetHeight;
+            parent = el.parentElement.parentElement;
+          if (lineIds.length > 1) {
+            const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+            const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+            height = bottom - top;
+          }
+          if (top !== null && height !== null && parent !== null) {
+            // cook up a div (if necessary) and position it 
+            let div = window.document.getElementById("code-annotation-line-highlight");
+            if (div === null) {
+              div = window.document.createElement("div");
+              div.setAttribute("id", "code-annotation-line-highlight");
+              div.style.position = 'absolute';
+              parent.appendChild(div);
+            }
+            div.style.top = top - 2 + "px";
+            div.style.height = height + 4 + "px";
+            div.style.left = 0;
+            let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+            if (gutterDiv === null) {
+              gutterDiv = window.document.createElement("div");
+              gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+              gutterDiv.style.position = 'absolute';
+              const codeCell = window.document.getElementById(targetCell);
+              const gutter = codeCell.querySelector('.code-annotation-gutter');
+              gutter.appendChild(gutterDiv);
+            }
+            gutterDiv.style.top = top - 2 + "px";
+            gutterDiv.style.height = height + 4 + "px";
+          }
+          selectedAnnoteEl = annoteEl;
+        }
+      };
+      const unselectCodeLines = () => {
+        const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+        elementsIds.forEach((elId) => {
+          const div = window.document.getElementById(elId);
+          if (div) {
+            div.remove();
+          }
+        });
+        selectedAnnoteEl = undefined;
+      };
+        // Handle positioning of the toggle
+    window.addEventListener(
+      "resize",
+      throttle(() => {
+        elRect = undefined;
+        if (selectedAnnoteEl) {
+          selectCodeLines(selectedAnnoteEl);
+        }
+      }, 10)
+    );
+    function throttle(fn, ms) {
+    let throttle = false;
+    let timer;
+      return (...args) => {
+        if(!throttle) { // first call gets through
+            fn.apply(this, args);
+            throttle = true;
+        } else { // all the others get throttled
+            if(timer) clearTimeout(timer); // cancel #2
+            timer = setTimeout(() => {
+              fn.apply(this, args);
+              timer = throttle = false;
+            }, ms);
+        }
+      };
+    }
+      // Attach click handler to the DT
+      const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+      for (const annoteDlNode of annoteDls) {
+        annoteDlNode.addEventListener('click', (event) => {
+          const clickedEl = event.target;
+          if (clickedEl !== selectedAnnoteEl) {
+            unselectCodeLines();
+            const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+            if (activeEl) {
+              activeEl.classList.remove('code-annotation-active');
+            }
+            selectCodeLines(clickedEl);
+            clickedEl.classList.add('code-annotation-active');
+          } else {
+            // Unselect the line
+            unselectCodeLines();
+            clickedEl.classList.remove('code-annotation-active');
+          }
+        });
+      }
+  const findCites = (el) => {
+    const parentEl = el.parentElement;
+    if (parentEl) {
+      const cites = parentEl.dataset.cites;
+      if (cites) {
+        return {
+          el,
+          cites: cites.split(' ')
+        };
+      } else {
+        return findCites(el.parentElement)
+      }
+    } else {
+      return undefined;
+    }
+  };
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const citeInfo = findCites(ref);
+    if (citeInfo) {
+      tippyHover(citeInfo.el, function() {
+        var popup = window.document.createElement('div');
+        citeInfo.cites.forEach(function(cite) {
+          var citeDiv = window.document.createElement('div');
+          citeDiv.classList.add('hanging-indent');
+          citeDiv.classList.add('csl-entry');
+          var biblioDiv = window.document.getElementById('ref-' + cite);
+          if (biblioDiv) {
+            citeDiv.innerHTML = biblioDiv.innerHTML;
+          }
+          popup.appendChild(citeDiv);
+        });
+        return popup.innerHTML;
+      });
+    }
+  }
+});
+</script>
+<nav class="page-navigation">
+  <div class="nav-page nav-page-previous">
+      <a href="../correction/chap8.html" class="pagination-link" aria-label="8 Choix de variables">
+        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text">8 Choix de variables</span>
+      </a>          
+  </div>
+  <div class="nav-page nav-page-next">
+      <a href="../correction/chap12.html" class="pagination-link" aria-label="Régression logistique">
+        <span class="nav-page-text">Régression logistique</span> <i class="bi bi-arrow-right-short"></i>
+      </a>
+  </div>
+</nav>
+</div> <!-- /content -->
+
+
+
+
+</body></html>

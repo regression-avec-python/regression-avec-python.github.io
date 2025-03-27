@@ -1,0 +1,108 @@
+---
+title: "13 Régression de Poisson"
+toc: true
+---
+
+
+```{python}
+import pandas as pd; import numpy as np
+import matplotlib.pyplot as plt
+import scipy as sp
+from scipy import stats
+import statsmodels.formula.api as smf
+import statsmodels.api as sm
+import statsmodels.regression.linear_model as smlm
+import sys
+sys.path.append('../modules')
+import choixglmstats
+```
+
+#   Le modèle linéaire généralisé
+
+#   Exemple : modélisation du nombre de visites
+
+```{python}
+Malaria = pd.read_csv("../donnees/poissonData3.csv", header=0, sep=',')
+Malaria["Sexe"] = Malaria["Sexe"].astype("category")
+Malaria["Prev"] = Malaria["Prev"].astype("category")
+print(Malaria.describe())
+```
+
+```{python}
+print(Malaria.isna().sum(axis=0))
+```
+
+```{python}
+Malaria = Malaria[["Sexe","Prev","Duree","Nmalaria"]]
+plt.plot(Malaria.Duree, Malaria.Nmalaria, 'o')
+```
+
+```{python}
+fig = plt.figure()
+modele = smf.ols("Nmalaria ~ 1+ Duree", data = Malaria).fit()
+plt.plot(Malaria.Duree, Malaria.Nmalaria, 'o')
+grille = pd.DataFrame({'Duree': np.linspace(Malaria.Duree.min(), Malaria.Duree.max(), 2)})
+calcprev = modele.get_prediction(grille)
+plt.plot(Malaria.Duree, Malaria.Nmalaria, 'o', grille.Duree,  calcprev.predicted_mean, '-')
+fig.tight_layout()
+```
+
+
+```{python}
+modP = smf.glm("Nmalaria ~ 1+ Duree", data = Malaria, family=sm.families.Poisson()).fit()
+modP.summary()
+```
+
+```{python}
+fig = plt.figure()
+plt.plot(Malaria.Duree, Malaria.Nmalaria, 'o')
+grille2 = pd.DataFrame({'Duree': np.linspace(Malaria.Duree.min(), Malaria.Duree.max(), 1500)})
+calcprev2 = modP.get_prediction(grille2)
+plt.plot(Malaria.Duree, Malaria.Nmalaria, 'o', grille.Duree,  calcprev.predicted_mean, '-', grille2.Duree,  calcprev2.predicted_mean, '--')
+fig.tight_layout()
+```
+
+#   Régression log-linéaire
+
+```{python}
+modP3 = smf.glm("Nmalaria ~ 1+ Duree + Sexe + Prev", data = Malaria, family=sm.families.Poisson()).fit()
+print(modP3.summary())
+```
+
+```{python}
+mod3= smf.glm("Nmalaria ~ 1+ Duree + Sexe + C(Prev, Treatment('Rien'))", data = Malaria, family=sm.families.Poisson()).fit()
+print(mod3.summary())
+```
+
+```{python}
+modP2= smf.glm("Nmalaria ~ 1+ Duree + Sexe ", data = Malaria, family=sm.families.Poisson()).fit()
+```
+```{python}
+smlm.RegressionResults.compare_lr_test(modP3,modP2)
+```
+
+```{python}
+sp.stats.chi2.ppf(0.95,3)
+```
+
+```{python}
+print(modP3.conf_int(alpha=0.05))
+```
+
+```{python}
+Malaria = pd.read_csv("../donnees/poissonData.csv", header=0, sep=",")
+Malaria.dropna(axis=0, inplace=True)
+```
+
+```{python}
+form ="Nmalaria ~ " + "+".join(Malaria.columns[ :-1 ])
+mod_sel = choixglmstats.bestglm(Malaria, upper=form, family=sm.families.Poisson())
+```
+
+```{python}
+print(mod_sel.sort_values(by=["BIC","nb_var"]).iloc[:3,[1,3]])
+```
+
+```{python}
+print(mod_sel.sort_values(by=["AIC","nb_var"]).iloc[:3,[1,2]])
+```

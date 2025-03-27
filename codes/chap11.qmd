@@ -1,0 +1,483 @@
+---
+title: "11 Comparaison des différentes méthodes, étude de cas réels"
+toc: true
+---
+
+
+
+
+```{python}
+import pandas as pd; import numpy as np
+import matplotlib.pyplot as plt
+from sklearn.preprocessing import StandardScaler
+from sklearn.decomposition import PCA
+from sklearn.linear_model import LinearRegression, Ridge, \
+ElasticNet, Lasso
+from sklearn.linear_model import RidgeCV, ElasticNetCV, LassoCV
+from sklearn.cross_decomposition import PLSRegression
+from sklearn.pipeline import Pipeline
+from sklearn.model_selection import GridSearchCV, KFold, cross_val_score
+from sklearn.metrics import mean_squared_error
+from patsy import dmatrix
+
+import sys
+sys.path.append('../modules')
+import ols_step_sk
+```
+
+#   Erreur de prévision et validation croisée
+
+#   Analyse de l'ozone
+
+```{python}
+ozone = pd.read_csv("../donnees/ozone_complet.txt", header = 0, sep = ";", index_col=0)
+ozone.shape
+```
+
+
+```{python}
+lesna = pd.isna(ozone)
+indNA = lesna.apply(any, axis=1)
+ozone2 = ozone[~indNA]
+ozone2.shape
+```
+
+```{python}
+don = pd.read_csv("../donnees/ozone_transf.txt", header = 0, sep = ";", index_col=0)
+don.shape
+don.rename(columns={"maxO3":"Y"},inplace=True)
+Y = don["Y"].to_numpy()
+```
+
+
+```{python}
+nb=10
+tmp = np.arange(don.shape[0])%nb
+```
+
+
+```{python}
+rng = np.random.default_rng(seed=1234)
+bloc = rng.choice(tmp,size=don.shape[0],replace=False)
+```
+
+
+```{python}
+PREV = pd.DataFrame({"bloc":bloc,"Y":don["Y"],"MCO":0.0,"BIC":0.0,"AIC":0.0,
+                    "ridge":0.0,"lasso":0.0,"elast":0.0,
+                    "pls":0.0,"pcr":0.0})
+```
+
+
+```{python}
+nomsvar = list(don.columns.difference(["Y"]))
+#design matrix
+formule = "~" + "+".join(nomsvar)
+dsX = dmatrix(formule,don)
+X = np.asarray(dsX)[:,1:]
+Y = don["Y"].to_numpy()
+```
+
+
+```{python}
+kfregul = KFold(n_splits=10, shuffle=True, random_state=0)
+kfaxes = KFold(n_splits=4, shuffle=True, random_state=0)
+nbaxes = 20
+# instanciation steps
+cr = StandardScaler()
+lassocv = LassoCV(cv=kfregul, n_jobs=3,max_iter=1000)
+enetcv = ElasticNetCV(cv=kfregul, n_jobs=3,max_iter=1000)
+# instanciation pipeline
+pipe_lassocv = Pipeline(steps=[("cr", cr), ("lassocv", lassocv)])
+pipe_enetcv = Pipeline(steps=[("cr", cr), ("enetcv", enetcv)])
+## ridge : path
+etape_lasso = pipe_lassocv.named_steps["lassocv"]
+# intanciations
+ridge = Ridge()
+pipe_ridge = Pipeline(steps=[("cr", cr), ("ridge", ridge)])
+acp = PCA()
+reg = LinearRegression()
+pipe_pcr = Pipeline(steps=[("cr", cr), ("acp", acp), ("reg", reg)])
+regpls = PLSRegression()
+## grille composantes et decoupage VC
+param_grid_pcr = { "acp__n_components" : list(range(1,nbaxes))}
+param_grid_pls = { "n_components" : list(range(1,nbaxes))}
+```
+
+
+```{python}
+#| cache: true
+#| label: comparaison_simple
+
+for i in np.arange(nb):
+    print(i)
+    Xapp = X[bloc!=i,:]
+    Xtest = X[bloc==i,:]
+    Yapp = don[bloc!=i]["Y"]
+    Ytest = don[bloc==i]["Y"]
+    #### reg
+    reg = LinearRegression()
+    reg.fit(Xapp,Yapp)
+    PREV.loc[PREV.bloc==i,"MCO"] = reg.predict(Xtest)
+    ### bic
+    inst_reg_bic = ols_step_sk.LinearRegressionSelectionFeatureIC(verbose=1,crit="bic")
+    reg_bic = inst_reg_bic.fit(X=Xapp, y=Yapp)
+    PREV.loc[PREV.bloc==i,"BIC"] = reg_bic.predict(Xtest)
+    ### aic
+    inst_reg_aic = ols_step_sk.LinearRegressionSelectionFeatureIC(verbose=1,crit="aic")
+    reg_aic = inst_reg_aic.fit(X=Xapp, y=Yapp)
+    PREV.loc[PREV.bloc==i,"AIC"] = reg_aic.predict(Xtest)
+    ## lasso
+    pipe_lassocv.fit(Xapp,Yapp)
+    PREV.loc[PREV.bloc==i,"lasso"] = pipe_lassocv.predict(Xtest)
+    ## elastic net
+    pipe_enetcv.fit(Xapp,Yapp)
+    PREV.loc[PREV.bloc==i,"elast"] = pipe_enetcv.predict(Xtest)    
+    ## params lambda
+    path_ridge = etape_lasso.alphas_ * 100    
+    param_grid_ridge = {"ridge__alpha": path_ridge}
+    ## GridSearchCV
+    cv_ridge = GridSearchCV(pipe_ridge, param_grid_ridge, cv=kfregul, scoring = "neg_mean_squared_error", n_jobs=3).fit(Xapp, Yapp)
+    PREV.loc[PREV.bloc==i,"ridge"] = cv_ridge.predict(Xtest)
+    ## gridsearch instanciation et fit
+    cv_pcr = GridSearchCV(pipe_pcr, param_grid_pcr, cv=kfaxes, scoring = "neg_mean_squared_error", n_jobs=3).fit(Xapp,Yapp)
+    cv_pls = GridSearchCV(regpls, param_grid_pls, cv=kfaxes, scoring = "neg_mean_squared_error", n_jobs=3).fit(Xapp,Yapp)
+    PREV.loc[PREV.bloc==i,"pcr"] = cv_pcr.predict(Xtest)
+    PREV.loc[PREV.bloc==i,"pls"] = cv_pls.predict(Xtest)
+
+```
+
+
+```{python}
+prev = PREV.iloc[:,1:]
+np.round((prev.sub(PREV.Y, axis=0)**2).mean(),2)
+```
+
+#   Transformation des variables : feature engineering
+
+##  Modèles de prévision avec interactions
+
+```{python}
+formuleI = "1 + (" + "+".join(nomsvar) + ")**2"
+Xinter = dmatrix(formuleI, don, return_type="dataframe").\
+    iloc[:,1:].to_numpy()
+```
+```{python}
+formuleI = "1 + (" + "+".join(nomsvar) + ")**2"
+Xq = dmatrix(formuleI, don)
+Xinter = np.asarray(Xq)[:,1:]
+Xinter.shape
+```
+
+
+```{python}
+#| cache: true
+#| label: comparaison_inter
+
+kfregul = KFold(n_splits=10, shuffle=True, random_state=0)
+kfaxes = KFold(n_splits=4, shuffle=True, random_state=0)
+nbaxes = 40
+# instanciation steps
+cr = StandardScaler()
+lassocv = LassoCV(cv=kfregul, n_jobs=3,max_iter=5000)
+enetcv = ElasticNetCV(cv=kfregul, n_jobs=3,max_iter=5000)
+# instanciation pipeline
+pipe_lassocv = Pipeline(steps=[("cr", cr), ("lassocv", lassocv)])
+pipe_enetcv = Pipeline(steps=[("cr", cr), ("enetcv", enetcv)])
+## ridge : path
+etape_lasso = pipe_lassocv.named_steps["lassocv"]
+# intanciations
+ridge = Ridge()
+pipe_ridge = Pipeline(steps=[("cr", cr), ("ridge", ridge)])
+acp = PCA()
+reg = LinearRegression()
+pipe_pcr = Pipeline(steps=[("cr", cr), ("acp", acp), ("reg", reg)])
+regpls = PLSRegression()
+## grille composantes et decoupage VC
+param_grid_pcr = { "acp__n_components" : list(range(1,nbaxes))}
+param_grid_pls = { "n_components" : list(range(1,nbaxes))}
+ 
+for i in np.arange(nb):
+    print(i)
+    Xapp = Xinter[bloc!=i,:]
+    Xtest = Xinter[bloc==i,:]
+    Yapp = don[bloc!=i]["Y"]
+    Ytest = don[bloc==i]["Y"]
+    #### reg
+    reg = LinearRegression()
+    reg.fit(Xapp,Yapp)
+    PREV.loc[PREV.bloc==i,"MCO"] = reg.predict(Xtest)
+    ### bic
+    inst_reg_bic = ols_step_sk.LinearRegressionSelectionFeatureIC(verbose=1,crit="bic")
+    reg_bic = inst_reg_bic.fit(X=Xapp, y=Yapp)
+    PREV.loc[PREV.bloc==i,"BIC"] = reg_bic.predict(Xtest)
+    ### aic
+    inst_reg_aic = ols_step_sk.LinearRegressionSelectionFeatureIC(verbose=1,crit="aic")
+    reg_aic = inst_reg_aic.fit(X=Xapp, y=Yapp)
+    PREV.loc[PREV.bloc==i,"AIC"] = reg_aic.predict(Xtest)
+    ## lasso
+    pipe_lassocv.fit(Xapp,Yapp)
+    PREV.loc[PREV.bloc==i,"lasso"] = pipe_lassocv.predict(Xtest)
+    ## elastic net
+    pipe_enetcv.fit(Xapp,Yapp)
+    PREV.loc[PREV.bloc==i,"elast"] = pipe_enetcv.predict(Xtest)    
+    ## params lambda
+    path_ridge = etape_lasso.alphas_ * 100    
+    param_grid_ridge = {"ridge__alpha": path_ridge}
+    ## GridSearchCV
+    cv_ridge = GridSearchCV(pipe_ridge, param_grid_ridge, cv=kfregul, scoring = "neg_mean_squared_error", n_jobs=3).fit(Xapp, Yapp)
+    PREV.loc[PREV.bloc==i,"ridge"] = cv_ridge.predict(Xtest)
+    ## gridsearch instanciation et fit
+    cv_pcr = GridSearchCV(pipe_pcr, param_grid_pcr, cv=kfaxes, scoring = "neg_mean_squared_error", n_jobs=3).fit(Xapp,Yapp)
+    cv_pls = GridSearchCV(regpls, param_grid_pls, cv=kfaxes, scoring = "neg_mean_squared_error", n_jobs=3).fit(Xapp,Yapp)
+    PREV.loc[PREV.bloc==i,"pcr"] = cv_pcr.predict(Xtest)
+    PREV.loc[PREV.bloc==i,"pls"] = cv_pls.predict(Xtest)
+
+```
+
+
+```{python}
+prev = PREV.iloc[:,1:]
+round((prev.sub(PREV.Y, axis=0)**2).mean(),2)
+```
+
+##  Modèles de prévision avec des polynômes
+
+```{python}
+Xcar = X**2
+Xcub = X**3
+Xpol = np.concatenate((X, Xcar, Xcub), axis=1)
+Xpol.shape
+```
+
+```{python}
+#| label: comparaison_poly
+#| cache: true
+
+kfregul = KFold(n_splits=10, shuffle=True, random_state=0)
+kfaxes = KFold(n_splits=4, shuffle=True, random_state=0)
+nbaxes = 40
+# instanciation steps
+cr = StandardScaler()
+lassocv = LassoCV(cv=kfregul, n_jobs=3,max_iter=3000)
+enetcv = ElasticNetCV(cv=kfregul, n_jobs=3,max_iter=3000)
+# instanciation pipeline
+pipe_lassocv = Pipeline(steps=[("cr", cr), ("lassocv", lassocv)])
+pipe_enetcv = Pipeline(steps=[("cr", cr), ("enetcv", enetcv)])
+## ridge : path
+etape_lasso = pipe_lassocv.named_steps["lassocv"]
+# intanciations
+ridge = Ridge()
+pipe_ridge = Pipeline(steps=[("cr", cr), ("ridge", ridge)])
+acp = PCA()
+reg = LinearRegression()
+pipe_pcr = Pipeline(steps=[("cr", cr), ("acp", acp), ("reg", reg)])
+regpls = PLSRegression()
+## grille composantes et decoupage VC
+param_grid_pcr = { "acp__n_components" : list(range(1,nbaxes))}
+param_grid_pls = { "n_components" : list(range(1,nbaxes))}
+ 
+for i in np.arange(nb):
+    print(i)
+    Xapp = Xpol[bloc!=i,:]
+    Xtest = Xpol[bloc==i,:]
+    Yapp = don[bloc!=i]["Y"]
+    Ytest = don[bloc==i]["Y"]
+    #### reg
+    reg = LinearRegression()
+    reg.fit(Xapp,Yapp)
+    PREV.loc[PREV.bloc==i,"MCO"] = reg.predict(Xtest)
+    ### bic
+    inst_reg_bic = ols_step_sk.LinearRegressionSelectionFeatureIC(verbose=1,crit="bic")
+    reg_bic = inst_reg_bic.fit(X=Xapp, y=Yapp)
+    PREV.loc[PREV.bloc==i,"BIC"] = reg_bic.predict(Xtest)
+    ### aic
+    inst_reg_aic = ols_step_sk.LinearRegressionSelectionFeatureIC(verbose=1,crit="aic")
+    reg_aic = inst_reg_aic.fit(X=Xapp, y=Yapp)
+    PREV.loc[PREV.bloc==i,"AIC"] = reg_aic.predict(Xtest)
+    ## lasso
+    pipe_lassocv.fit(Xapp,Yapp)
+    PREV.loc[PREV.bloc==i,"lasso"] = pipe_lassocv.predict(Xtest)
+    ## elastic net
+    pipe_enetcv.fit(Xapp,Yapp)
+    PREV.loc[PREV.bloc==i,"elast"] = pipe_enetcv.predict(Xtest)    
+    ## params lambda
+    path_ridge = etape_lasso.alphas_ * 100    
+    param_grid_ridge = {"ridge__alpha": path_ridge}
+    ## GridSearchCV
+    cv_ridge = GridSearchCV(pipe_ridge, param_grid_ridge, cv=kfregul, scoring = "neg_mean_squared_error", n_jobs=3).fit(Xapp, Yapp)
+    PREV.loc[PREV.bloc==i,"ridge"] = cv_ridge.predict(Xtest)
+    ## gridsearch instanciation et fit
+    cv_pcr = GridSearchCV(pipe_pcr, param_grid_pcr, cv=kfaxes, scoring = "neg_mean_squared_error", n_jobs=3).fit(Xapp,Yapp)
+    cv_pls = GridSearchCV(regpls, param_grid_pls, cv=kfaxes, scoring = "neg_mean_squared_error", n_jobs=3).fit(Xapp,Yapp)
+    PREV.loc[PREV.bloc==i,"pcr"] = cv_pcr.predict(Xtest)
+    PREV.loc[PREV.bloc==i,"pls"] = cv_pls.predict(Xtest)
+```
+
+```{python}
+prev = PREV.iloc[:,1:]
+round((prev.sub(PREV.Y, axis=0)**2).mean(),2)
+```
+
+
+##  Modèles de prévision des splines
+
+```{python}
+
+Xp = np.ones((X.shape[0],1))
+for i in nomsvar:
+    xi = don.loc[:,i].quantile([0.25, 0.5, 0.75])
+    formule = "-1 + bs(" + i + ",knots=xi, degree=3)"
+    BX = dmatrix(formule, don)
+    Xp = np.concatenate((Xp, BX), axis=1)
+
+Xspline = Xp[:,1:]
+```
+
+
+```{python}
+#| label: comparaison_spline
+#| cache: true
+
+kfregul = KFold(n_splits=10, shuffle=True, random_state=0)
+kfaxes = KFold(n_splits=4, shuffle=True, random_state=0)
+nbaxes = 40
+# instanciation steps
+cr = StandardScaler()
+lassocv = LassoCV(cv=kfregul, n_jobs=3,max_iter=3000)
+enetcv = ElasticNetCV(cv=kfregul, n_jobs=3,max_iter=3000)
+# instanciation pipeline
+pipe_lassocv = Pipeline(steps=[("cr", cr), ("lassocv", lassocv)])
+pipe_enetcv = Pipeline(steps=[("cr", cr), ("enetcv", enetcv)])
+## ridge : path
+etape_lasso = pipe_lassocv.named_steps["lassocv"]
+# intanciations
+ridge = Ridge()
+pipe_ridge = Pipeline(steps=[("cr", cr), ("ridge", ridge)])
+acp = PCA()
+reg = LinearRegression()
+pipe_pcr = Pipeline(steps=[("cr", cr), ("acp", acp), ("reg", reg)])
+regpls = PLSRegression()
+## grille composantes et decoupage VC
+param_grid_pcr = { "acp__n_components" : list(range(1,nbaxes))}
+param_grid_pls = { "n_components" : list(range(1,nbaxes))}
+ 
+for i in np.arange(nb):
+    print(i)
+    Xapp = Xspline[bloc!=i,:]
+    Xtest = Xspline[bloc==i,:]
+    Yapp = don[bloc!=i]["Y"]
+    Ytest = don[bloc==i]["Y"]
+    #### reg
+    reg = LinearRegression()
+    reg.fit(Xapp,Yapp)
+    PREV.loc[PREV.bloc==i,"MCO"] = reg.predict(Xtest)
+    ### bic
+    inst_reg_bic = ols_step_sk.LinearRegressionSelectionFeatureIC(verbose=1,crit="bic")
+    reg_bic = inst_reg_bic.fit(X=Xapp, y=Yapp)
+    PREV.loc[PREV.bloc==i,"BIC"] = reg_bic.predict(Xtest)
+    ### aic
+    inst_reg_aic = ols_step_sk.LinearRegressionSelectionFeatureIC(verbose=1,crit="aic")
+    reg_aic = inst_reg_aic.fit(X=Xapp, y=Yapp)
+    PREV.loc[PREV.bloc==i,"AIC"] = reg_aic.predict(Xtest)
+    ## lasso
+    pipe_lassocv.fit(Xapp,Yapp)
+    PREV.loc[PREV.bloc==i,"lasso"] = pipe_lassocv.predict(Xtest)
+    ## elastic net
+    pipe_enetcv.fit(Xapp,Yapp)
+    PREV.loc[PREV.bloc==i,"elast"] = pipe_enetcv.predict(Xtest)    
+    ## params lambda
+    path_ridge = etape_lasso.alphas_ * 100    
+    param_grid_ridge = {"ridge__alpha": path_ridge}
+    ## GridSearchCV
+    cv_ridge = GridSearchCV(pipe_ridge, param_grid_ridge, cv=kfregul, scoring = "neg_mean_squared_error", n_jobs=3).fit(Xapp, Yapp)
+    PREV.loc[PREV.bloc==i,"ridge"] = cv_ridge.predict(Xtest)
+    ## gridsearch instanciation et fit
+    cv_pcr = GridSearchCV(pipe_pcr, param_grid_pcr, cv=kfaxes, scoring = "neg_mean_squared_error", n_jobs=3).fit(Xapp,Yapp)
+    cv_pls = GridSearchCV(regpls, param_grid_pls, cv=kfaxes, scoring = "neg_mean_squared_error", n_jobs=3).fit(Xapp,Yapp)
+    PREV.loc[PREV.bloc==i,"pcr"] = cv_pcr.predict(Xtest)
+    PREV.loc[PREV.bloc==i,"pls"] = cv_pls.predict(Xtest)
+
+```
+
+```{python}
+prev = PREV.iloc[:,1:]
+round((prev.sub(PREV.Y, axis=0)**2).mean(),2)
+```
+
+##  Modèles de prévision avec des splines et des interactions
+
+
+```{python}
+Xsplineinter = np.concatenate((Xinter[:,22:],Xspline),axis=1)
+```
+
+```{python}
+#| label: comparaison_splines_inter
+#| cache: true
+
+kfregul = KFold(n_splits=10, shuffle=True, random_state=0)
+kfaxes = KFold(n_splits=4, shuffle=True, random_state=0)
+nbaxes = 40
+# instanciation steps
+cr = StandardScaler()
+lassocv = LassoCV(cv=kfregul, n_jobs=3,max_iter=3000)
+enetcv = ElasticNetCV(cv=kfregul, n_jobs=3,max_iter=3000)
+# instanciation pipeline
+pipe_lassocv = Pipeline(steps=[("cr", cr), ("lassocv", lassocv)])
+pipe_enetcv = Pipeline(steps=[("cr", cr), ("enetcv", enetcv)])
+## ridge : path
+etape_lasso = pipe_lassocv.named_steps["lassocv"]
+# intanciations
+ridge = Ridge()
+pipe_ridge = Pipeline(steps=[("cr", cr), ("ridge", ridge)])
+acp = PCA()
+reg = LinearRegression()
+pipe_pcr = Pipeline(steps=[("cr", cr), ("acp", acp), ("reg", reg)])
+regpls = PLSRegression()
+## grille composantes et decoupage VC
+param_grid_pcr = { "acp__n_components" : list(range(1,nbaxes))}
+param_grid_pls = { "n_components" : list(range(1,nbaxes))}
+ 
+for i in np.arange(nb):
+    print(i)
+    Xapp = Xsplineinter[bloc!=i,:]
+    Xtest = Xsplineinter[bloc==i,:]
+    Yapp = don[bloc!=i]["Y"]
+    Ytest = don[bloc==i]["Y"]
+    #### reg
+    reg = LinearRegression()
+    reg.fit(Xapp,Yapp)
+    PREV.loc[PREV.bloc==i,"MCO"] = reg.predict(Xtest)
+    ### bic
+    inst_reg_bic = ols_step_sk.LinearRegressionSelectionFeatureIC(verbose=1,crit="bic")
+    reg_bic = inst_reg_bic.fit(X=Xapp, y=Yapp)
+    PREV.loc[PREV.bloc==i,"BIC"] = reg_bic.predict(Xtest)
+    ### aic
+    inst_reg_aic = ols_step_sk.LinearRegressionSelectionFeatureIC(verbose=1,crit="aic")
+    reg_aic = inst_reg_aic.fit(X=Xapp, y=Yapp)
+    PREV.loc[PREV.bloc==i,"AIC"] = reg_aic.predict(Xtest)
+    ## lasso
+    pipe_lassocv.fit(Xapp,Yapp)
+    PREV.loc[PREV.bloc==i,"lasso"] = pipe_lassocv.predict(Xtest)
+    ## elastic net
+    pipe_enetcv.fit(Xapp,Yapp)
+    PREV.loc[PREV.bloc==i,"elast"] = pipe_enetcv.predict(Xtest)    
+    ## params lambda
+    path_ridge = etape_lasso.alphas_ * 100    
+    param_grid_ridge = {"ridge__alpha": path_ridge}
+    ## GridSearchCV
+    cv_ridge = GridSearchCV(pipe_ridge, param_grid_ridge, cv=kfregul, scoring = "neg_mean_squared_error", n_jobs=3).fit(Xapp, Yapp)
+    PREV.loc[PREV.bloc==i,"ridge"] = cv_ridge.predict(Xtest)
+    ## gridsearch instanciation et fit
+    cv_pcr = GridSearchCV(pipe_pcr, param_grid_pcr, cv=kfaxes, scoring = "neg_mean_squared_error", n_jobs=3).fit(Xapp,Yapp)
+    cv_pls = GridSearchCV(regpls, param_grid_pls, cv=kfaxes, scoring = "neg_mean_squared_error", n_jobs=3).fit(Xapp,Yapp)
+    PREV.loc[PREV.bloc==i,"pcr"] = cv_pcr.predict(Xtest)
+    PREV.loc[PREV.bloc==i,"pls"] = cv_pls.predict(Xtest)
+```
+
+
+```{python}
+prev = PREV.iloc[:,1:]
+round((prev.sub(PREV.Y, axis=0)**2).mean(),2)
+```

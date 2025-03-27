@@ -1,0 +1,1529 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="fr" xml:lang="fr"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.5.57">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>Régression logistique – Régression avec Python</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { display: inline-block; text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js" integrity="sha512-bLT0Qm9VnAYZDflyKcBaQ2gg0hSYNQrJ8RilYldYQ1FxQYoCLtUjuuRuZo+fjqhx/qtq/1itJ0C2ejDxltZVFg==" crossorigin="anonymous"></script><script src="../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../">
+<link href="../correction/chap13.html" rel="next">
+<link href="../correction/chap9.html" rel="prev">
+<script src="../site_libs/quarto-html/quarto.js"></script>
+<script src="../site_libs/quarto-html/popper.min.js"></script>
+<script src="../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../site_libs/bootstrap/bootstrap.min.css" rel="stylesheet" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "Pas de résultats",
+    "search-matching-documents-text": "documents trouvés",
+    "search-copy-link-title": "Copier le lien vers la recherche",
+    "search-hide-matches-text": "Cacher les correspondances additionnelles",
+    "search-more-match-text": "correspondance de plus dans ce document",
+    "search-more-matches-text": "correspondances de plus dans ce document",
+    "search-clear-button-title": "Effacer",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Annuler",
+    "search-submit-button-title": "Envoyer",
+    "search-label": "Recherche"
+  }
+}</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" integrity="sha512-c3Nl8+7g4LMSTdrm621y7kf9v3SDPnhxLNhcjFJbKECVnmZHTdo+IRO05sNLTH/D3vA6u1X32ehoLC7WFVdheg==" crossorigin="anonymous"></script>
+
+<script type="application/javascript">define('jquery', [],function() {return window.jQuery;})</script>
+
+  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN") {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
+
+<link rel="stylesheet" href="../styles.css">
+</head>
+
+<body class="nav-sidebar floating nav-fixed">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a class="navbar-brand" href="../index.html">
+    <span class="navbar-title">Régression avec Python</span>
+    </a>
+  </div>
+            <div id="quarto-search" class="" title="Recherche"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Basculer la navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll me-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="../index.html"> 
+<span class="menu-text">Home</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../resume.html"> 
+<span class="menu-text">Résumé</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../donnees.html"> 
+<span class="menu-text">Données</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../codes/index.html"> 
+<span class="menu-text">Codes</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link active" href="../correction/index.html" aria-current="page"> 
+<span class="menu-text">Corrections</span></a>
+  </li>  
+</ul>
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="https://github.com/lrouviere/site_regression_python"> <i class="bi bi-github" role="img">
+</i> 
+<span class="menu-text">github</span></a>
+  </li>  
+</ul>
+          </div> <!-- /navcollapse -->
+            <div class="quarto-navbar-tools">
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+  <nav class="quarto-secondary-nav">
+    <div class="container-fluid d-flex">
+      <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Basculer la barre latérale" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+        <i class="bi bi-layout-text-sidebar-reverse"></i>
+      </button>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../correction/index.html">Corrections</a></li><li class="breadcrumb-item"><a href="../correction/chap12.html">IV Le modèle linéaire généralisé</a></li><li class="breadcrumb-item"><a href="../correction/chap12.html">Régression logistique</a></li></ol></nav>
+        <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Basculer la barre latérale" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
+        </a>
+    </div>
+  </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+  <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal quarto-sidebar-collapse-item sidebar-navigation floating overflow-auto">
+    <div class="sidebar-menu-container"> 
+    <ul class="list-unstyled mt-1">
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a href="../correction/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Corrections</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="true" aria-label="Basculer la section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-1" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="false">
+ <span class="menu-text">I Introduction au modèle linéaire</span></a>
+          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="false" aria-label="Basculer la section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-2" class="collapse list-unstyled sidebar-section depth2 ">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../correction/chap1.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">1 La régression linéaire simple</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../correction/chap2.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">2 La régression linéaire multiple</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../correction/chap3.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">3 Validation du modèle</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../correction/chap4.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">4 Extension : non-inversibilité et (ou) erreurs non corrélées</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../correction/chap5.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">5 Régression polynomiale et régression spline</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+          <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" role="navigation" aria-expanded="false">
+ <span class="menu-text">II Inférence</span></a>
+          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" role="navigation" aria-expanded="false" aria-label="Basculer la section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-3" class="collapse list-unstyled sidebar-section depth2 ">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../correction/chap6.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">6 Inférence dans le modèle gaussien</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../correction/chap7.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">7 Variables qualitatives : ANCOVA et ANOVA</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+          <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-4" role="navigation" aria-expanded="false">
+ <span class="menu-text">III Réduction de dimension</span></a>
+          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-4" role="navigation" aria-expanded="false" aria-label="Basculer la section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-4" class="collapse list-unstyled sidebar-section depth2 ">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../correction/chap8.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">8 Choix de variables</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../correction/chap9.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Régularisation des moindres carrés : ridge, lasso, elastic-net</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+          <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-5" role="navigation" aria-expanded="true">
+ <span class="menu-text">IV Le modèle linéaire généralisé</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-5" role="navigation" aria-expanded="true" aria-label="Basculer la section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-5" class="collapse list-unstyled sidebar-section depth2 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../correction/chap12.html" class="sidebar-item-text sidebar-link active">
+ <span class="menu-text">Régression logistique</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../correction/chap13.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">13 Régression de Poisson</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../correction/chap14.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">14 Régularisation de la vraisemblance</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../correction/chap16.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">16 Données déséquilibrées</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+      </ul>
+  </li>
+    </ul>
+    </div>
+</nav>
+<div id="quarto-sidebar-glass" class="quarto-sidebar-collapse-item" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item"></div>
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar zindex-bottom">
+        
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../correction/index.html">Corrections</a></li><li class="breadcrumb-item"><a href="../correction/chap12.html">IV Le modèle linéaire généralisé</a></li><li class="breadcrumb-item"><a href="../correction/chap12.html">Régression logistique</a></li></ol></nav>
+<div class="quarto-title">
+<h1 class="title">Régression logistique</h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<div id="822b9bd8" class="cell" data-execution_count="1">
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> pandas <span class="im">as</span> pd</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> statsmodels.api <span class="im">as</span> sm</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> statsmodels.formula.api <span class="im">as</span> smf</span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> statsmodels.stats.anova <span class="im">import</span> anova_lm</span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> matplotlib.pyplot <span class="im">as</span> plt</span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> scipy.stats <span class="im">import</span> chi2,norm</span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> scipy <span class="im">import</span> interpolate</span></code><button title="Copier vers le presse-papier" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div id="exr-12-1" class="theorem exercise">
+<p><span class="theorem-title"><strong>Exercice 1 (Questions de cours)</strong></span> &nbsp;</p>
+<ol type="1">
+<li>A</li>
+<li>A</li>
+<li>B</li>
+<li>A</li>
+<li>A</li>
+<li>A</li>
+<li>B</li>
+<li>A</li>
+</ol>
+</div>
+<div id="exr-12-2" class="theorem exercise">
+<p><span class="theorem-title"><strong>Exercice 2 (Interprétation des coefficients)</strong></span> &nbsp;</p>
+<ol type="1">
+<li><p>On génère l’échantillon.</p>
+<div id="b9830709" class="cell" data-execution_count="2">
+<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>n <span class="op">=</span> <span class="dv">100</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>np.random.seed(<span class="dv">48967365</span>)</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>X <span class="op">=</span> np.random.choice([<span class="st">'A'</span>, <span class="st">'B'</span>, <span class="st">'C'</span>], size<span class="op">=</span>n, replace<span class="op">=</span><span class="va">True</span>)</span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>Y <span class="op">=</span> np.zeros(n, dtype<span class="op">=</span><span class="bu">int</span>)</span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>np.random.seed(<span class="dv">487365</span>)</span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>Y[X <span class="op">==</span> <span class="st">'A'</span>] <span class="op">=</span> np.random.binomial(<span class="dv">1</span>, <span class="fl">0.95</span>, size<span class="op">=</span>np.<span class="bu">sum</span>(X <span class="op">==</span> <span class="st">'A'</span>))</span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>np.random.seed(<span class="dv">4878365</span>)</span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>Y[X <span class="op">==</span> <span class="st">'B'</span>] <span class="op">=</span> np.random.binomial(<span class="dv">1</span>, <span class="fl">0.95</span>, size<span class="op">=</span>np.<span class="bu">sum</span>(X <span class="op">==</span> <span class="st">'B'</span>))</span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a>np.random.seed(<span class="dv">4653965</span>)</span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a>Y[X <span class="op">==</span> <span class="st">'C'</span>] <span class="op">=</span> np.random.binomial(<span class="dv">1</span>, <span class="fl">0.05</span>, size<span class="op">=</span>np.<span class="bu">sum</span>(X <span class="op">==</span> <span class="st">'C'</span>))</span>
+<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a>donnees <span class="op">=</span> pd.DataFrame({<span class="st">'Y'</span>: Y, <span class="st">'X'</span>: X})</span>
+<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(donnees.head())</span></code><button title="Copier vers le presse-papier" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>   Y  X
+0  1  A
+1  0  C
+2  1  A
+3  1  B
+4  0  A</code></pre>
+</div>
+</div></li>
+<li><p>On ajuste le modèle avec les contraintes par défaut.</p>
+<div id="295305d1" class="cell" data-execution_count="3">
+<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>model1 <span class="op">=</span> smf.logit(<span class="st">'Y ~ X'</span>, data<span class="op">=</span>donnees).fit()</span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(model1.summary())</span></code><button title="Copier vers le presse-papier" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Optimization terminated successfully.
+         Current function value: 0.297451
+         Iterations 7
+                           Logit Regression Results                           
+==============================================================================
+Dep. Variable:                      Y   No. Observations:                  100
+Model:                          Logit   Df Residuals:                       97
+Method:                           MLE   Df Model:                            2
+Date:                Tue, 04 Feb 2025   Pseudo R-squ.:                  0.5521
+Time:                        12:22:32   Log-Likelihood:                -29.745
+converged:                       True   LL-Null:                       -66.406
+Covariance Type:            nonrobust   LLR p-value:                 1.197e-16
+==============================================================================
+                 coef    std err          z      P&gt;|z|      [0.025      0.975]
+------------------------------------------------------------------------------
+Intercept      1.9459      0.478      4.070      0.000       1.009       2.883
+X[T.B]         0.5798      0.877      0.661      0.508      -1.138       2.298
+X[T.C]        -4.6868      0.872     -5.373      0.000      -6.396      -2.977
+==============================================================================</code></pre>
+</div>
+</div>
+<p>On obtient les résultats du <strong>test de Wald</strong> sur la nullité des paramètres <span class="math inline">\(\beta_0,\beta_2\)</span> et <span class="math inline">\(\beta_3\)</span>.</p></li>
+<li><p>On change la modalité de référence.</p>
+<div id="decd4891" class="cell" data-execution_count="4">
+<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>model2 <span class="op">=</span> smf.logit(<span class="st">'Y ~ C(X, Treatment(reference="C"))'</span>, data<span class="op">=</span>donnees).fit()</span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(model2.summary())</span></code><button title="Copier vers le presse-papier" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Optimization terminated successfully.
+         Current function value: 0.297451
+         Iterations 7
+                           Logit Regression Results                           
+==============================================================================
+Dep. Variable:                      Y   No. Observations:                  100
+Model:                          Logit   Df Residuals:                       97
+Method:                           MLE   Df Model:                            2
+Date:                Tue, 04 Feb 2025   Pseudo R-squ.:                  0.5521
+Time:                        12:22:32   Log-Likelihood:                -29.745
+converged:                       True   LL-Null:                       -66.406
+Covariance Type:            nonrobust   LLR p-value:                 1.197e-16
+=======================================================================================================
+                                          coef    std err          z      P&gt;|z|      [0.025      0.975]
+-------------------------------------------------------------------------------------------------------
+Intercept                              -2.7408      0.730     -3.757      0.000      -4.171      -1.311
+C(X, Treatment(reference="C"))[T.A]     4.6868      0.872      5.373      0.000       2.977       6.396
+C(X, Treatment(reference="C"))[T.B]     5.2666      1.035      5.086      0.000       3.237       7.296
+=======================================================================================================</code></pre>
+</div>
+</div>
+<p>On obtient les résultats du <strong>test de Wald</strong> sur la nullité des paramètres <span class="math inline">\(\beta_0,\beta_1\)</span> et <span class="math inline">\(\beta_2\)</span>.</p></li>
+<li><p>On remarque que dans <strong>model1</strong> on accepte la nullité de <span class="math inline">\(\beta_2\)</span> alors qu’on la rejette dans <strong>model2</strong>. Ceci est logique dans la mesure où ces tests dépendent de la contrainte identifiante choisie. Dans <strong>model1</strong> le test de nullité de <span class="math inline">\(\beta_2\)</span> permet de vérifier si <span class="math inline">\(B\)</span> à un effet similaire à <span class="math inline">\(A\)</span> sur <span class="math inline">\(Y\)</span>. Dans <strong>model2</strong>, on compare l’effet de <span class="math inline">\(B\)</span> à celui de <span class="math inline">\(C\)</span>. On peut donc conclure <span class="math inline">\(A\)</span> et <span class="math inline">\(B\)</span> ont des effets proches sur <span class="math inline">\(Y\)</span> alors que <span class="math inline">\(B\)</span> et <span class="math inline">\(C\)</span> ont un impact différent. Ceci est logique vu la façon dont les données ont été générées.</p></li>
+<li><p>Tester l’effet global de <span class="math inline">\(X\)</span> sur <span class="math inline">\(Y\)</span> revient à tester si les coefficients <span class="math inline">\(\beta_1,\beta_2\)</span> et <span class="math inline">\(\beta_3\)</span> sont égaux, ce qui, compte tenu des contraintes revient à considérer les hypothèses nulles :</p>
+<ul>
+<li><span class="math inline">\(\beta_2=\beta_3=0\)</span> dans <strong>model1</strong> ;</li>
+<li><span class="math inline">\(\beta_1=\beta_2=0\)</span> dans <strong>model2</strong>.</li>
+</ul>
+<p>On peut effectuer les tests de <strong>Wald</strong> ou du <strong>rapport de vraisemblance</strong>. On obtient les résultats du <strong>rapport de vraisemblance</strong> avec :</p>
+<div id="62143931" class="cell" data-execution_count="5">
+<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>lr_test_model1 <span class="op">=</span> model1.llr</span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>lr_test_model2 <span class="op">=</span> model2.llr</span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"Test de rapport de vraisemblance pour model1:"</span>)</span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"LR stat: </span><span class="sc">{</span>lr_test_model1<span class="sc">:.4f}</span><span class="ss">, p-value: </span><span class="sc">{</span>model1<span class="sc">.</span>llr_pvalue<span class="sc">:.4f}</span><span class="ss">"</span>)</span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"</span><span class="ch">\n</span><span class="st">Test de rapport de vraisemblance pour model2:"</span>)</span>
+<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"LR stat: </span><span class="sc">{</span>lr_test_model2<span class="sc">:.4f}</span><span class="ss">, p-value: </span><span class="sc">{</span>model2<span class="sc">.</span>llr_pvalue<span class="sc">:.4f}</span><span class="ss">"</span>)</span></code><button title="Copier vers le presse-papier" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Test de rapport de vraisemblance pour model1:
+LR stat: 73.3227, p-value: 0.0000
+
+Test de rapport de vraisemblance pour model2:
+LR stat: 73.3227, p-value: 0.0000</code></pre>
+</div>
+</div>
+<p>On remarque ici que ces deux tests sont identiques : ils ne dépendent pas de la contrainte identifiante choisie.</p></li>
+</ol>
+</div>
+<div id="exr-12-3" class="theorem exercise">
+<p><span class="theorem-title"><strong>Exercice 3 (Séparabilité)</strong></span> &nbsp;</p>
+<ol type="1">
+<li><p>On génère l’échantillon demandé.</p>
+<div id="0bc3e4a5" class="cell" data-execution_count="6">
+<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>np.random.seed(<span class="dv">1234</span>)</span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>X <span class="op">=</span> np.concatenate([np.random.uniform(<span class="op">-</span><span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">50</span>), np.random.uniform(<span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">50</span>)])</span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a>Y <span class="op">=</span> np.concatenate([np.zeros(<span class="dv">50</span>), np.ones(<span class="dv">50</span>)])</span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a>df <span class="op">=</span> pd.DataFrame({<span class="st">'X'</span>: X, <span class="st">'Y'</span>: Y})</span>
+<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(df.head())</span></code><button title="Copier vers le presse-papier" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>          X    Y
+0 -0.808481  0.0
+1 -0.377891  0.0
+2 -0.562272  0.0
+3 -0.214641  0.0
+4 -0.220024  0.0</code></pre>
+</div>
+</div></li>
+<li><p>Le graphe s’obtient avec :</p>
+<div id="f600f279" class="cell" data-execution_count="7">
+<div class="sourceCode cell-code" id="cb12"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a>beta <span class="op">=</span> np.arange(<span class="dv">0</span>, <span class="dv">100</span>, <span class="fl">0.01</span>)</span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> log_vrais(X, Y, beta):</span>
+<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a>    LV <span class="op">=</span> np.zeros(<span class="bu">len</span>(beta))</span>
+<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> i <span class="kw">in</span> <span class="bu">range</span>(<span class="bu">len</span>(beta)):</span>
+<span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a>        Pbeta <span class="op">=</span> np.exp(beta[i] <span class="op">*</span> X) <span class="op">/</span> (<span class="dv">1</span> <span class="op">+</span> np.exp(beta[i] <span class="op">*</span> X))</span>
+<span id="cb12-6"><a href="#cb12-6" aria-hidden="true" tabindex="-1"></a>        LV[i] <span class="op">=</span> np.<span class="bu">sum</span>(Y <span class="op">*</span> X <span class="op">*</span> beta[i] <span class="op">-</span> np.log(<span class="dv">1</span> <span class="op">+</span> np.exp(X <span class="op">*</span> beta[i])))</span>
+<span id="cb12-7"><a href="#cb12-7" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> LV</span>
+<span id="cb12-8"><a href="#cb12-8" aria-hidden="true" tabindex="-1"></a>LL <span class="op">=</span> log_vrais(df[<span class="st">'X'</span>], df[<span class="st">'Y'</span>], beta)</span></code><button title="Copier vers le presse-papier" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div id="49d3a164" class="cell" data-execution_count="8">
+<div class="sourceCode cell-code" id="cb13"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a>plt.plot(beta,LL)</span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a>plt.xlabel(<span class="st">'beta'</span>)</span>
+<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a>plt.ylabel(<span class="st">'Log-vraisemblance'</span>)</span>
+<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a>plt.title(<span class="st">'Log-vraisemblance en fonction de beta'</span>)</span>
+<span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a>plt.show()</span></code><button title="Copier vers le presse-papier" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="chap12_files/figure-html/cell-9-output-1.png" width="596" height="449" class="figure-img"></p>
+</figure>
+</div>
+</div>
+</div></li>
+<li><p>On obtient un avertissement qui nous dit que l’algorithme d’optimisation n’a pas convergé.</p>
+<div id="2ffe54b3" class="cell" data-message="true" data-execution_count="9">
+<div class="sourceCode cell-code" id="cb14"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a>model <span class="op">=</span> smf.logit(<span class="st">'Y ~ X - 1'</span>, data<span class="op">=</span>df).fit()</span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(model.params)</span></code><button title="Copier vers le presse-papier" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Warning: Maximum number of iterations has been exceeded.
+         Current function value: 0.000000
+         Iterations: 35
+X    1801.824972
+dtype: float64</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>/opt/miniconda3/lib/python3.12/site-packages/statsmodels/discrete/discrete_model.py:2385: RuntimeWarning: overflow encountered in exp
+  return 1/(1+np.exp(-X))
+/opt/miniconda3/lib/python3.12/site-packages/statsmodels/base/model.py:607: ConvergenceWarning: Maximum Likelihood optimization failed to converge. Check mle_retvals
+  warnings.warn("Maximum Likelihood optimization failed to "</code></pre>
+</div>
+</div></li>
+<li><p>Le changement proposé supprime la séparabilité des données. On obtient bien un maximum fini pour cette nouvelle vraisemblance.</p>
+<div id="57913488" class="cell" data-execution_count="10">
+<div class="sourceCode cell-code" id="cb17"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a>Y1 <span class="op">=</span> Y.copy()</span>
+<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a>Y1[<span class="dv">0</span>] <span class="op">=</span> <span class="dv">1</span></span>
+<span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a>LL1 <span class="op">=</span> log_vrais(X, Y1, beta)</span>
+<span id="cb17-4"><a href="#cb17-4" aria-hidden="true" tabindex="-1"></a>plt.plot(beta, LL1)</span>
+<span id="cb17-5"><a href="#cb17-5" aria-hidden="true" tabindex="-1"></a>plt.xlabel(<span class="st">'beta'</span>)</span>
+<span id="cb17-6"><a href="#cb17-6" aria-hidden="true" tabindex="-1"></a>plt.ylabel(<span class="st">'Log-vraisemblance'</span>)</span>
+<span id="cb17-7"><a href="#cb17-7" aria-hidden="true" tabindex="-1"></a>plt.title(<span class="st">'Log-vraisemblance en fonction de beta pour Y1'</span>)</span>
+<span id="cb17-8"><a href="#cb17-8" aria-hidden="true" tabindex="-1"></a>plt.show()</span></code><button title="Copier vers le presse-papier" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="chap12_files/figure-html/cell-11-output-1.png" width="596" height="449" class="figure-img"></p>
+</figure>
+</div>
+</div>
+</div></li>
+</ol>
+</div>
+<div id="exr-12-4" class="theorem exercise">
+<p><span class="theorem-title"><strong>Exercice 4 (Matrice hessienne)</strong></span> Le gradient de la log-vraisemblance en <span class="math inline">\(\beta\)</span> est donné par <span class="math inline">\(\nabla \mathcal L(Y,\beta)=X'(Y-P_\beta)\)</span>. Sa <span class="math inline">\(j\)</span>ème composante vaut <span class="math display">\[\frac{\partial\mathcal L}{\partial\beta_j}(\beta)=\sum_{i=1}^nx_{ij}(y_i-p_\beta(x_i)).\]</span></p>
+<p>On peut donc calculer la drivée par rapport à <span class="math inline">\(\beta_\ell\)</span> : <span class="math display">\[\begin{align*}
+\frac{\partial\mathcal L}{\partial\beta_j\partial\beta_\ell}(\beta)= &amp; \frac{\partial}{\partial\beta_\ell}\left[
+\sum_{i=1}^nx_{ij}\left(y_i-\frac{\exp(x_i'\beta)}{1+\exp(x_i'\beta)}\right)\right] \\
+=&amp; -\sum_{i=1}^nx_{ij}x_{i\ell}\frac{\exp(x_i'\beta)}{[1+\exp(x_i'\beta)]^2} \\
+=&amp; -\sum_{i=1}^nx_{ij}x_{i\ell}p_\beta(x_i)(1-p_\beta(x_i)).
+\end{align*}\]</span> Matriciellement on déduit donc que la hessienne vaut <span class="math display">\[\nabla^2\mathcal L(Y,\beta)=-X'W_\beta X,\]</span> où <span class="math inline">\(W_\beta\)</span> est la matrice <span class="math inline">\(n\times n\)</span> diagonale dont le <span class="math inline">\(i\)</span>ème terme de la diagonale vaut <span class="math inline">\(p_\beta(x_i)(1-p_\beta(x_i))\)</span>. Par ailleurs, comme pour tout <span class="math inline">\(i=1,\dots,n\)</span>, on a <span class="math inline">\(p_\beta(x_i)(1-p_\beta(x_i))&gt;0\)</span> et que <span class="math inline">\(X\)</span> est de plein rang, on déduit que <span class="math inline">\(X'W_\beta X\)</span> est définie positive et par conséquent que la hessienne est définie négative.</p>
+</div>
+<div id="exr-12-5" class="theorem exercise">
+<p><span class="theorem-title"><strong>Exercice 5 (Modèles avec R)</strong></span> On importe les données :</p>
+<div id="5a4447af" class="cell" data-execution_count="11">
+<div class="sourceCode cell-code" id="cb18"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a>panne <span class="op">=</span> pd.read_csv(<span class="st">"../donnees/panne.txt"</span>, sep<span class="op">=</span><span class="st">" "</span>)</span>
+<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(panne.head())</span></code><button title="Copier vers le presse-papier" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>   etat  age marque
+0     0    4      A
+1     0    2      C
+2     0    3      C
+3     0    9      B
+4     0    7      B</code></pre>
+</div>
+</div>
+<ol type="1">
+<li><p>La commande</p>
+<div id="e588e1e8" class="cell" data-execution_count="12">
+<div class="sourceCode cell-code" id="cb20"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a>model <span class="op">=</span> smf.logit(<span class="st">'etat ~ age+marque'</span>, data<span class="op">=</span>panne).fit()</span></code><button title="Copier vers le presse-papier" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Optimization terminated successfully.
+         Current function value: 0.659124
+         Iterations 5</code></pre>
+</div>
+</div>
+<p>ajuste le modèle <span class="math display">\[\log\left(\frac{p_\beta(x)}{1-p_\beta(x)}\right)=\beta_0+\beta_1x_1+\beta_2\mathsf{1}_{x_2=B}+\beta_3\mathsf{1}_{x_2=C}\]</span> où <span class="math inline">\(x_1\)</span> et <span class="math inline">\(x_2\)</span> désigne respectivement les variables <strong>age</strong> et <strong>marque</strong>. On obtient les estimateurs avec</p>
+<div id="d4625094" class="cell" data-execution_count="13">
+<div class="sourceCode cell-code" id="cb22"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(model.summary())</span></code><button title="Copier vers le presse-papier" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>                           Logit Regression Results                           
+==============================================================================
+Dep. Variable:                   etat   No. Observations:                   33
+Model:                          Logit   Df Residuals:                       29
+Method:                           MLE   Df Model:                            3
+Date:                Tue, 04 Feb 2025   Pseudo R-squ.:                 0.04845
+Time:                        12:22:41   Log-Likelihood:                -21.751
+converged:                       True   LL-Null:                       -22.859
+Covariance Type:            nonrobust   LLR p-value:                    0.5290
+===============================================================================
+                  coef    std err          z      P&gt;|z|      [0.025      0.975]
+-------------------------------------------------------------------------------
+Intercept       0.4781      0.833      0.574      0.566      -1.155       2.111
+marque[T.B]    -0.4194      0.814     -0.515      0.607      -2.015       1.177
+marque[T.C]    -1.4561      1.054     -1.382      0.167      -3.521       0.609
+age             0.0139      0.094      0.148      0.883      -0.170       0.198
+===============================================================================</code></pre>
+</div>
+</div></li>
+<li><p>Il s’agit des tests de Wald pour tester l’effet des variables dans le modèle. Pour l’effet de marque, on va par exemple tester <span class="math display">\[H_0:\beta_2=\beta_3=0\quad\text{contre}\quad H_1:\beta_2\neq 0\text{ ou }\beta_3\neq 0.\]</span> Sous <span class="math inline">\(H_0\)</span> la statistique de Wald suit une loi du <span class="math inline">\(\chi^2\)</span> à 4-2=2 degrés de liberté. Pour le test de la variable <strong>age</strong> le nombre de degrés de liberté manquant est 1. On retrouve cela dans la sortie</p>
+<div id="9bdac9a6" class="cell" data-execution_count="14">
+<div class="sourceCode cell-code" id="cb24"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a>wald_tests <span class="op">=</span> model.wald_test_terms()</span>
+<span id="cb24-2"><a href="#cb24-2" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"Tests de Wald pour chaque coefficient:"</span>)</span>
+<span id="cb24-3"><a href="#cb24-3" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(wald_tests)</span></code><button title="Copier vers le presse-papier" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Tests de Wald pour chaque coefficient:
+                              chi2              P&gt;chi2  df constraint
+Intercept   [[0.3293833811483461]]  0.5660224013616977              1
+marque      [[1.9306493813691281]]  0.3808595181236274              2
+age        [[0.02182485519152971]]  0.8825539788968159              1</code></pre>
+</div>
+</div></li>
+</ol>
+<!--
+3.  Il s'agit cette fois du test du rapport de vraisemblance. Les degrés de liberté manquants sont identiques.
+
+
+    ::: {#224d016f .cell execution_count=15}
+    ``` {.python .cell-code}
+    def lr_test(full_model, reduced_model):
+        lr_stat = 2 * (full_model.llf - reduced_model.llf)
+        p_value = chi2.sf(lr_stat, df=full_model.df_model - reduced_model.df_model)
+        return lr_stat, p_value
+    
+    # Liste des variables explicatives
+    variables = panne.columns.drop('etat')
+    
+    # Effectuer les tests de rapport de vraisemblance pour chaque variable
+    lr_results = {}
+    for var in variables:
+        formula_reduced = 'etat ~ ' + ' + '.join(variables.drop(var))
+        reduced_model = smf.logit(formula_reduced, data=panne).fit(disp=0)
+        lr_stat, p_value = lr_test(model, reduced_model)
+        lr_results[var] = {'LR stat': lr_stat, 'p-value': p_value}
+    
+    # Afficher les résultats des tests de rapport de vraisemblance
+    print("Tests de rapport de vraisemblance pour chaque variable:")
+    for var, result in lr_results.items():
+        print(f"{var}: LR stat = {result['LR stat']:.4f}, p-value = {result['p-value']:.4f}")
+    ```
+    
+    ::: {.cell-output .cell-output-stdout}
+    ```
+    Tests de rapport de vraisemblance pour chaque variable:
+    age: LR stat = 0.0219, p-value = 0.8824
+    marque: LR stat = 2.0956, p-value = 0.3507
+    ```
+    :::
+    :::
+    
+    
+-->
+<ol start="3" type="1">
+<li><ol type="a">
+<li><p>Le modèle s’écrit <span class="math display">\[\log\left(\frac{p_\beta(x)}{1-p_\beta(x)}\right)=\beta_0+\beta_1\mathsf{1}_{x_2=A}+\beta_2\mathsf{1}_{x_2=B}.\]</span></p></li>
+<li><p>Le modèle ajusté ici est <span class="math display">\[
+\log\left(\frac{p_\beta(x)}{1-p_\beta(x)}\right)=\gamma_0+\gamma_1\mathsf{1}_{x_2=B}+\gamma_2\mathsf{1}_{x_2=C}.
+\]</span> Par identification on a <span class="math display">\[
+\begin{cases}
+    \beta_0+\beta_1=\gamma_0 \\
+    \beta_0+\beta_2=\gamma_0+\gamma_1 \\
+    \beta_0=\gamma_0+\gamma_2 \\
+    \end{cases}
+    \Longleftrightarrow
+    \begin{cases}
+    \beta_0=\gamma_0+\gamma_2 \\
+    \beta_1=-\gamma_2 \\
+    \beta_2=\gamma_1-\gamma_2 \\
+    \end{cases}
+    \Longrightarrow
+    \begin{cases}
+    \widehat\beta_0=-0.92 \\
+    \widehat\beta_1=1.48 \\
+    \widehat\beta_2=1.05 \\
+    \end{cases}
+\]</span> On peut retrouver ces résultats avec</p>
+<div id="c1ee341c" class="cell" data-execution_count="16">
+<div class="sourceCode cell-code" id="cb26"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a>model1 <span class="op">=</span> smf.logit(<span class="st">'etat ~ C(marque, Treatment(reference="C"))'</span>, data<span class="op">=</span>panne).fit()</span>
+<span id="cb26-2"><a href="#cb26-2" aria-hidden="true" tabindex="-1"></a>model1.summary()</span></code><button title="Copier vers le presse-papier" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Optimization terminated successfully.
+         Current function value: 0.659456
+         Iterations 5</code></pre>
+</div>
+<div class="cell-output cell-output-display" data-execution_count="16">
+<table class="simpletable caption-top table table-sm table-striped small" data-quarto-postprocess="true">
+<caption>Logit Regression Results</caption>
+<tbody>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">Dep. Variable:</td>
+<td>etat</td>
+<td data-quarto-table-cell-role="th">No. Observations:</td>
+<td>33</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">Model:</td>
+<td>Logit</td>
+<td data-quarto-table-cell-role="th">Df Residuals:</td>
+<td>30</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">Method:</td>
+<td>MLE</td>
+<td data-quarto-table-cell-role="th">Df Model:</td>
+<td>2</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">Date:</td>
+<td>Tue, 04 Feb 2025</td>
+<td data-quarto-table-cell-role="th">Pseudo R-squ.:</td>
+<td>0.04798</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">Time:</td>
+<td>12:22:41</td>
+<td data-quarto-table-cell-role="th">Log-Likelihood:</td>
+<td>-21.762</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">converged:</td>
+<td>True</td>
+<td data-quarto-table-cell-role="th">LL-Null:</td>
+<td>-22.859</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">Covariance Type:</td>
+<td>nonrobust</td>
+<td data-quarto-table-cell-role="th">LLR p-value:</td>
+<td>0.3340</td>
+</tr>
+</tbody>
+</table>
+
+
+<table class="simpletable caption-top table table-sm table-striped small" data-quarto-postprocess="true">
+<tbody>
+<tr class="odd">
+<td></td>
+<td data-quarto-table-cell-role="th">coef</td>
+<td data-quarto-table-cell-role="th">std err</td>
+<td data-quarto-table-cell-role="th">z</td>
+<td data-quarto-table-cell-role="th">P&gt;|z|</td>
+<td data-quarto-table-cell-role="th">[0.025</td>
+<td data-quarto-table-cell-role="th">0.975]</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">Intercept</td>
+<td>-0.9163</td>
+<td>0.837</td>
+<td>-1.095</td>
+<td>0.273</td>
+<td>-2.556</td>
+<td>0.724</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">C(marque, Treatment(reference="C"))[T.A]</td>
+<td>1.4759</td>
+<td>1.045</td>
+<td>1.412</td>
+<td>0.158</td>
+<td>-0.573</td>
+<td>3.525</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">C(marque, Treatment(reference="C"))[T.B]</td>
+<td>1.0498</td>
+<td>0.984</td>
+<td>1.067</td>
+<td>0.286</td>
+<td>-0.878</td>
+<td>2.978</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div></li>
+</ol></li>
+<li><p>Il y a interaction si l’age agit différemment sur la panne en fonction de la marque.</p></li>
+<li><p>Le modèle ajusté sur est <span class="math display">\[
+\log\left(\frac{p_\beta(x)}{1-p_\beta(x)}\right)=\delta_0+\delta_1\mathsf{1}_{x_2=B}+\delta_2\mathsf{1}_{x_2=C}+\delta_3x_1+\delta_4x_1\mathsf{1}_{x_2=B}+\delta_5x_1\mathsf{1}_{x_2=C}.
+\]</span></p>
+<p>On obtient ainsi par identification : <span class="math display">\[
+\begin{cases}
+\alpha_0=\delta_0\\
+\alpha_1=\delta_3\\
+\beta_0=\delta_0+\delta_1\\
+\beta_1=\delta_3+\delta_4\\
+\gamma_0=\delta_0+\delta_2\\
+\gamma_1=\delta_3+\delta_5
+\end{cases}
+\]</span></p>
+<p>On déduit les valeurs des estimateurs que l’on peut retrouver avec la commande :</p>
+<div id="afd6301e" class="cell" data-execution_count="17">
+<div class="sourceCode cell-code" id="cb28"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a>model2 <span class="op">=</span> smf.logit(<span class="st">'etat ~ -1 + marque + marque:age'</span>, data<span class="op">=</span>panne).fit()</span>
+<span id="cb28-2"><a href="#cb28-2" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(model2.summary())</span></code><button title="Copier vers le presse-papier" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Optimization terminated successfully.
+         Current function value: 0.645772
+         Iterations 5
+                           Logit Regression Results                           
+==============================================================================
+Dep. Variable:                   etat   No. Observations:                   33
+Model:                          Logit   Df Residuals:                       27
+Method:                           MLE   Df Model:                            5
+Date:                Tue, 04 Feb 2025   Pseudo R-squ.:                 0.06773
+Time:                        12:22:41   Log-Likelihood:                -21.310
+converged:                       True   LL-Null:                       -22.859
+Covariance Type:            nonrobust   LLR p-value:                    0.6851
+=================================================================================
+                    coef    std err          z      P&gt;|z|      [0.025      0.975]
+---------------------------------------------------------------------------------
+marque[A]         0.2351      1.047      0.225      0.822      -1.817       2.288
+marque[B]         0.4337      0.889      0.488      0.626      -1.308       2.176
+marque[C]        -2.1963      2.008     -1.094      0.274      -6.131       1.739
+marque[A]:age     0.0564      0.150      0.377      0.706      -0.237       0.350
+marque[B]:age    -0.0555      0.133     -0.416      0.677      -0.317       0.206
+marque[C]:age     0.2723      0.367      0.742      0.458      -0.447       0.992
+=================================================================================</code></pre>
+</div>
+</div></li>
+</ol>
+</div>
+<div id="exr-12-6" class="theorem exercise">
+<p><span class="theorem-title"><strong>Exercice 6 (Interprétation)</strong></span> &nbsp;</p>
+<div id="18d653b5" class="cell" data-execution_count="18">
+<div class="sourceCode cell-code" id="cb30"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a>df <span class="op">=</span> pd.read_csv(<span class="st">"../donnees/logit_exo6.csv"</span>)</span>
+<span id="cb30-2"><a href="#cb30-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb30-3"><a href="#cb30-3" aria-hidden="true" tabindex="-1"></a><span class="co"># Ajuster le modèle de régression logistique avec toutes les variables explicatives</span></span>
+<span id="cb30-4"><a href="#cb30-4" aria-hidden="true" tabindex="-1"></a>mod <span class="op">=</span> smf.logit(<span class="st">'Y ~ X1+X2'</span>, data<span class="op">=</span>df).fit()</span>
+<span id="cb30-5"><a href="#cb30-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb30-6"><a href="#cb30-6" aria-hidden="true" tabindex="-1"></a><span class="co"># Ajuster le modèle de régression logistique avec seulement la variable X1</span></span>
+<span id="cb30-7"><a href="#cb30-7" aria-hidden="true" tabindex="-1"></a>mod1 <span class="op">=</span> smf.logit(<span class="st">'Y ~ X1'</span>, data<span class="op">=</span>df).fit()</span>
+<span id="cb30-8"><a href="#cb30-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb30-9"><a href="#cb30-9" aria-hidden="true" tabindex="-1"></a><span class="co"># Afficher le résumé des modèles</span></span>
+<span id="cb30-10"><a href="#cb30-10" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(mod.summary())</span>
+<span id="cb30-11"><a href="#cb30-11" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(mod1.summary())</span></code><button title="Copier vers le presse-papier" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Optimization terminated successfully.
+         Current function value: 0.618257
+         Iterations 6
+Optimization terminated successfully.
+         Current function value: 0.692991
+         Iterations 3
+                           Logit Regression Results                           
+==============================================================================
+Dep. Variable:                      Y   No. Observations:                  500
+Model:                          Logit   Df Residuals:                      497
+Method:                           MLE   Df Model:                            2
+Date:                Tue, 04 Feb 2025   Pseudo R-squ.:                  0.1080
+Time:                        12:22:41   Log-Likelihood:                -309.13
+converged:                       True   LL-Null:                       -346.57
+Covariance Type:            nonrobust   LLR p-value:                 5.469e-17
+==============================================================================
+                 coef    std err          z      P&gt;|z|      [0.025      0.975]
+------------------------------------------------------------------------------
+Intercept     -0.5787      0.119     -4.852      0.000      -0.812      -0.345
+X1            -0.1947      0.066     -2.970      0.003      -0.323      -0.066
+X2             0.3190      0.044      7.244      0.000       0.233       0.405
+==============================================================================
+                           Logit Regression Results                           
+==============================================================================
+Dep. Variable:                      Y   No. Observations:                  500
+Model:                          Logit   Df Residuals:                      498
+Method:                           MLE   Df Model:                            1
+Date:                Tue, 04 Feb 2025   Pseudo R-squ.:               0.0002259
+Time:                        12:22:41   Log-Likelihood:                -346.50
+converged:                       True   LL-Null:                       -346.57
+Covariance Type:            nonrobust   LLR p-value:                    0.6923
+==============================================================================
+                 coef    std err          z      P&gt;|z|      [0.025      0.975]
+------------------------------------------------------------------------------
+Intercept      0.0011      0.089      0.012      0.990      -0.174       0.177
+X1            -0.0205      0.052     -0.396      0.692      -0.122       0.081
+==============================================================================</code></pre>
+</div>
+</div>
+<p>On remarque que la nullité du paramètre associé à <strong>X1</strong> est accepté dans le modèle avec uniquement <strong>X1</strong> alors qu’elle est refusée lorsqu’on considère <strong>X1</strong> et <strong>X2</strong> dans le modèle.</p>
+</div>
+<div id="exr-12-7" class="theorem exercise">
+<p><span class="theorem-title"><strong>Exercice 7 (Tests à la main)</strong></span> &nbsp;</p>
+<ol type="1">
+<li><p>Le modèle s’écrit <span class="math display">\[log\left(\frac{p_\beta(x)}{1-p_\beta(x)}\right)=\beta_0+\beta_1x.\]</span></p></li>
+<li><p>La log vraisemblance s’obtient avec</p>
+<div id="d6ef065e" class="cell" data-execution_count="19">
+<div class="sourceCode cell-code" id="cb32"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb32-1"><a href="#cb32-1" aria-hidden="true" tabindex="-1"></a>p <span class="op">=</span> np.array([<span class="fl">0.76</span>, <span class="fl">0.4</span>, <span class="fl">0.6</span>, <span class="fl">0.89</span>, <span class="fl">0.35</span>])</span>
+<span id="cb32-2"><a href="#cb32-2" aria-hidden="true" tabindex="-1"></a>Y <span class="op">=</span> np.array([<span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">1</span>])</span>
+<span id="cb32-3"><a href="#cb32-3" aria-hidden="true" tabindex="-1"></a>L1 <span class="op">=</span> np.log(np.prod(p<span class="op">**</span>Y <span class="op">*</span> (<span class="dv">1</span><span class="op">-</span>p)<span class="op">**</span>(<span class="dv">1</span><span class="op">-</span>Y)))</span>
+<span id="cb32-4"><a href="#cb32-4" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(L1)</span></code><button title="Copier vers le presse-papier" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>-2.867909142096535</code></pre>
+</div>
+</div></li>
+<li><ol type="a">
+<li><p>On calcule les écart-type des estimateurs</p>
+<div id="1ebb7fb1" class="cell" data-execution_count="20">
+<div class="sourceCode cell-code" id="cb34"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb34-1"><a href="#cb34-1" aria-hidden="true" tabindex="-1"></a>p <span class="op">=</span> np.array([<span class="fl">0.76</span>, <span class="fl">0.4</span>, <span class="fl">0.6</span>, <span class="fl">0.89</span>, <span class="fl">0.35</span>])</span>
+<span id="cb34-2"><a href="#cb34-2" aria-hidden="true" tabindex="-1"></a>X1 <span class="op">=</span> np.array([<span class="fl">0.47</span>, <span class="op">-</span><span class="fl">0.55</span>, <span class="op">-</span><span class="fl">0.01</span>, <span class="fl">1.07</span>, <span class="op">-</span><span class="fl">0.71</span>])</span>
+<span id="cb34-3"><a href="#cb34-3" aria-hidden="true" tabindex="-1"></a>X <span class="op">=</span> np.column_stack((np.ones(<span class="dv">5</span>), X1))</span>
+<span id="cb34-4"><a href="#cb34-4" aria-hidden="true" tabindex="-1"></a>W <span class="op">=</span> np.diag(p <span class="op">*</span> (<span class="dv">1</span> <span class="op">-</span> p))</span>
+<span id="cb34-5"><a href="#cb34-5" aria-hidden="true" tabindex="-1"></a>SIG <span class="op">=</span> np.linalg.inv(X.T <span class="op">@</span> W <span class="op">@</span> X)</span>
+<span id="cb34-6"><a href="#cb34-6" aria-hidden="true" tabindex="-1"></a>sig <span class="op">=</span> np.sqrt(np.diag(SIG))</span>
+<span id="cb34-7"><a href="#cb34-7" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(sig)</span></code><button title="Copier vers le presse-papier" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1.0232524  1.74493535]</code></pre>
+</div>
+</div>
+<p>On en déduit les statistiques de test :</p>
+<div id="c8a8b1ca" class="cell" data-execution_count="21">
+<div class="sourceCode cell-code" id="cb36"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb36-1"><a href="#cb36-1" aria-hidden="true" tabindex="-1"></a>beta <span class="op">=</span> np.array([<span class="fl">0.4383</span>, <span class="fl">1.5063</span>])</span>
+<span id="cb36-2"><a href="#cb36-2" aria-hidden="true" tabindex="-1"></a>result <span class="op">=</span> beta <span class="op">/</span> sig</span>
+<span id="cb36-3"><a href="#cb36-3" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(result)</span></code><button title="Copier vers le presse-papier" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[0.42834006 0.86324115]</code></pre>
+</div>
+</div></li>
+<li><p>On peut faire le test de Wald et du rapport de vraisemblance.</p></li>
+<li><p>La statistique de test vaut 0.8632411, on obtient donc la probabilité critique</p>
+<div id="c2a48e80" class="cell" data-execution_count="22">
+<div class="sourceCode cell-code" id="cb38"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb38-1"><a href="#cb38-1" aria-hidden="true" tabindex="-1"></a><span class="dv">2</span> <span class="op">*</span> (<span class="dv">1</span> <span class="op">-</span> norm.cdf(<span class="fl">0.8632411</span>))</span></code><button title="Copier vers le presse-papier" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display" data-execution_count="22">
+<pre><code>0.3880049206652636</code></pre>
+</div>
+</div>
+<p>On peut également effectuer un test du rapport de vraisemblance. Le modèle null sans X1 a pour log-vraisemblance</p>
+<div id="82054446" class="cell" data-execution_count="23">
+<div class="sourceCode cell-code" id="cb40"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb40-1"><a href="#cb40-1" aria-hidden="true" tabindex="-1"></a>p0 <span class="op">=</span> <span class="dv">3</span> <span class="op">/</span> <span class="dv">5</span></span>
+<span id="cb40-2"><a href="#cb40-2" aria-hidden="true" tabindex="-1"></a>Y <span class="op">=</span> np.array([<span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">1</span>])</span>
+<span id="cb40-3"><a href="#cb40-3" aria-hidden="true" tabindex="-1"></a>L0 <span class="op">=</span> np.log(np.prod(p0<span class="op">**</span>Y <span class="op">*</span> (<span class="dv">1</span><span class="op">-</span>p0)<span class="op">**</span>(<span class="dv">1</span><span class="op">-</span>Y)))</span>
+<span id="cb40-4"><a href="#cb40-4" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(L0)</span></code><button title="Copier vers le presse-papier" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>-3.365058335046282</code></pre>
+</div>
+</div>
+<p>La statistique de test vaut donc</p>
+<div id="1d468d24" class="cell" data-execution_count="24">
+<div class="sourceCode cell-code" id="cb42"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb42-1"><a href="#cb42-1" aria-hidden="true" tabindex="-1"></a><span class="dv">2</span><span class="op">*</span>(L1<span class="op">-</span>L0)</span></code><button title="Copier vers le presse-papier" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display" data-execution_count="24">
+<pre><code>0.9942983858994943</code></pre>
+</div>
+</div>
+<p>et la probabilité critique est égale à</p>
+<div id="e2f90c18" class="cell" data-execution_count="25">
+<div class="sourceCode cell-code" id="cb44"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb44-1"><a href="#cb44-1" aria-hidden="true" tabindex="-1"></a><span class="dv">1</span> <span class="op">-</span> chi2.cdf(<span class="dv">2</span><span class="op">*</span>(L1<span class="op">-</span>L0), df<span class="op">=</span><span class="dv">1</span>)</span></code><button title="Copier vers le presse-papier" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display" data-execution_count="25">
+<pre><code>0.31869407584847365</code></pre>
+</div>
+</div>
+<p>On peut retrouver (aux arrondis près) les résultats de l’exercice avec</p>
+<div id="ca21d325" class="cell" data-execution_count="26">
+<div class="sourceCode cell-code" id="cb46"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb46-1"><a href="#cb46-1" aria-hidden="true" tabindex="-1"></a>X <span class="op">=</span> [<span class="fl">0.47</span>, <span class="op">-</span><span class="fl">0.55</span>, <span class="op">-</span><span class="fl">0.01</span>, <span class="fl">1.07</span>, <span class="op">-</span><span class="fl">0.71</span>]</span>
+<span id="cb46-2"><a href="#cb46-2" aria-hidden="true" tabindex="-1"></a>Y <span class="op">=</span> [<span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">1</span>]</span>
+<span id="cb46-3"><a href="#cb46-3" aria-hidden="true" tabindex="-1"></a>df <span class="op">=</span> pd.DataFrame({<span class="st">'X'</span>: X, <span class="st">'Y'</span>: Y})</span>
+<span id="cb46-4"><a href="#cb46-4" aria-hidden="true" tabindex="-1"></a>model <span class="op">=</span> smf.logit(<span class="st">'Y ~ X'</span>, data<span class="op">=</span>df).fit()</span>
+<span id="cb46-5"><a href="#cb46-5" aria-hidden="true" tabindex="-1"></a>log_likelihood <span class="op">=</span> model.llf</span>
+<span id="cb46-6"><a href="#cb46-6" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(log_likelihood)</span></code><button title="Copier vers le presse-papier" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Optimization terminated successfully.
+         Current function value: 0.579753
+         Iterations 6
+-2.898765148750008</code></pre>
+</div>
+</div>
+<div id="5168505b" class="cell" data-execution_count="27">
+<div class="sourceCode cell-code" id="cb48"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb48-1"><a href="#cb48-1" aria-hidden="true" tabindex="-1"></a>wald_test <span class="op">=</span> model.wald_test_terms()</span>
+<span id="cb48-2"><a href="#cb48-2" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(wald_test)</span></code><button title="Copier vers le presse-papier" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>                             chi2               P&gt;chi2  df constraint
+Intercept  [[0.1845505636560877]]   0.6674913759958387              1
+X           [[0.755071501627431]]  0.38487529817766963              1</code></pre>
+</div>
+</div>
+<div id="f3d9f796" class="cell" data-execution_count="28">
+<div class="sourceCode cell-code" id="cb50"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb50-1"><a href="#cb50-1" aria-hidden="true" tabindex="-1"></a>lr_test_model <span class="op">=</span> model.llr</span>
+<span id="cb50-2"><a href="#cb50-2" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"LR stat: </span><span class="sc">{</span>lr_test_model<span class="sc">:.4f}</span><span class="ss">, p-value: </span><span class="sc">{</span>model<span class="sc">.</span>llr_pvalue<span class="sc">:.4f}</span><span class="ss">"</span>)</span></code><button title="Copier vers le presse-papier" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>LR stat: 0.9326, p-value: 0.3342</code></pre>
+</div>
+</div></li>
+</ol></li>
+</ol>
+</div>
+<div id="exr-12-8" class="theorem exercise">
+<p><span class="theorem-title"><strong>Exercice 8 (Vraisemblance du modèle saturé)</strong></span> &nbsp;</p>
+<ol type="1">
+<li><p>Les variables <span class="math inline">\((y_t,t=1,\dots,y_T)\)</span> étant indépendantes et de loi binomiales <span class="math inline">\(B(n_t,p_t)\)</span>, la log-vraisemblance est donnée par <span class="math display">\[\begin{align*}
+\mathcal L_{\text{sat}}(Y,p)= &amp; \log\left(\prod_{t=1}^T
+\begin{pmatrix}
+n_t\\
+\tilde y_t
+\end{pmatrix}
+p_t^{\tilde y_t}(1-p_t)^{n_t-\tilde y_t}\right) \\
+= &amp;
+\sum_{t=1}^T\left(\log
+\begin{pmatrix}
+n_t\\
+\tilde y_t
+\end{pmatrix}
++\tilde y_t\log(p_t)+(n_t-\tilde y_t)\log(1-p_t)\right)
+\end{align*}\]</span></p></li>
+<li><p>La dérivée de la log-vraisemblance par rapport à <span class="math inline">\(p_t\)</span> s’écrit <span class="math display">\[\frac{\tilde y_t}{p_t}-\frac{n_t-\tilde y_t}{1-p_t}.\]</span> Cette dérivée s’annule pour <span class="math display">\[\widehat p_t=\frac{\tilde y_t}{n_t}.\]</span></p></li>
+<li><p>On note <span class="math inline">\(\widehat \beta\)</span> l’EMV du modèle logistique et <span class="math inline">\(p_{\widehat\beta}\)</span> le vecteur qui contient les valeurs ajustées <span class="math inline">\(p_{\widehat\beta}(x_t),t=1,\dots,T\)</span>. On a pour tout <span class="math inline">\(\beta\in\mathbb R^p\)</span> : <span class="math display">\[\mathcal L(Y,\beta)\leq\mathcal L(Y,\widehat\beta)=\mathcal L_{\text{sat}}(Y,p_{\widehat\beta})\leq L_{\text{sat}}(Y,\widehat p_t).\]</span></p></li>
+</ol>
+</div>
+<div id="exr-12-9" class="theorem exercise">
+<p><span class="theorem-title"><strong>Exercice 9 (Résidus partiels)</strong></span> &nbsp;</p>
+<ol type="1">
+<li><div id="dc2125f8" class="cell" data-execution_count="29">
+<div class="sourceCode cell-code" id="cb52"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb52-1"><a href="#cb52-1" aria-hidden="true" tabindex="-1"></a>artere <span class="op">=</span> pd.read_csv(<span class="st">'../donnees/artere.txt'</span>, header<span class="op">=</span><span class="dv">0</span>, index_col<span class="op">=</span><span class="dv">0</span>, sep<span class="op">=</span><span class="st">' '</span>)</span>
+<span id="cb52-2"><a href="#cb52-2" aria-hidden="true" tabindex="-1"></a>modele <span class="op">=</span> smf.glm(<span class="st">'chd~age'</span>, data<span class="op">=</span>artere, family<span class="op">=</span>sm.families.Binomial()).fit()</span>
+<span id="cb52-3"><a href="#cb52-3" aria-hidden="true" tabindex="-1"></a>B0 <span class="op">=</span> modele.params</span>
+<span id="cb52-4"><a href="#cb52-4" aria-hidden="true" tabindex="-1"></a>OriginalDeviance <span class="op">=</span> modele.deviance</span></code><button title="Copier vers le presse-papier" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div></li>
+<li><div id="8ff64acd" class="cell" data-execution_count="30">
+<div class="sourceCode cell-code" id="cb53"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb53-1"><a href="#cb53-1" aria-hidden="true" tabindex="-1"></a>alpha<span class="op">=</span><span class="fl">0.05</span></span></code><button title="Copier vers le presse-papier" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div></li>
+<li><p>::: {#496f8de4 .cell execution_count=31} <code>{.python .cell-code}   stderr = modele.cov_params().iloc[1,1]**0.5   from scipy import stats   delta = stats.chi2.ppf(1-alpha/4, df=1)**0.5*stderr/5   grille = B0[1] + np.arange(-10,11)*delta</code> :::</p></li>
+<li><p>On a <span class="math display">\[\begin{align*}
+\mathcal D_1&amp;=-2(\mathcal L(Y,\hat\beta)-\mathcal L_{sat})
+  \end{align*}\]</span> Pour celle avec l’offset <span class="math inline">\(K_i=x_i\beta_2^*\)</span> elle vaut <span class="math display">\[\begin{align*}
+\mathcal D_o&amp;=-2(\mathcal L(Y,K,\hat\beta_1)-\mathcal L_{sat})
+  \end{align*}\]</span> où <span class="math inline">\(\hat \beta_1\)</span> maximise <span class="math inline">\(\mathcal L(Y,K,\hat\beta_1)\)</span> c’est à dire <span class="math inline">\(\mathcal L(Y,K,\hat\beta_1)=l(\beta_2^*)\)</span> et nous avons donc <span class="math display">\[\begin{align*}
+\mathcal D_o - \mathcal D_1= 2(\mathcal L(Y,\hat\beta)-\mathcal L(Y,K,\beta_1)= 2(\mathcal L(Y,\hat\beta)-l(\beta_2^*))=P(\beta_2^*).
+  \end{align*}\]</span></p></li>
+<li><div id="2262b8b0" class="cell" data-execution_count="32">
+<div class="sourceCode cell-code" id="cb54"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb54-1"><a href="#cb54-1" aria-hidden="true" tabindex="-1"></a>profil2 <span class="op">=</span> []</span>
+<span id="cb54-2"><a href="#cb54-2" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> valgrille <span class="kw">in</span> grille:</span>
+<span id="cb54-3"><a href="#cb54-3" aria-hidden="true" tabindex="-1"></a>    modeleo <span class="op">=</span> smf.glm(<span class="st">'chd~1'</span>, data<span class="op">=</span>artere, offset<span class="op">=</span>artere.age<span class="op">*</span>valgrille, family<span class="op">=</span>sm.families.Binomial()).fit()</span>
+<span id="cb54-4"><a href="#cb54-4" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> (modeleo.deviance <span class="op">-</span>  OriginalDeviance)<span class="op">&lt;</span><span class="dv">0</span>:</span>
+<span id="cb54-5"><a href="#cb54-5" aria-hidden="true" tabindex="-1"></a>        profil2.append(<span class="dv">0</span>)</span>
+<span id="cb54-6"><a href="#cb54-6" aria-hidden="true" tabindex="-1"></a>    <span class="cf">else</span>:</span>
+<span id="cb54-7"><a href="#cb54-7" aria-hidden="true" tabindex="-1"></a>        profil2.append(modeleo.deviance <span class="op">-</span>  OriginalDeviance)    </span></code><button title="Copier vers le presse-papier" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div></li>
+<li><div id="724f0d63" class="cell" data-execution_count="33">
+<div class="sourceCode cell-code" id="cb55"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb55-1"><a href="#cb55-1" aria-hidden="true" tabindex="-1"></a>profil <span class="op">=</span> np.sign(np.arange(<span class="op">-</span><span class="dv">10</span>,<span class="dv">11</span>))<span class="op">*</span>np.sqrt(profil2)</span></code><button title="Copier vers le presse-papier" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div></li>
+<li><p>::: {#79a2dfd6 .cell execution_count=34} <code>{.python .cell-code}   f = interpolate.interp1d(profil, grille)   xnew = [-np.sqrt(stats.chi2.ppf(1-alpha, df=1)),           np.sqrt(stats.chi2.ppf(1-alpha, df=1)) ]   print(f(xnew))</code></p>
+<p>::: {.cell-output .cell-output-stdout} <code>[0.06697424 0.16204287]</code> ::: :::</p></li>
+<li><div id="bd5e7cfc" class="cell" data-execution_count="35">
+<div class="sourceCode cell-code" id="cb56"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb56-1"><a href="#cb56-1" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(modele.conf_int().iloc[<span class="dv">1</span>,:])</span></code><button title="Copier vers le presse-papier" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>0    0.063765
+1    0.158078
+Name: age, dtype: float64</code></pre>
+</div>
+</div></li>
+</ol>
+</div>
+
+
+
+<a onclick="window.scrollTo(0, 0); return false;" role="button" id="quarto-back-to-top"><i class="bi bi-arrow-up"></i> Retour au sommet</a></main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const isCodeAnnotation = (el) => {
+    for (const clz of el.classList) {
+      if (clz.startsWith('code-annotation-')) {                     
+        return true;
+      }
+    }
+    return false;
+  }
+  const onCopySuccess = function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copié");
+    let tooltip;
+    if (window.bootstrap) {
+      button.setAttribute("data-bs-toggle", "tooltip");
+      button.setAttribute("data-bs-placement", "left");
+      button.setAttribute("data-bs-title", "Copié");
+      tooltip = new bootstrap.Tooltip(button, 
+        { trigger: "manual", 
+          customClass: "code-copy-button-tooltip",
+          offset: [0, -8]});
+      tooltip.show();    
+    }
+    setTimeout(function() {
+      if (tooltip) {
+        tooltip.hide();
+        button.removeAttribute("data-bs-title");
+        button.removeAttribute("data-bs-toggle");
+        button.removeAttribute("data-bs-placement");
+      }
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  }
+  const getTextToCopy = function(trigger) {
+      const codeEl = trigger.previousElementSibling.cloneNode(true);
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+  }
+  const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+    text: getTextToCopy
+  });
+  clipboard.on('success', onCopySuccess);
+  if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+    // For code content inside modals, clipBoardJS needs to be initialized with a container option
+    // TODO: Check when it could be a function (https://github.com/zenorocha/clipboard.js/issues/860)
+    const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+      text: getTextToCopy,
+      container: window.document.getElementById('quarto-embedded-source-code-modal')
+    });
+    clipboardModal.on('success', onCopySuccess);
+  }
+    var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+    var mailtoRegex = new RegExp(/^mailto:/);
+      var filterRegex = new RegExp('/' + window.location.host + '/');
+    var isInternal = (href) => {
+        return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+    }
+    // Inspect non-navigation links and adorn them if external
+ 	var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+    for (var i=0; i<links.length; i++) {
+      const link = links[i];
+      if (!isInternal(link.href)) {
+        // undo the damage that might have been done by quarto-nav.js in the case of
+        // links that we want to consider external
+        if (link.dataset.originalHref !== undefined) {
+          link.href = link.dataset.originalHref;
+        }
+      }
+    }
+  function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+    const config = {
+      allowHTML: true,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start',
+    };
+    if (contentFn) {
+      config.content = contentFn;
+    }
+    if (onTriggerFn) {
+      config.onTrigger = onTriggerFn;
+    }
+    if (onUntriggerFn) {
+      config.onUntrigger = onUntriggerFn;
+    }
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      if (note) {
+        return note.innerHTML;
+      } else {
+        return "";
+      }
+    });
+  }
+  const xrefs = window.document.querySelectorAll('a.quarto-xref');
+  const processXRef = (id, note) => {
+    // Strip column container classes
+    const stripColumnClz = (el) => {
+      el.classList.remove("page-full", "page-columns");
+      if (el.children) {
+        for (const child of el.children) {
+          stripColumnClz(child);
+        }
+      }
+    }
+    stripColumnClz(note)
+    if (id === null || id.startsWith('sec-')) {
+      // Special case sections, only their first couple elements
+      const container = document.createElement("div");
+      if (note.children && note.children.length > 2) {
+        container.appendChild(note.children[0].cloneNode(true));
+        for (let i = 1; i < note.children.length; i++) {
+          const child = note.children[i];
+          if (child.tagName === "P" && child.innerText === "") {
+            continue;
+          } else {
+            container.appendChild(child.cloneNode(true));
+            break;
+          }
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(container);
+        }
+        return container.innerHTML
+      } else {
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        return note.innerHTML;
+      }
+    } else {
+      // Remove any anchor links if they are present
+      const anchorLink = note.querySelector('a.anchorjs-link');
+      if (anchorLink) {
+        anchorLink.remove();
+      }
+      if (window.Quarto?.typesetMath) {
+        window.Quarto.typesetMath(note);
+      }
+      // TODO in 1.5, we should make sure this works without a callout special case
+      if (note.classList.contains("callout")) {
+        return note.outerHTML;
+      } else {
+        return note.innerHTML;
+      }
+    }
+  }
+  for (var i=0; i<xrefs.length; i++) {
+    const xref = xrefs[i];
+    tippyHover(xref, undefined, function(instance) {
+      instance.disable();
+      let url = xref.getAttribute('href');
+      let hash = undefined; 
+      if (url.startsWith('#')) {
+        hash = url;
+      } else {
+        try { hash = new URL(url).hash; } catch {}
+      }
+      if (hash) {
+        const id = hash.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note !== null) {
+          try {
+            const html = processXRef(id, note.cloneNode(true));
+            instance.setContent(html);
+          } finally {
+            instance.enable();
+            instance.show();
+          }
+        } else {
+          // See if we can fetch this
+          fetch(url.split('#')[0])
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.getElementById(id);
+            if (note !== null) {
+              const html = processXRef(id, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      } else {
+        // See if we can fetch a full url (with no hash to target)
+        // This is a special case and we should probably do some content thinning / targeting
+        fetch(url)
+        .then(res => res.text())
+        .then(html => {
+          const parser = new DOMParser();
+          const htmlDoc = parser.parseFromString(html, "text/html");
+          const note = htmlDoc.querySelector('main.content');
+          if (note !== null) {
+            // This should only happen for chapter cross references
+            // (since there is no id in the URL)
+            // remove the first header
+            if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+              note.children[0].remove();
+            }
+            const html = processXRef(null, note);
+            instance.setContent(html);
+          } 
+        }).finally(() => {
+          instance.enable();
+          instance.show();
+        });
+      }
+    }, function(instance) {
+    });
+  }
+      let selectedAnnoteEl;
+      const selectorForAnnotation = ( cell, annotation) => {
+        let cellAttr = 'data-code-cell="' + cell + '"';
+        let lineAttr = 'data-code-annotation="' +  annotation + '"';
+        const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+        return selector;
+      }
+      const selectCodeLines = (annoteEl) => {
+        const doc = window.document;
+        const targetCell = annoteEl.getAttribute("data-target-cell");
+        const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+        const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+        const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+        const lineIds = lines.map((line) => {
+          return targetCell + "-" + line;
+        })
+        let top = null;
+        let height = null;
+        let parent = null;
+        if (lineIds.length > 0) {
+            //compute the position of the single el (top and bottom and make a div)
+            const el = window.document.getElementById(lineIds[0]);
+            top = el.offsetTop;
+            height = el.offsetHeight;
+            parent = el.parentElement.parentElement;
+          if (lineIds.length > 1) {
+            const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+            const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+            height = bottom - top;
+          }
+          if (top !== null && height !== null && parent !== null) {
+            // cook up a div (if necessary) and position it 
+            let div = window.document.getElementById("code-annotation-line-highlight");
+            if (div === null) {
+              div = window.document.createElement("div");
+              div.setAttribute("id", "code-annotation-line-highlight");
+              div.style.position = 'absolute';
+              parent.appendChild(div);
+            }
+            div.style.top = top - 2 + "px";
+            div.style.height = height + 4 + "px";
+            div.style.left = 0;
+            let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+            if (gutterDiv === null) {
+              gutterDiv = window.document.createElement("div");
+              gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+              gutterDiv.style.position = 'absolute';
+              const codeCell = window.document.getElementById(targetCell);
+              const gutter = codeCell.querySelector('.code-annotation-gutter');
+              gutter.appendChild(gutterDiv);
+            }
+            gutterDiv.style.top = top - 2 + "px";
+            gutterDiv.style.height = height + 4 + "px";
+          }
+          selectedAnnoteEl = annoteEl;
+        }
+      };
+      const unselectCodeLines = () => {
+        const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+        elementsIds.forEach((elId) => {
+          const div = window.document.getElementById(elId);
+          if (div) {
+            div.remove();
+          }
+        });
+        selectedAnnoteEl = undefined;
+      };
+        // Handle positioning of the toggle
+    window.addEventListener(
+      "resize",
+      throttle(() => {
+        elRect = undefined;
+        if (selectedAnnoteEl) {
+          selectCodeLines(selectedAnnoteEl);
+        }
+      }, 10)
+    );
+    function throttle(fn, ms) {
+    let throttle = false;
+    let timer;
+      return (...args) => {
+        if(!throttle) { // first call gets through
+            fn.apply(this, args);
+            throttle = true;
+        } else { // all the others get throttled
+            if(timer) clearTimeout(timer); // cancel #2
+            timer = setTimeout(() => {
+              fn.apply(this, args);
+              timer = throttle = false;
+            }, ms);
+        }
+      };
+    }
+      // Attach click handler to the DT
+      const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+      for (const annoteDlNode of annoteDls) {
+        annoteDlNode.addEventListener('click', (event) => {
+          const clickedEl = event.target;
+          if (clickedEl !== selectedAnnoteEl) {
+            unselectCodeLines();
+            const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+            if (activeEl) {
+              activeEl.classList.remove('code-annotation-active');
+            }
+            selectCodeLines(clickedEl);
+            clickedEl.classList.add('code-annotation-active');
+          } else {
+            // Unselect the line
+            unselectCodeLines();
+            clickedEl.classList.remove('code-annotation-active');
+          }
+        });
+      }
+  const findCites = (el) => {
+    const parentEl = el.parentElement;
+    if (parentEl) {
+      const cites = parentEl.dataset.cites;
+      if (cites) {
+        return {
+          el,
+          cites: cites.split(' ')
+        };
+      } else {
+        return findCites(el.parentElement)
+      }
+    } else {
+      return undefined;
+    }
+  };
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const citeInfo = findCites(ref);
+    if (citeInfo) {
+      tippyHover(citeInfo.el, function() {
+        var popup = window.document.createElement('div');
+        citeInfo.cites.forEach(function(cite) {
+          var citeDiv = window.document.createElement('div');
+          citeDiv.classList.add('hanging-indent');
+          citeDiv.classList.add('csl-entry');
+          var biblioDiv = window.document.getElementById('ref-' + cite);
+          if (biblioDiv) {
+            citeDiv.innerHTML = biblioDiv.innerHTML;
+          }
+          popup.appendChild(citeDiv);
+        });
+        return popup.innerHTML;
+      });
+    }
+  }
+});
+</script>
+<nav class="page-navigation">
+  <div class="nav-page nav-page-previous">
+      <a href="../correction/chap9.html" class="pagination-link" aria-label="Régularisation des moindres carrés : ridge, lasso, elastic-net">
+        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text">Régularisation des moindres carrés : ridge, lasso, elastic-net</span>
+      </a>          
+  </div>
+  <div class="nav-page nav-page-next">
+      <a href="../correction/chap13.html" class="pagination-link" aria-label="13 Régression de Poisson">
+        <span class="nav-page-text">13 Régression de Poisson</span> <i class="bi bi-arrow-right-short"></i>
+      </a>
+  </div>
+</nav>
+</div> <!-- /content -->
+
+
+
+
+</body></html>

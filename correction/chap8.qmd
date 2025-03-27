@@ -1,0 +1,378 @@
+---
+title: "8 Choix de variables"
+toc: true
+---
+
+::: {.content-hidden}
+{{< include ../macros.tex >}}
+:::
+
+::: {#exr-8-1 name="Questions de cours"}
+A, C, B en général. Un cas particulier de la dernière question est le suivant : si les variables sélectionnées $\xi$ engendrent un sous-espace orthogonal au sous-espace engendré par les variables non sélectionnées $\bar\xi$, alors C est la bonne réponse.
+:::
+
+::: {#exr-8-2 name="Analyse du biais"}
+La preuve des deux premiers points s'effectue comme l'exemple de
+la section 7.2.1. Nous ne détaillerons que le premier point.
+Supposons que $|\xi|$ soit plus petit que $p$, le "vrai" nombre de
+variables entrant dans le modèle. Nous avons pour estimateur de $\beta$
+$$
+\hat \beta_{\xi} = (X_{\xi}'X_{\xi})^{-1}X_{\xi}'Y = P_{X_{\xi}}Y.
+$$
+Le vrai modèle étant obtenu avec $p$ variables, $\E(Y)=X_p \beta$.
+Nous avons alors
+$$
+\begin{eqnarray*}
+\E(\hat \beta_{\xi})&=&P_{X_{\xi}}X_p \beta\\
+&=& P_{X_{\xi}}X_{\xi} \beta_{\xi} +P_{X_{\xi}}X_{\bar \xi} \beta_{\bar \xi}.
+\end{eqnarray*}
+$$
+Cette dernière quantité n'est pas nulle sauf si
+$\Im(X_{\xi}) \perp \Im(X_{\bar \xi})$. Comme $\hat \beta_{\xi}$
+est en général biaisé, il en est de même pour la valeur prévue
+$\hat y_{\xi}$ dont l'espérance ne vaudra pas $X\beta$.
+:::
+
+::: {#exr-8-3 name="Variance des estimateurs"}
+L'estimateur obtenu avec les $|\xi|$ variables est noté $\hat \beta_{\xi}$
+et l'estimateur obtenu dans le modèle complet $\hat \beta$. Ces vecteurs
+ne sont pas de même taille, le premier est de longueur $|\xi|$, le second
+de longueur $p$. Nous comparons les $|\xi|$ composantes communes, c'est-à-dire
+que nous comparons $\hat \beta_{\xi}$ et $[\hat \beta]_{\xi}$.
+Partitionnons la matrice $X$ en $X_{\xi}$ et $X_{\bar \xi}$.
+Nous avons alors
+$$
+\begin{eqnarray*}
+\V(\hat \beta) &=& \sigma^2 \left(
+\begin{array}{cc}
+X'_{\xi}X_{\xi} &X'_{\xi}X_{\bar \xi}\\
+X'_{\bar \xi}X_{\xi} &X'_{\bar \xi}X_{\bar \xi}
+\end{array}
+\right)^{-1}.
+\end{eqnarray*}
+$$
+En utilisant la formule d'inverse par bloc, donnée en annexe A,
+nous obtenons
+$$
+\begin{eqnarray*}
+\V([\hat \beta]_{\xi}) &=& \sigma^2 \left[X_{\xi}'X_{\xi}-X_{\xi}'X_{\bar \xi}(X_{\bar \xi}'
+X_{\bar \xi})^{-1}X_{\bar \xi}'X_{\xi}\right]^{-1},
+\end{eqnarray*}
+$$
+alors que la variance de $\hat \beta_{\xi}$ vaut
+$$
+\begin{eqnarray*}
+\V(\hat \beta_{\xi}) &=& \sigma^2 \left[X_{\xi}'X_{\xi}\right]^{-1}.
+\end{eqnarray*}
+$$
+Nous devons comparer $\V([\hat \beta]_{\xi})$ et $\V(\hat \beta_{\xi})$.
+Nous avons
+$$
+\begin{eqnarray*}
+X_{\xi}'X_{\xi}-X_{\xi}'X_{\bar \xi}(X_{\bar \xi}'
+X_{\bar \xi})^{-1}X_{\bar \xi}'X_{\xi}=X_{\xi}'(I-P_{X_{\bar \xi}})X_{\xi}
+=X_{\xi}'P_{X_{\bar \xi}^\perp}X_{\xi}.
+\end{eqnarray*}
+$$
+La matrice $P_{X_{\bar \xi}^\perp}$ est la matrice d'un projecteur, alors
+elle est semi-définie positive (SDP) (cf. annexe A), donc
+$X_{\xi}'P_{X_{\bar \xi}^\perp}X_{\xi}$ est également SDP. La
+matrice $X_{\xi}'P_{X_{\bar \xi}^\perp}X_{\xi}-X_{\xi}'P_{X_{\bar \xi}^\perp}X_{\xi}$ est définie positive (DP) puisque c'est $\V([\hat \beta]_{\xi})/ \sigma^2$.
+Utilisons le changement de notation suivant :
+$$
+\begin{eqnarray*}
+A=X_{\xi}'X_{\xi}-X_{\xi}'P_{X_{\bar \xi}}X_{\xi} \quad \hbox{et} \quad
+B=X_{\xi}'P_{X_{\bar \xi}}X_{\xi}.
+\end{eqnarray*}
+$$
+La matrice $A$ est DP et la matrice $B$ SDP. La propriété donnée en
+annexe A indique que $A^{-1}-(A+B)^{-1}$ est SDP, or
+$$
+\begin{eqnarray*}
+\V([\hat \beta]_{\xi})-\V(\hat \beta_{\xi}) = \sigma^2 (A^{-1}-(A+B)^{-1}).
+\end{eqnarray*}
+$$
+Donc la quantité $\V([\hat \beta]_{\xi})-\V(\hat \beta_{\xi})$ est SDP.
+Le résultat est démontré. L'estimation, en terme de variance, de $\xi$
+composantes est plus précise que les mêmes $\xi$ composantes extraites
+d'une estimation obtenue avec $p$ composantes.
+
+La variance des valeurs ajustées dépend de la variance de $\hat \beta$,
+le point 2 de la proposition se démontre de façon similaire.
+
+**Remarque** : nous venons de comparer deux estimateurs de même taille
+*via* leur matrice de variance. Pour cela, nous montrons que la différence
+de ces deux matrices est une matrice SDP. Que pouvons-nous dire alors
+sur la variance de chacune des coordonnées ? Plus précisément, pour
+simplifier les notations, notons le premier estimateur (de taille $p$)
+$\tilde \beta$ de
+variance $\V(\tilde \beta)$ et le second estimateur $\hat \beta$ de
+variance $\V(\hat \beta)$. Si $\V(\tilde \beta)-\V(\hat \beta)$ est SDP,
+pouvons-nous dire que $\V(\tilde \beta_i)-\V(\hat \beta_i)$ est un
+nombre positif pour $i$ variant de $1$ à $p$ ? Considérons par exemple
+le vecteur $u_1'=(1,0,\dotsc,0)$ de $\R^p$. Nous avons alors
+$$
+u_1' \hat \beta = \hat \beta_1 \quad \hbox{et}
+\quad u_1' \tilde \beta = \tilde \beta_1.
+$$
+Comme $\V(\tilde \beta)-\V(\hat \beta)$ est SDP, nous avons pour
+tout vecteur $u$ de $\R^p$ que $u'(\V(\tilde \beta)-\V(\hat \beta))u\geq 0$,
+c'est donc vrai en particulier pour $u_1$. Nous avons donc
+$$
+\begin{eqnarray*}
+u_1'(\V(\tilde \beta)-\V(\hat \beta))u_1&\geq& 0\\
+u_1'\V(\tilde \beta)u_1-u_1'\V(\hat \beta)u_1&\geq& 0\\
+\V(u_1'\tilde \beta)-\V(u_1'\hat \beta)&\geq& 0\\
+\V(\tilde \beta_1) &\geq & \V(\hat \beta_1).
+\end{eqnarray*}
+$$
+Nous pouvons retrouver ce résultat pour les autres coordonnées
+des vecteurs estimés ou encore pour des combinaisons linéaires
+quelconques de ces coordonnées.
+:::
+
+::: {#exr-8-4 name="Choix de variables"}
+
+Tous les modèles possibles ont été étudiés, la recherche est donc exhaustive.
+En prenant comme critère l'AIC ou le BIC, le modèle retenu est le modèle M134.
+Comme prévu, le $\leR$ indique le modèle conservant toutes les variables. Cependant
+le $\leR$ peut être utilisé pour tester des modèles emboîtés. Dans ce cas, le
+modèle retenu est également le M134.
+
+Pour une procédure avec test nous devons démarrer d'un modèle.
+Démarrons par exemple du modèle avec uniquement la constante. Nous
+ajoutons une variable après l'autre. Nous ajoutons celle avec la
+statistique de test la plus élevée et cette valeur doit être plus
+grande que 2.3 (sinon aucune variable n'est ajoutée et le modèle courant
+est conservé). Dans les modèles à une variable, c'est le modèle M1 qui
+est choisi (statistique la plus élevée de 41.9 et supérieure à 2.3).
+Ensuite nous ajoutons à M1 une variable (2 ou 3 ou 4) et la meilleure est
+la 4 mais la statistique est de 0.9 (< 2.3) on n'ajoute pas de variable
+et on choisit M1.
+
+Démarrons du modèle complet 1234, on enlève la moins significative (la
+valeur de la statistique de test la plus faible en dehors de la
+constante et qui doit être plus faible que 2.3). Ici nous enlevons la
+variable 2 et nous avons donc le modèle M134. Dans ce modèle la
+variable la moins significative est la 3 mais sa statistique est plus
+grande que 2.3, on conserve donc le modèle M134.
+:::
+
+::: {#exr-8-5 name="Utilisation du $R^2$"}
+Plaçons nous dans le cas pratique où la constante fait partie des modèles, elle est donc dans une des colonnes de $Z$ (par exemple la première). Le $\leR$ est par définition
+$$
+\begin{align*}
+\leR(Z)&=\frac{\|P_{Z}Y - P_{\un}Y\|^{2}}{\|Y - P_{\un}Y\|^{2}}\\
+\leR(X)&=\frac{\|P_{X}Y - P_{\un}Y\|^{2}}{\|Y - P_{\un}Y\|^{2}}
+\end{align*}
+$$
+Comme $\Im(Z)\subset \Im(X)$ on peut décomposer en deux $\Im(X)$: la partie $\Im(Z)$ puis le reste ce qui se note
+$$
+\Im(X)=\Im(Z) \stackrel{\perp}{\oplus} (\Im(X)\cap \Im(Z)^{\perp})
+$$
+Au niveau des projecteurs on a donc
+$$
+P_{X}=P_{Z} + P_{X\cap Z^{\perp}}
+$$
+ce qui permet d'écrire le $\leR$ du modèle avec $X$ comme suit puis par pythagore ($(P_{Z}Y - P_{\un}Y)\in \Im(Z)$ et $P_{X\cap Z^{\perp}}Y\in \Im(Z)^{\perp}$)
+$$
+\begin{align*}
+\leR(X)&=\frac{\|P_{Z}Y + P_{X\cap Z^{\perp}}Y - P_{\un}Y\|^{2}}{\|Y - P_{\un}Y\|^{2}} \\
+&= \frac{\|(P_{Z}Y - P_{\un}Y) + P_{X\cap Z^{\perp}}Y \|^{2}}{\|Y - P_{\un}Y\|^{2}}\\
+&=\frac{\|(P_{Z}Y - P_{\un}Y) \|^{2}}{\|Y - P_{\un}Y\|^{2}} + \frac{\|P_{X\cap Z^{\perp}}Y \|^{2}}{\|Y - P_{\un}Y\|^{2}}= \leR2(Z) + \frac{\|P_{X\cap Z^{\perp}}Y \|^{2}}{\|Y - P_{\un}Y\|^{2}}
+\end{align*}
+$$
+Comme la seconde partie est positive ou nulle on a que $\leR(X)$ est au moins aussi grand que $\leR(Z)$. Il y a égalité dans le cas rare où $Y\perp (\Im(X)\cap \Im(Z)^{\perp})$ c'est à dire que l'on a ajouté des variables qui ne sont pas entièrement reliées aux variables de $Z$ mais dont la partie non redondante avec celle de $Z$ (qui existe car le rang de $X$ est $p$) a une corrélation empirique avec $Y$ de 0 exactement. Comme le $\leR$ augmente en ajoutant des variables le modèle sélectionné sera celui avec toutes les variables.
+
+Donc si nous cherchons à expliquer la concentration d'ozone à Rennes et si nous avons en même temps la consommation de nouille au Viêt Nam les mêmes jours, le $\leR$ nous conduira à sélectionner aussi  la consommation de nouille au Viet-Nam comme variable explicative, variable dont on sent le peu d'influence sur la concentration d'ozone.
+:::
+
+::: {#exr-8-6 name="Cas orthogonal"}
+1.  Les variables sont orthogonales donc on a $X'X=I_{p}$ et l'estimateur des MCO s'écrit
+$$
+\hat \beta=(X'X)^{-1}X'Y=X'Y
+$$
+    En remplaçant $Y$ par le modèle ($Y=X\beta + \varepsilon$) on a
+$$
+\hat \beta=X'X\beta + X'\varepsilon = \beta + X'\varepsilon.
+$$
+
+2.  La somme des résidus vaut ici
+$$
+\begin{align*}
+\SCR&=\|Y-X\hat\beta\|^{2}=(Y-X\hat\beta)'(Y-X\hat\beta)= Y'Y - 2Y'X\hat\beta + \hat\beta'X'X\hat\beta\\
+&= \sum_{i=1}^n y_{i}^2- 2Y'X\hat\beta + \hat\beta'X'X\hat\beta.
+\end{align*}
+$$
+    Évaluons le second terme du membre de droite: comme $X\hat\beta=P_{X}Y$ et en utilisant le  fait que $Y=P_{X}Y + P_{X^{\perp}}Y$ on obtient
+$$
+Y'X\hat\beta= (P_{X}Y + P_{X^{\perp}}Y)'P_{X}Y= Y' P_{X}' P_{X}Y = \hat\beta'X'X\hat \beta
+$$
+    car $P_{X}Y$ et $P_{X^{\perp}}Y$ sont orthogonaux et leur produit scalaire $Y'P_{X^{\perp}}'P_{X}Y$ vaut 0. On a donc
+$$
+\SCR=\sum_{i=1}^n y_{i}^2 - \hat\beta'X'X\hat \beta
+$$
+    Comme ici la matrice $X$ est orthogonale on a $X'X=I_{p}$ et l'expression devient
+$$
+\SCR=\sum_{i=1}^n y_{i}^2 - \sum_{j=1}^p \hat \beta_{j}
+$${#eq-scr-ortho}
+    La somme du carré des résidus est d'autant plus faible que les coefficients estimés sont grands en valeur absolue.
+
+3.  Prenons un modèle $\xi$ qui regroupe les $k$ premières variables (ce qui est pratique pour les notations). Comme la matrice $X$ est orthogonale on a au niveau des sous espaces que toutes les variables engendrent des sous-espaces vectoriels orthogonaux que l'on peut regrouper:
+$$
+\begin{align*}
+\Im(X) &= \Im(X_{1})\stackrel{\perp}{\oplus} \Im(X_{2})\stackrel{\perp}{\oplus} \cdots \stackrel{\perp}{\oplus}\Im(X_{p})\\
+&= \Im(X_{\xi})\stackrel{\perp}{\oplus}\Im(X_{\bar\xi})
+\end{align*}
+$$
+    Ce qui donne au niveau des projecteurs
+$$
+P_{X}= P_{X_{\xi}} + P_{X_{\bar\xi}}
+$$
+    Écrivons par ailleurs l'ajustement:
+$$
+\begin{align*}
+P_{X}Y&= X\hat \beta= X_{1}\hat \beta_{1} + X_{2}\hat \beta_{2} + \cdots +X_{p}\hat \beta_{p}\\
+P_{X_{\xi}}Y + P_{X_{\bar\xi}}Y&= X_{1}\hat \beta_{1} + X_{2}\hat \beta_{2} + \cdots +X_{p}\hat \beta_{p}
+\end{align*}
+$$
+    Si je projette sur $\Im(X_{\xi})$ l'équation ci-dessus cela nous donne ($\Im(X_{\bar\xi})\subset \Im(X_{\xi})^{\perp}$)
+$$
+P_{X_{\xi}}Y= X_{1}\hat \beta_{1}  + \cdots +X_{k}\hat \beta_{k}
+$$
+    Or nous savons que les MCO dans le modèle $\xi$ donne l'ajustement $P_{X_{\xi}}Y=X_{\xi}\hat\beta_{\xi}$ qui est unique, ce qui donne en identifiant les deux écritures que
+$$
+X_{1}\hat \beta_{1}  + \cdots +X_{k}\hat \beta_{k}= X_{\xi}
+$$
+    Comme une base de $\Im(X_{\bar\xi})$ est donnée par les colonnes orthonormées de $X_{\xi}$ on en déduit que les coefficients dans la base sont uniques d'où
+$$
+[\hat \beta]_{\xi}= \hat\beta_{\xi}.
+$$
+4.  Les critères AIC et BIC valent pour le modèle $\xi$
+$$
+-2\mathcal{L} + 2 |\xi + 1| f(n)
+$$
+    et quand on compare le modèle $\xi$ et le modèle $\{\xi, l\}$ on compare donc
+$$
+-2\mathcal{L}(\xi) + 2 |\xi + 1| f(n) \ \ \mathrm{et} \ \ -2\mathcal{L}(\{\xi, l\}) + 2 |\xi + 2| f(n)
+$$
+    Comme $\mathcal{L}(\xi)$ vaut $-\sfrac{n}{2}\log\sigma^{2} -\sfrac{n}{2}-\sfrac{1}{2\sigma^{2}}.\SCR(\xi)$ lorsque l'on compare on peut éliminer les termes identiques et il reste donc
+$$
+\frac{1}{\sigma^{2}}\SCR(\xi) \ \ \mathrm{et} \ \  \frac{1}{\sigma^{2}}\SCR(\{\xi, l\}) + 2  f(n)
+$$
+    Effectuons la différence:
+$$
+\Delta =  \frac{1}{\sigma^{2}}(\SCR(\{\xi, l\}) - \SCR(\xi)) + 2  f(n)
+$$
+    et en utilisant @eq-scr-ortho et la question 3 on obtient
+$$
+\begin{align*}
+\Delta &= \frac{1}{\sigma^{2}}(\sum_{i=1}^n y_{i}^2 - \sum_{\xi} \hat \beta_{j}^2 - \hat \beta_{l}^2 - \sum_{i=1}^n y_{i}^2 + \sum_{\xi} \hat \beta_{j}^2)+ 2  f(n)\\
+&= -\frac{\hat \beta_{l}^2}{\sigma^{2}} + 2f(n)
+\end{align*}
+$$
+    Quand $\Delta$ est négatif l'AIC (ou le BIC) du modèle $\{\xi, l\}$ est plus faible que l'AIC (ou le BIC) que celui du modèle $\xi$, c'est à dire que l'AIC (ou le BIC) du modèle $\{\xi, l\}$ est meilleur: on ajoute la variable $l$. Cela donne donc
+$$
+\begin{align*}
+\Delta & < 0\\
+-\frac{\hat \beta_{l}^2}{\sigma^{2}} + 2f(n) & < 0\\
+\frac{\hat \beta_{l}^2}{\sigma^{2}}&> 2f(n)
+\end{align*}
+$$
+
+5.  En écrivant que
+$$
+N=\frac{\SCR(\xi) - \SCR(\{\xi, l\})}{\sigma^{2}}
+$$
+    nous voyons qu'il faut évaluer la différence des SCR. En utilisant @eq-scr-ortho et la question 3 on a
+$$
+\begin{align*}
+\SCR(\xi) - \SCR(\{\xi, l\})&=\sum_{i=1}^n y_{i}^2  -  \sum_{\xi} \hat \beta_{j}^2 - \sum_{i=1}^n y_{i}^2 + \sum_{\xi} \hat \beta_{j}^2 + \hat \beta_{l}^2  \\
+&= \hat \beta_{l}^2
+\end{align*}
+$$
+    Nous en déduisons la valeur de $N$ (la dernière égalité découle du calcul de $\hat \beta$ en question 1)
+$$
+N=\frac{\hat\beta_{l}^{2}}{\sigma^{2}}= \frac{(\beta_{l} + [X' \varepsilon]_{l})^{2}}{\sigma^{2}}
+$$
+    Le dernier membre nous indique que la partie aléatoire est $[X' \varepsilon]_{l}$. D'après $\HH_{3}$ on a que $X' \varepsilon$ est gaussien d'espérance $\E(X'\varepsilon)=X'\E(\varepsilon)=0$ et de variance $\V(X'\varepsilon)=X'\V(\varepsilon)X=\sigma^{2}I_{p}$. Sa coordonnée $l$ notée $[X' \varepsilon]_{l}$ est donc une loi normale $N(0, \sigma^{2})$ et on en déduit que
+$$
+\frac{\hat \beta_{l}}{\sigma} \sim N(\frac{\beta_{l}}{\sigma}, 1).
+$$
+
+    Le carré de cette loi normale (noté $N$) est donc un $\chi^{2}(1)$ décentré de paramètre de décentrage $\sfrac{\beta_{l}^{2}}{\sigma^{2}}$. On connait donc la loi de la statistique de test $N$ (un $\chi^{2}(1)$ décentré de paramètre de décentrage $\beta_{l}^{2}$). Quand $\Hz$ est vrai, c'est-à-dire le modèle $\xi$ est valide, il n'y a pas la variable $l$ dans le modèle, donc $\beta_{l}=0$ et le paramètre de décentrage vaut $0$. Le seuil de rejet basé sur la statistique $N$ est son quantile de niveau 0.95 sous $\Hz$' c'est à dire celui d'un $\chi^{2}(1)$ à 0.95 :
+
+    ```{python}
+    from scipy.stats import chi2
+    print(chi2.ppf(0.95, df=1))
+    ```
+
+6.  Par définition le $\radeux$ vaut
+$$
+\radeux(\xi) =1-\frac{n-1}{\SCT}\frac{\SCR(\xi)}{n-|\xi|}
+$$
+    Calculons la différence des $\radeux$
+$$
+\Delta\radeux = \frac{n-1}{\SCT}(\frac{\SCR(\xi)}{n-|\xi|} - \frac{\SCR(\{\xi, l\})}{n-|\xi| -1})
+$$
+    Cette différence est positive (on ajoute la variable $l$) si
+$$
+\begin{align*}
+\frac{\SCR(\xi)}{n-|\xi|} - \frac{\SCR(\{\xi, l\})}{n-|\xi| -1}&>0\\
+\frac{\SCR(\xi)}{n-|\xi|}- \frac{\SCR(\xi) -\hat\beta^{2}_{l} }{n-|\xi| -1}&>0\\
+\frac{\SCR(\xi)}{n-|\xi|} - \frac{\SCR(\xi)}{n-|\xi|}.\frac{n-|\xi|}{n-|\xi|-1}+ \frac{\hat\beta^{2}_{l}}{n-|\xi| -1} &>0\\
+\frac{\SCR(\xi)}{n-|\xi|}\frac{-1}{n-|\xi| -1}+ \frac{\hat\beta^{2}_{l}}{n-|\xi| -1}&>0
+\end{align*}
+$$
+      En utilisant l'approximation on a donc approximativement
+$$
+\begin{align*}
+   \frac{1}{n-|\xi| -1}(\hat\beta^{2}_{l}- \sigma^{2})  &>0\\
+  \frac{\sigma^{2}}{n-|\xi| -1} (\frac{\hat\beta^{2}_{l}}{\sigma^{2}}- 1)&>0\\
+ \end{align*}
+$$
+    Le premier terme étant positif on retrouve que
+$$
+\begin{align*}
+\frac{\hat\beta^{2}_{l}}{\sigma^{2}}- 1&>0\\
+\frac{\hat\beta^{2}_{l}}{\sigma^{2}}&>1.
+\end{align*}
+$$
+
+7.  Comme
+$$
+\Cp(\xi)=\frac{\SCR(\xi)}{\sigma^2}-n+2|\xi|.
+$$
+    on fait là encore la différence des $\Cp$
+$$
+\begin{align*}
+\Delta\Cp &= \frac{\SCR(\{\xi, l\})-\SCR(\xi)}{\sigma^2}+2 =
+\frac{\SCR(\xi) -\hat\beta^{2}_{l} -\SCR(\xi)}{\sigma^2} +2\\
+&=-\frac{\hat\beta^{2}_{l}}{\sigma^2} +2
+\end{align*}
+$$
+    Cette différence est négative (on ajoute la variable $l$) si
+$$
+-\frac{\hat\beta^{2}_{l}}{\sigma^2} +2<0 \quad\Longleftrightarrow\quad
+\frac{\hat\beta^{2}_{l}}{\sigma^2}>2.
+$$
+
+9.  D'après la question 3 nous n'avons besoin d'estimer qu'une fois le modèle complet et les coordonnées donnent les estimateurs dans les modèles restreints.
+
+    **Algorithme** :
+    1.    Estimer $\beta$ dans le modèle complet $\hat \beta = X'Y$  .
+    2.    Déduire $\hat\sigma^{2}$ dans le modèle complet $\hat\sigma^{2}=\|Y - X\hat \beta\|^{2}/(n-p)$  .
+    3.    Ordonner les coordonnées dans l'ordre décroissant:
+$$
+\hat \beta_{{(1)}} \geq \hat \beta_{{(2)}}\geq \cdots \geq \hat \beta_{{(p)}}.
+$$
+          Les colonnes correspondantes seront notées $(k)$.
+    4.    Pour $k=1$ à $p$
+    
+          -   Si $\frac{\hat\beta^{2}_{(k)}}{\hat\sigma^2}$ > Seuil alors ajout  la variable $(k)$
+          -   Sinon Sortie de la boucle, plus de variable à ajouter
+          
+          Le seuil vaut $2f(n)$ pour l'AIC et le BIC, il vaut 3.84 pour un test, 1 pour le $\radeux$ et 2 pour le $\Cp$.
+
+:::
+

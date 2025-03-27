@@ -1,0 +1,189 @@
+---
+title: "9 Régularisation des moindres carrés : ridge, lasso elastic net"
+toc: true
+---
+
+
+```{python}
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+from sklearn.linear_model import Ridge, ElasticNet, Lasso
+from sklearn.linear_model import RidgeCV, ElasticNetCV, LassoCV
+from sklearn.preprocessing import StandardScaler
+from sklearn.linear_model import LinearRegression
+from sklearn.pipeline import Pipeline
+from sklearn.model_selection import KFold
+from patsy import dmatrix
+```
+
+#   Introduction
+
+#   Problème du centrage-réduction
+
+#   Propriétés des estimateurs
+
+#   Régularisation avec le package scikitlearn
+
+```{python}
+ozone = pd.read_csv("../donnees/ozone.txt", header = 0, sep = ";", index_col=0)
+X = ozone.iloc[:,1:10].to_numpy()
+y = ozone["O3"].to_numpy()
+```
+
+
+```{python}
+cr = StandardScaler()
+kf = KFold(n_splits=10, shuffle=True, random_state=0)
+```
+
+
+```{python}
+lassocv = LassoCV(cv=kf)
+enetcv = ElasticNetCV(cv=kf)
+pipe_lassocv = Pipeline(steps=[("cr", cr), ("lassocv", lassocv)])
+pipe_enetcv = Pipeline(steps=[("cr", cr), ("enetcv", enetcv)])
+```
+
+
+```{python}
+pipe_lassocv.fit(X, y)
+pipe_enetcv.fit(X, y)
+```
+
+```{python}
+etape_lassocv = pipe_lassocv.named_steps["lassocv"]
+etape_enetcv = pipe_enetcv.named_steps["enetcv"]
+```
+
+```{python}
+alphasridge = etape_lassocv.alphas_ * 100
+ridgecv = RidgeCV(cv=kf, alphas=alphasridge)
+```
+
+```{python}
+pipe_ridgecv = Pipeline(steps=[("cr", cr), ("ridgecv", ridgecv)])
+pipe_ridgecv.fit(X, y)
+```
+
+```{python}
+etape_ridgecv = pipe_ridgecv.named_steps["ridgecv"]
+```
+
+```{python}
+alphas = pipe_lassocv.named_steps["lassocv"].alphas_
+coefs_lasso = []; coefs_enet = []; coefs_ridge = []
+Xcr = StandardScaler().fit(X).transform(X)
+for a in alphas:
+    ## lasso
+    lasso = Lasso(alpha=a, warm_start=True).fit(Xcr, y)
+    coefs_lasso.append(lasso.coef_)
+    ## enet
+    enet = ElasticNet(alpha=a*2, warm_start=True).fit(Xcr, y)
+    coefs_enet.append(enet.coef_)
+    ## ridge
+    ridge = Ridge(alpha=a*100).fit(Xcr, y)
+    coefs_ridge.append(ridge.coef_)
+fig, (ax1, ax2, ax3) = plt.subplots(1, 3)
+ax1.plot(np.log(alphas), coefs_lasso)
+ax1.set_xlabel(r'$\log(\alpha)$')
+ax1.set_ylabel('Coefficients')
+ax2.plot(np.log(2*alphas), coefs_enet)
+ax2.set_xlabel(r'$\log(2\alpha)$')
+ax2.set_ylabel('Coefficients')
+ax3.plot(np.log(100*alphas), coefs_ridge)
+ax3.set_xlabel(r'$\log(100\alpha)$')
+ax3.set_ylabel('Coefficients')
+```
+
+```{python}
+print("Lasso: ", round(etape_lassocv.alpha_,4))
+print("ElasticNet: ", round(etape_enetcv.alpha_,4))
+print("Ridge: ", round(etape_ridgecv.alpha_,4))
+```
+
+
+
+
+
+
+```{python}
+ozone = pd.read_csv("../donnees/ozone.txt", header = 0, sep = ";", index_col=0)
+Xapp = ozone.iloc[0:45,1:10].to_numpy()
+Xnew = ozone.iloc[45:50,1:10].to_numpy()
+yapp = np.ravel(ozone.iloc[0:45,:1])
+ynew = np.ravel(ozone.iloc[45:50,:1])
+```
+
+
+```{python}
+kf = KFold(n_splits=10, shuffle=True, random_state=0)
+cr = StandardScaler()
+lassocv = LassoCV(cv=kf)
+pipe_lassocv = Pipeline(steps=[("cr", cr), ("lassocv", lassocv)])
+pipe_lassocv.fit(Xapp,yapp)
+```
+
+
+```{python}
+pipe_lassocv.predict(Xnew)
+```
+
+
+#   Intégration de variables qualitatives
+
+```{python}
+ozone = pd.read_csv("../donnees/ozone.txt", header=0, sep=";", index_col=0)
+ozone["vent"]=ozone["vent"].astype("category")
+ozone["nebu"]=ozone["nebu"].astype("category")
+```
+
+```{python}
+kf = KFold(n_splits=10, shuffle=True, random_state=0)
+cr = StandardScaler()
+lassocv = LassoCV(cv=kf)
+enetcv = ElasticNetCV(cv=kf)
+pipe_lassocv = Pipeline(steps=[("cr", cr), ("lassocv", lassocv)])
+```
+
+```{python}
+noms = list(ozone.iloc[:, 1:].columns)
+formule = "~" + "+".join(noms[0:])
+Xq = dmatrix(formule, ozone, return_type="dataframe")
+Xapp = Xq.iloc[0:45, 1:].to_numpy()
+Xnew = Xq.iloc[45:50, 1:].to_numpy()
+yapp = np.ravel(ozone.iloc[0:45,:1])
+ynew = np.ravel(ozone.iloc[45:50,:1])
+```
+
+```{python}
+pipe_lassocv.fit(Xapp, yapp)
+pipe_lassocv.predict(Xnew).round(2)
+```
+
+```{python}
+formule = "~" + "+".join(noms[0:]) + "+C(vent,Treatment(1))"
+Xq = dmatrix(formule,ozone,return_type="dataframe")
+Xapp = Xq.iloc[0:45,1:].to_numpy()
+Xnew = Xq.iloc[45:50,1:].to_numpy()
+yapp = np.ravel(ozone.iloc[0:45,:1])
+ynew = np.ravel(ozone.iloc[45:50,:1])
+pipe_lassocv.fit(Xapp,yapp)
+pipe_lassocv.predict(Xnew).round(2)
+```
+
+```{python}
+formule = "~" + "+".join(noms[0:-2]) + \
+"+ C(nebu, Sum) + C(vent, Sum)"
+Xq = dmatrix(formule,ozone,return_type="dataframe")
+Xapp = Xq.iloc[0:45,1:].to_numpy()
+Xnew = Xq.iloc[45:50,1:].to_numpy()
+yapp = np.ravel(ozone.iloc[0:45,:1])
+ynew = np.ravel(ozone.iloc[45:50,:1])
+pipe_lassocv.fit(Xapp,yapp)
+pipe_lassocv.predict(Xnew).round(2)
+```
+
+
+
+

@@ -1,0 +1,154 @@
+---
+title: "Inférence dans le modèle gaussien"
+toc: true
+---
+
+```{python}
+import numpy as np; import pandas as pd
+import matplotlib
+import matplotlib.pyplot as plt
+import scipy.stats as stats
+import statsmodels.formula.api as smf
+import statsmodels.api as sm
+```
+
+```{python}
+ozone = pd.read_csv("../donnees/ozone.txt", header=0, sep=";")
+mod3 = smf.ols("O3 ~ T12+Vx+Ne12", data=ozone).fit()
+print(mod3.conf_int(alpha=0.05))
+```
+
+```{python}
+mod3.summary()
+ICparams=mod3.conf_int(alpha=0.05)
+mod3.params
+
+stats.t.ppf(0.95, mod3.df_resid)
+
+ICparams=mod3.conf_int(alpha=0.025)
+
+
+def ellipse(m, ij, alpha=0.05, npoints=500):
+    import numpy as np
+    from scipy.stats import f
+    hatSigma = m.cov_params().iloc[ij,ij]
+    valpr,vectpr = np.linalg.eig(hatSigma)
+    hatSigmademi = vectpr @ np.diag(np.sqrt(valpr))
+    theta = np.linspace(0, 2 * np.pi, npoints)
+    rho = (2 * f.isf(alpha, 2, m.nobs - 2))**0.5
+    XX = np.array([rho * np.cos(theta), rho * np.sin(theta)])
+    ZZ = np.add((hatSigmademi @ XX).T, m.params.iloc[ij].to_numpy())
+    return ZZ
+
+fig = plt.figure()
+fig, axs = plt.subplots(3, 2,figsize=(8, 8))
+ic = 0
+il = 0
+for i in range(0,3):
+    for j in range(i+1,4):
+        coord = ellipse(mod3, [i, j])
+        axs[il,ic].fill(coord[:,0], coord[:,1], fc='lightgrey', ec='k', lw=1)
+        axs[il,ic].plot(mod3.params.iloc[i], mod3.params.iloc[j], "+")
+        r = matplotlib.patches.Rectangle(ICparams.iloc[[i, j], 0], ICparams.diff(axis=1).iloc[i, 1], ICparams.diff(axis=1).iloc[j, 1], fill=False)
+        axs[il,ic].add_artist(r)
+        if ic==0:
+            ic = 1
+        else:
+            ic = 0
+            il += 1
+
+
+            
+fig.tight_layout()            
+
+```
+
+```{python}
+#print(mod3.scale*mod3.df_resid/scipy.stats.chi2.ppf(0.975,mod3.df_resid))
+#print(mod3.scale*mod3.df_resid/scipy.stats.chi2.ppf(0.025,mod3.df_resid))
+```
+
+#   Exemple 1 : la concentration en ozone
+
+
+```{python}
+mod3 = smf.ols("O3 ~ T12 + Vx + Ne12",data=ozone).fit()
+mod3.summary()
+```
+
+```{python}
+mod3.conf_int(alpha=0.05)
+```
+
+```{python}
+mod2 = smf.ols("O3 ~ T12 + Vx",data=ozone).fit()
+round(sm.stats.anova_lm(mod2,mod3),3)
+
+```
+
+#   Exemple 2 : la hauteur des eucalyptus
+
+
+```{python}
+eucalyptus = pd.read_csv("../donnees/eucalyptus.txt",header=0,sep=";")
+regS = smf.ols('ht~circ', data=eucalyptus).fit()
+regM = smf.ols('ht~circ +  np.sqrt(circ)', data=eucalyptus).fit()
+round(sm.stats.anova_lm(regS,regM),3)
+```
+
+
+```{python}
+regM.summary()
+```
+
+
+```{python}
+grille = pd.DataFrame({'circ' : np.linspace(eucalyptus["circ"].min(),eucalyptus["circ"].max(),100)})
+calculprev = regM.get_prediction(grille)
+prev = calculprev.predicted_mean
+ICdte = calculprev.conf_int(obs=False, alpha=0.05)
+ICpre = calculprev.conf_int(obs=True, alpha=0.05)
+fig = plt.figure()
+plt.plot(eucalyptus["circ"], eucalyptus["ht"], '+k')
+plt.ylabel('ht') ; plt.xlabel('circ')
+plt.plot(grille['circ'],  prev, '-', label="E(Y)", lw=1)
+lesic, = plt.plot(grille['circ'], ICdte[:,0], 'r--', label=r"IC $\mathbb{E}(Y)$",lw=1)
+plt.plot(grille['circ'], ICdte[:, 1], 'r--', lw=1)
+lesic2, = plt.plot(grille['circ'], ICpre[:, 0], 'g:', label=r"IC $Y$",lw=1)
+plt.plot(grille['circ'], ICpre[:, 1],'g:', lw=1)
+plt.legend(handles=[lesic, lesic2], loc='lower right')
+fig.tight_layout()
+
+```
+
+#   Intervlle de confiance : boostrap
+
+
+```{python}
+mod3 = smf.ols("O3 ~ 1 + T12 + Vx + Ne12", data = ozone).fit()
+
+mod3.params
+mod3.scale
+residus3 = mod3.resid
+ychap = mod3.fittedvalues
+n = residus3.shape[0]
+
+B = 1000
+COEFF = np.zeros((B, 4))
+rng = np.random.default_rng(seed=1234)
+ozoneetoile = ozone[["O3", "T12" , "Vx",  "Ne12"]].copy()
+for  b in range(B):
+    resetoile = residus3[rng.integers(n, size=n)]
+    O3etoile = np.add(ychap.values ,resetoile.values)
+    ozoneetoile.loc[:,"O3"] = O3etoile
+    regboot = smf.ols("O3 ~ 1+ T12 + Vx + Ne12", data=ozoneetoile).fit()
+    COEFF[b] = regboot.params.values
+
+    
+print(np.quantile(COEFF,[0.025, 0.975],axis=0))
+
+fig = plt.figure()
+n, bins, patches = plt.hist(COEFF[:,1], 30, density=True, facecolor='g', alpha=0.75)
+plt.xlabel(r'$\hat \beta_{2}^*$')
+fig.tight_layout()
+```

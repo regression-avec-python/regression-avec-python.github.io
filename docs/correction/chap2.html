@@ -1,0 +1,1253 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="fr" xml:lang="fr"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.5.57">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>2 La régression linéaire multiple – Régression avec Python</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { display: inline-block; text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js" integrity="sha512-bLT0Qm9VnAYZDflyKcBaQ2gg0hSYNQrJ8RilYldYQ1FxQYoCLtUjuuRuZo+fjqhx/qtq/1itJ0C2ejDxltZVFg==" crossorigin="anonymous"></script><script src="../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../">
+<link href="../correction/chap3.html" rel="next">
+<link href="../correction/chap1.html" rel="prev">
+<script src="../site_libs/quarto-html/quarto.js"></script>
+<script src="../site_libs/quarto-html/popper.min.js"></script>
+<script src="../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../site_libs/bootstrap/bootstrap.min.css" rel="stylesheet" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "Pas de résultats",
+    "search-matching-documents-text": "documents trouvés",
+    "search-copy-link-title": "Copier le lien vers la recherche",
+    "search-hide-matches-text": "Cacher les correspondances additionnelles",
+    "search-more-match-text": "correspondance de plus dans ce document",
+    "search-more-matches-text": "correspondances de plus dans ce document",
+    "search-clear-button-title": "Effacer",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Annuler",
+    "search-submit-button-title": "Envoyer",
+    "search-label": "Recherche"
+  }
+}</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" integrity="sha512-c3Nl8+7g4LMSTdrm621y7kf9v3SDPnhxLNhcjFJbKECVnmZHTdo+IRO05sNLTH/D3vA6u1X32ehoLC7WFVdheg==" crossorigin="anonymous"></script>
+
+<script type="application/javascript">define('jquery', [],function() {return window.jQuery;})</script>
+
+  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN") {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
+
+<link rel="stylesheet" href="../styles.css">
+</head>
+
+<body class="nav-sidebar floating nav-fixed">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a class="navbar-brand" href="../index.html">
+    <span class="navbar-title">Régression avec Python</span>
+    </a>
+  </div>
+            <div id="quarto-search" class="" title="Recherche"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Basculer la navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll me-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="../index.html"> 
+<span class="menu-text">Home</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../resume.html"> 
+<span class="menu-text">Résumé</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../donnees.html"> 
+<span class="menu-text">Données</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../codes/index.html"> 
+<span class="menu-text">Codes</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link active" href="../correction/index.html" aria-current="page"> 
+<span class="menu-text">Corrections</span></a>
+  </li>  
+</ul>
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="https://github.com/lrouviere/site_regression_python"> <i class="bi bi-github" role="img">
+</i> 
+<span class="menu-text">github</span></a>
+  </li>  
+</ul>
+          </div> <!-- /navcollapse -->
+            <div class="quarto-navbar-tools">
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+  <nav class="quarto-secondary-nav">
+    <div class="container-fluid d-flex">
+      <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Basculer la barre latérale" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+        <i class="bi bi-layout-text-sidebar-reverse"></i>
+      </button>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../correction/index.html">Corrections</a></li><li class="breadcrumb-item"><a href="../correction/chap1.html">I Introduction au modèle linéaire</a></li><li class="breadcrumb-item"><a href="../correction/chap2.html">2 La régression linéaire multiple</a></li></ol></nav>
+        <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Basculer la barre latérale" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
+        </a>
+    </div>
+  </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+  <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal quarto-sidebar-collapse-item sidebar-navigation floating overflow-auto">
+    <div class="sidebar-menu-container"> 
+    <ul class="list-unstyled mt-1">
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a href="../correction/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Corrections</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="true" aria-label="Basculer la section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-1" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="true">
+ <span class="menu-text">I Introduction au modèle linéaire</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="true" aria-label="Basculer la section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-2" class="collapse list-unstyled sidebar-section depth2 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../correction/chap1.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">1 La régression linéaire simple</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../correction/chap2.html" class="sidebar-item-text sidebar-link active">
+ <span class="menu-text">2 La régression linéaire multiple</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../correction/chap3.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">3 Validation du modèle</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../correction/chap4.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">4 Extension : non-inversibilité et (ou) erreurs non corrélées</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../correction/chap5.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">5 Régression polynomiale et régression spline</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+          <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" role="navigation" aria-expanded="false">
+ <span class="menu-text">II Inférence</span></a>
+          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" role="navigation" aria-expanded="false" aria-label="Basculer la section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-3" class="collapse list-unstyled sidebar-section depth2 ">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../correction/chap6.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">6 Inférence dans le modèle gaussien</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../correction/chap7.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">7 Variables qualitatives : ANCOVA et ANOVA</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+          <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-4" role="navigation" aria-expanded="false">
+ <span class="menu-text">III Réduction de dimension</span></a>
+          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-4" role="navigation" aria-expanded="false" aria-label="Basculer la section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-4" class="collapse list-unstyled sidebar-section depth2 ">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../correction/chap8.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">8 Choix de variables</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../correction/chap9.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Régularisation des moindres carrés : ridge, lasso, elastic-net</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+          <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-5" role="navigation" aria-expanded="false">
+ <span class="menu-text">IV Le modèle linéaire généralisé</span></a>
+          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-5" role="navigation" aria-expanded="false" aria-label="Basculer la section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-5" class="collapse list-unstyled sidebar-section depth2 ">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../correction/chap12.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Régression logistique</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../correction/chap13.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">13 Régression de Poisson</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../correction/chap14.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">14 Régularisation de la vraisemblance</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../correction/chap16.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">16 Données déséquilibrées</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+      </ul>
+  </li>
+    </ul>
+    </div>
+</nav>
+<div id="quarto-sidebar-glass" class="quarto-sidebar-collapse-item" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item"></div>
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar zindex-bottom">
+        
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../correction/index.html">Corrections</a></li><li class="breadcrumb-item"><a href="../correction/chap1.html">I Introduction au modèle linéaire</a></li><li class="breadcrumb-item"><a href="../correction/chap2.html">2 La régression linéaire multiple</a></li></ol></nav>
+<div class="quarto-title">
+<h1 class="title">2 La régression linéaire multiple</h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<div id="exr-2-1" class="theorem exercise">
+<p><span class="theorem-title"><strong>Exercice 1 (Question de cours)</strong></span> A, A, B, B, B, C.</p>
+</div>
+<div id="exr-2-2" class="theorem exercise">
+<p><span class="theorem-title"><strong>Exercice 2 (Covariance de <span class="math inline">\(\hat\varepsilon\)</span> et <span class="math inline">\(\hat Y\)</span>)</strong></span> Nous allons montrer que, pour tout autre estimateur <span class="math inline">\(\tilde{\beta}\)</span> de <span class="math inline">\(\beta\)</span> linéaire et sans biais, <span class="math inline">\(\mathop{\mathrm{V}}(\tilde{\beta})  \geq \mathop{\mathrm{V}}(\hat \beta)\)</span>. Décomposons la variance de <span class="math inline">\(\tilde{\beta}\)</span> <span class="math display">\[\begin{eqnarray*}
+\mathop{\mathrm{V}}(\tilde{\beta})  = \mathop{\mathrm{V}}(\tilde{\beta} - \hat \beta+\hat \beta)
+=\mathop{\mathrm{V}}(\tilde{\beta} - \hat \beta)+\mathop{\mathrm{V}}(\hat \beta) -
+2 \mathop{\mathrm{Cov}}(\tilde{\beta} - \hat \beta,\hat \beta).
+\end{eqnarray*}\]</span> Les variances étant définies positives, si nous montrons que <span class="math inline">\(\mathop{\mathrm{Cov}}(\tilde{\beta}- \hat \beta,\hat \beta)=0\)</span>, nous aurons fini la démonstration.\ Puisque <span class="math inline">\(\tilde{\beta}\)</span> est linéaire, <span class="math inline">\(\tilde{\beta} = A Y\)</span>. De plus, nous savons qu’il est sans biais, c’est-à-dire <span class="math inline">\(\mathbf E(\tilde{\beta}) = \beta\)</span> pour tout <span class="math inline">\(\beta\)</span>, donc <span class="math inline">\(A X = I\)</span>. La covariance devient : <span class="math display">\[\begin{eqnarray*}
+\mathop{\mathrm{Cov}}(\tilde{\beta} - \hat \beta,\hat \beta) &amp;=&amp;
+\mathop{\mathrm{Cov}}(A Y,(X'X)^{-1}X'Y) - \mathop{\mathrm{V}}(\hat \beta)\\
+&amp;=&amp; \sigma^2 A X (X'X)^{-1} - \sigma^2 (X'X)^{-1}=0.
+\end{eqnarray*}\]</span></p>
+</div>
+<div id="exr-2-3" class="theorem exercise">
+<p><span class="theorem-title"><strong>Exercice 3 (Théorème de Gauss Markov)</strong></span> Nous devons montrer que, parmi tous les estimateurs linéaires sans biais, l’estimateur de MC est celui qui a la plus petite variance. La linéarité de <span class="math inline">\(\hat \beta\)</span> est évidente. Calculons sa variance : <span class="math display">\[\begin{eqnarray*}
+\mathop{\mathrm{V}}(\hat \beta) = \mathop{\mathrm{V}}((X'X)^{-1}X'Y) =
+(X'X)^{-1}X'\mathop{\mathrm{V}}(Y)X(X'X)^{-1}=\sigma^2 (X'X)^{-1}.
+\end{eqnarray*}\]</span> Nous allons montrer que, pour tout autre estimateur <span class="math inline">\(\tilde{\beta}\)</span> de <span class="math inline">\(\beta\)</span> linéaire et sans biais, <span class="math inline">\(\mathop{\mathrm{V}}(\tilde{\beta})  \geq \mathop{\mathrm{V}}(\hat \beta)\)</span>. Décomposons la variance de <span class="math inline">\(\tilde{\beta}\)</span> <span class="math display">\[\begin{eqnarray*}
+\mathop{\mathrm{V}}(\tilde{\beta})  = \mathop{\mathrm{V}}(\tilde{\beta} - \hat \beta+\hat \beta)
+=\mathop{\mathrm{V}}(\tilde{\beta} - \hat \beta)+\mathop{\mathrm{V}}(\hat \beta) -
+2 \mathop{\mathrm{Cov}}(\tilde{\beta} - \hat \beta,\hat \beta).
+\end{eqnarray*}\]</span> Les variances étant définies positives, si nous montrons que <span class="math inline">\(\mathop{\mathrm{Cov}}(\tilde{\beta}- \hat \beta,\hat \beta)=0\)</span>, nous aurons fini la démonstration.\ Puisque <span class="math inline">\(\tilde{\beta}\)</span> est linéaire, <span class="math inline">\(\tilde{\beta} = A Y\)</span>. De plus, nous savons qu’il est sans biais, c’est-à-dire <span class="math inline">\(\mathbf E(\tilde{\beta}) = \beta\)</span> pour tout <span class="math inline">\(\beta\)</span>, donc <span class="math inline">\(A X = I\)</span>. La covariance devient : <span class="math display">\[\begin{eqnarray*}
+\mathop{\mathrm{Cov}}(\tilde{\beta} - \hat \beta,\hat \beta) &amp;=&amp;
+\mathop{\mathrm{Cov}}(A Y,(X'X)^{-1}X'Y) - \mathop{\mathrm{V}}(\hat \beta)\\
+&amp;=&amp; \sigma^2 A X (X'X)^{-1} - \sigma^2 (X'X)^{-1}=0.
+\end{eqnarray*}\]</span></p>
+</div>
+<div id="exr-2-4" class="theorem exercise">
+<p><span class="theorem-title"><strong>Exercice 4 (Représentation des variables)</strong></span> Nous représentons les données dans <span class="math inline">\(\mathbb R^2\)</span> pour le premier jeu et dans <span class="math inline">\(\mathbb R^3\)</span> pour le second.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="FIGURES/exo2-4.png" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:75.0%"></p>
+</figure>
+</div>
+<p>Dans le premier modèle, nous projetons <span class="math inline">\(Y\)</span> sur l’espace engendré par <span class="math inline">\(X\)</span>, soit la droite de vecteur directeur <span class="math inline">\(\overrightarrow{OX}\)</span>. Nous trouvons par le calcul <span class="math inline">\(\hat \beta = 1.47\)</span>, résultat que nous aurions pu trouver graphiquement car <span class="math inline">\(\overrightarrow{O \hat Y}=
+\hat \beta . \overrightarrow{OX}\)</span>.</p>
+<p>Considérons <span class="math inline">\(\mathbb R^3\)</span> muni de la base orthonormée <span class="math inline">\((\vec{i},\vec{j},\vec{k})\)</span>. Les vecteurs <span class="math inline">\(\overrightarrow{OX}\)</span> et <span class="math inline">\(\overrightarrow{OZ}\)</span> engendrent le même plan que celui engendré par <span class="math inline">\((\vec{i},\vec{j})\)</span>. La projection de <span class="math inline">\(Y\)</span> sur ce plan donne <span class="math inline">\(\overrightarrow{O \hat Y}\)</span>. Il est quasiment impossible de trouver <span class="math inline">\(\hat \beta\)</span> et <span class="math inline">\(\hat \gamma\)</span> graphiquement mais nous trouvons par le calcul <span class="math inline">\(\hat \beta = -3.33\)</span> et <span class="math inline">\(\hat \gamma =5\)</span>.</p>
+</div>
+<div id="exr-2-5" class="theorem exercise">
+<p><span class="theorem-title"><strong>Exercice 5 (Modèles emboîtés)</strong></span> Nous obtenons <span class="math display">\[\begin{eqnarray*}
+\hat Y_p = X \hat \beta \quad  \hbox{et} \quad \hat Y_q= X_q \hat \gamma.
+\end{eqnarray*}\]</span> Par définition du <span class="math inline">\(\mathbb R2\)</span>, il faut comparer la norme au carré des vecteurs <span class="math inline">\(\hat Y_p\)</span> et <span class="math inline">\(\hat Y_q\)</span>. Notons les espaces engendrés par les colonnes de <span class="math inline">\(X_q\)</span> et <span class="math inline">\(X\)</span>, <span class="math inline">\(\mathcal M_{X_q}\)</span> et <span class="math inline">\(\mathcal M_{X}\)</span>, nous avons <span class="math inline">\(\mathcal M_{X_q} \subset  \mathcal M_{X}\)</span>. Nous obtenons alors <span class="math display">\[\begin{eqnarray*}
+\hat Y_p = P_{X_p}Y
+= (P_{X_q} + P_{X^{\perp}_q})P_{X_p}Y &amp;=&amp; P_{X_q}P_{X_p}Y + P_{X^{\perp}_q}P_{X_p}Y\\
+&amp;=&amp; P_{X_q}Y + P_{X^{\perp}_q \cap X_p} Y\\
+&amp;=&amp; \hat Y_q + P_{X^{\perp}_q \cap X_p} Y.
+\end{eqnarray*}\]</span> En utilisant le théorème de Pythagore, nous avons <span class="math display">\[\begin{eqnarray*}
+\| \hat Y_p \|^2 &amp;=&amp; \|\hat Y_q \|^2 + \| P_{X^{\perp}_q \cap X_p} Y \|^2
+\geq \|\hat Y_q \|^2,
+\end{eqnarray*}\]</span> d’où <span class="math display">\[\begin{eqnarray*}
+\mathbb R2(p)=\frac{\| \hat Y_p \|^2}{\| Y \|^2} \geq
+\frac{\| \hat Y_q \|^2}{\| Y \|^2} =\mathbb R2(q).
+\end{eqnarray*}\]</span></p>
+<p>En conclusion, lorsque les modèles sont emboîtés <span class="math inline">\(\mathcal M_{X_q} \subset  \mathcal M_{X}\)</span>, le <span class="math inline">\(\mathbb R2\)</span> du modèle le plus grand (ayant le plus de variables) sera toujours plus grand que le <span class="math inline">\(\mathbb R2\)</span> du modèle le plus petit.</p>
+</div>
+<div id="exr-2-6" class="theorem exercise">
+<p><span class="theorem-title"><strong>Exercice 6</strong></span> La matrice <span class="math inline">\(X'X\)</span> est symétrique, <span class="math inline">\(n\)</span> vaut 30 et <span class="math inline">\(\bar x= \bar z=0\)</span>. Le coefficient de corrélation <span class="math display">\[\begin{equation*}
+\rho_{x,z} = \frac{\sum_{i=1}^{30} (x_i -\bar x)(z_i - \bar z)}
+{\sqrt{\sum_{i=1}^{30} (x_i -\bar x)^2\sum_{i=1}^{30} (z_i - \bar z)^2}}
+=\frac{\sum_{i=1}^{30} x_i z_i}
+{\sqrt{\sum_{i=1}^{30} x_i^2 \sum_{i=1}^{30} z_i^2}}
+=\frac{7}{\sqrt{150}}=0.57.
+\end{equation*}\]</span> Nous avons <span class="math display">\[\begin{eqnarray*}
+y_i &amp;=&amp; -2 +x_i+z_i+\hat \varepsilon_i
+\end{eqnarray*}\]</span> et la moyenne vaut alors <span class="math display">\[\begin{eqnarray*}
+\bar y &amp;=&amp; -2 + \bar x +\bar z + \frac{1}{n}\sum_i \hat \varepsilon_i.
+\end{eqnarray*}\]</span> La constante étant dans le modèle, la somme des résidus est nulle car le vecteur <span class="math inline">\(\hat \varepsilon\)</span> est orthogonal au vecteur <span class="math inline">\(\mathbf{1}\)</span>. Nous obtenons donc que la moyenne de <span class="math inline">\(Y\)</span> vaut 2 car <span class="math inline">\(\bar x=0\)</span> et <span class="math inline">\(\bar z=0\)</span>. Nous obtenons en développant <span class="math display">\[\begin{eqnarray*}
+\|\hat Y \|^2 &amp;=&amp; \sum_{i=1}^{30}(-2+x_i+2z_i)^2\\
+&amp;=&amp; 4+10+60+14=88.
+\end{eqnarray*}\]</span> Par le théorème de Pythagore, nous concluons que <span class="math display">\[\begin{eqnarray*}
+\mathop{\mathrm{SCT}}=\mathop{\mathrm{SCE}}+\mathop{\mathrm{SCR}}=88+12=100.
+\end{eqnarray*}\]</span></p>
+</div>
+<div id="exr-2-7" class="theorem exercise">
+<p><span class="theorem-title"><strong>Exercice 7 (Changement d’échelle des variables explicatives)</strong></span> Nous avons l’estimation sur le modèle avec les variables originales qui minimise <span class="math display">\[\begin{align*}
+\mathop{\mathrm{MCO}}(\beta)&amp;=\|Y - \sum_{j=1}^{p} X_j \beta_j \|^{2}
+\end{align*}\]</span> Cette solution est notée <span class="math inline">\(\hat \beta\)</span>.</p>
+<p>Nous avons l’estimation sur le modèle avec les variables prémultipliées par <span class="math inline">\(a_{j}\)</span> (changement d’échelle) qui minimise</p>
+<p><span class="math display">\[   
+\begin{align*}
+\tilde{\mathop{\mathrm{MCO}}}(\beta)&amp;=\|Y - \sum_{j=1}^{p} \tilde X_j \beta_j \|^{2} = \|Y - \sum_{j=1}^{p} a_{j} X_j \beta_j \|^{2}\\
+&amp;= \|Y - \sum_{j=1}^{p} X_j \gamma_j \|^{2}=\mathop{\mathrm{MCO}}(\gamma),
+\end{align*}
+\]</span></p>
+<p>en posant en dernière ligne <span class="math inline">\(\gamma_{j}=a_{j} \beta_j\)</span>. La solution de de <span class="math inline">\(\mathop{\mathrm{MCO}}(\gamma)\)</span> (ou encore <span class="math inline">\(\mathop{\mathrm{MCO}}(\beta)\)</span>) est <span class="math inline">\(\hat \beta\)</span>. La solution de <span class="math inline">\(\tilde{\mathop{\mathrm{MCO}}}(\beta)\)</span> est alors donnée par <span class="math inline">\(\hat \beta_{j}=a_{j} \tilde \beta_j\)</span>.</p>
+</div>
+<div id="exr-2-8" class="theorem exercise">
+<p><span class="theorem-title"><strong>Exercice 8 (Différence entre régression multiple et régressions simples)</strong></span> &nbsp;</p>
+<ol type="1">
+<li><p>Calculons l’estimateur des MCO noté traditionnellement <span class="math inline">\((X'X)^{-1}X'Y\)</span> avec la matrice <span class="math inline">\(X\)</span> qui possède ici deux colonnes (notées ici <span class="math inline">\(X\)</span> et <span class="math inline">\(Z\)</span>) et <span class="math inline">\(n\)</span> lignes. On a donc <span class="math display">\[\begin{align*}
+  (X'X)&amp;=
+         \begin{pmatrix}
+           \|X\|^{2} &amp; &lt;X,Z&gt;\\
+           &lt;X,Z&gt; &amp; \|Z\|^{2} \\
+         \end{pmatrix}
+\end{align*}\]</span> Son déterminant est <span class="math inline">\(\Delta= \|X\|^{2}\|Z\|^{2} - 2 &lt;X,Z&gt;\)</span> et son inverse est <span class="math display">\[\begin{align*}
+  \frac{1}{\Delta}
+  \begin{pmatrix}
+           \|Z\|^{2} &amp; -&lt;X,Z&gt;\\
+           -&lt;X,Z&gt; &amp; \|X\|^{2} \\
+  \end{pmatrix}
+\end{align*}\]</span> Ensuite <span class="math inline">\(X'Y\)</span> est simplement le vecteur colonne de coordonnées <span class="math inline">\(&lt;X,Y&gt;\)</span> et <span class="math inline">\(&lt;Z,Y&gt;\)</span>. En rassemblant le tout nous avons <span class="math display">\[\begin{align*}
+  \hat \beta_{1}&amp;=\frac{1}{\Delta}(\|Z\|^{2} &lt;X,Y&gt; - &lt;X,Z&gt;&lt;Z,Y&gt;),\\
+  \hat \beta_{2}&amp;=\frac{1}{\Delta}(\|X\|^{2} &lt;Z,Y&gt; - &lt;X,Z&gt;&lt;X,Y&gt;).
+\end{align*}\]</span> Si <span class="math inline">\(&lt;X,Z&gt;=0\)</span> (les deux vecteurs sont orthogonaux) alors cette écriture se simplifie en <span class="math display">\[
+  \hat \beta_{1}=\frac{&lt;X,Y&gt;}{\|X\|^{2}},\quad
+  \hat \beta_{2}=\frac{&lt;Z,Y&gt;}{\|Z\|^{2}}.
+\]</span></p></li>
+<li><p>Calculons l’estimateur des MCO noté traditionnellement <span class="math inline">\((X'X)^{-1}X'Y\)</span> avec la matrice <span class="math inline">\(X\)</span> qui possède ici une colonne (notée ici <span class="math inline">\(X\)</span>) et <span class="math inline">\(n\)</span> lignes. On a donc <span class="math display">\[\begin{align*}
+  \hat \beta_{X} = \frac{&lt;X,Y&gt;}{\|X\|^{2}}.
+\end{align*}\]</span> Passons maintenant à la matrice qui possède ici une colonne (notée ici <span class="math inline">\(Z\)</span>) et <span class="math inline">\(n\)</span> lignes. On a donc <span class="math display">\[\begin{align*}
+  \hat \beta_{Z} = \frac{&lt;Z,Y&gt;}{\|Z\|^{2}}.
+\end{align*}\]</span></p></li>
+<li><p>En général les coefficients des régressions simples ne sont pas ceux obtenus par régression multiple sauf si les variables sont orthogonales.</p></li>
+<li><p>Nous avons ici les résidus de la première régression qui sont <span class="math display">\[\begin{align}
+  \hat \varepsilon = Y - \hat \beta_{X} X.
+\end{align}\]</span> La deuxième régression (sur les résidus) donne le coefficient <span class="math display">\[\begin{align*}
+  \hat \beta_{Z} = \frac{&lt;Z,\hat \varepsilon&gt;}{\|Z\|^{2}} = \hat \beta_{Z} - \hat \beta_{X}\frac{&lt;Z,X&gt;}{\|Z\|^{2}}
+\end{align*}\]</span> La régression séquentielle donne des coefficients différents des régressions univariées ou bivariées sauf si les variables sont orthogonales. \end{enumerate}</p></li>
+</ol>
+</div>
+<div id="exr-2-9" class="theorem exercise">
+<p><span class="theorem-title"><strong>Exercice 9 (TP : différence entre régression multiple et régressions simples)</strong></span> &nbsp;</p>
+</div>
+<div id="exr-2-10" class="theorem exercise">
+<p><span class="theorem-title"><strong>Exercice 10 (TP : régression multiple et code R)</strong></span> &nbsp;</p>
+<div id="68bffe14" class="cell" data-execution_count="2">
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> pandas <span class="im">as</span> pd</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="co">#import numpy as np</span></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="co">#import matplotlib</span></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="co">#import matplotlib.pyplot as plt</span></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="co">#from mpl_toolkits.mplot3d import Axes3D</span></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="co">#from pandas import DataFrame</span></span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a><span class="co">#import statsmodels.api as sm</span></span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> statsmodels.formula.api <span class="im">as</span> smf</span></code><button title="Copier vers le presse-papier" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<ol type="1">
+<li><div id="9f2ba1aa" class="cell" data-execution_count="3">
+<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>ozone <span class="op">=</span> pd.read_csv(<span class="st">"../donnees/ozone.txt"</span>, header<span class="op">=</span><span class="dv">0</span>, sep<span class="op">=</span><span class="st">";"</span>)</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>nomvar <span class="op">=</span> []</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> var <span class="kw">in</span> ozone.columns[<span class="dv">2</span>:]:</span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> (var<span class="op">!=</span><span class="st">"nebulosite"</span>) <span class="op">&amp;</span> (var<span class="op">!=</span><span class="st">"vent"</span>):</span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>        nomvar.append(var)</span></code><button title="Copier vers le presse-papier" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div></li>
+<li><div id="cfc56eeb" class="cell" data-execution_count="4">
+<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>fd <span class="op">=</span> <span class="st">"+"</span>.join(nomvar[<span class="dv">2</span>:])</span></code><button title="Copier vers le presse-papier" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div></li>
+<li><div id="b3ab97e9" class="cell" data-execution_count="5">
+<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>formule<span class="op">=</span> <span class="st">"O3 ~ 1+"</span> <span class="op">+</span> fd</span></code><button title="Copier vers le presse-papier" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div></li>
+<li><div id="1a864322" class="cell" data-execution_count="6">
+<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>regmult <span class="op">=</span> smf.ols(formule, data <span class="op">=</span> ozone).fit()</span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>regmult.summary()</span></code><button title="Copier vers le presse-papier" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display" data-execution_count="5">
+<table class="simpletable caption-top table table-sm table-striped small" data-quarto-postprocess="true">
+<caption>OLS Regression Results</caption>
+<tbody>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">Dep. Variable:</td>
+<td>O3</td>
+<td data-quarto-table-cell-role="th">R-squared:</td>
+<td>0.715</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">Model:</td>
+<td>OLS</td>
+<td data-quarto-table-cell-role="th">Adj. R-squared:</td>
+<td>0.668</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">Method:</td>
+<td>Least Squares</td>
+<td data-quarto-table-cell-role="th">F-statistic:</td>
+<td>15.06</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">Date:</td>
+<td>Fri, 31 Jan 2025</td>
+<td data-quarto-table-cell-role="th">Prob (F-statistic):</td>
+<td>1.19e-09</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">Time:</td>
+<td>15:38:38</td>
+<td data-quarto-table-cell-role="th">Log-Likelihood:</td>
+<td>-197.75</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">No. Observations:</td>
+<td>50</td>
+<td data-quarto-table-cell-role="th">AIC:</td>
+<td>411.5</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">Df Residuals:</td>
+<td>42</td>
+<td data-quarto-table-cell-role="th">BIC:</td>
+<td>426.8</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">Df Model:</td>
+<td>7</td>
+<td data-quarto-table-cell-role="th"></td>
+<td></td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">Covariance Type:</td>
+<td>nonrobust</td>
+<td data-quarto-table-cell-role="th"></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+
+
+<table class="simpletable caption-top table table-sm table-striped small" data-quarto-postprocess="true">
+<tbody>
+<tr class="odd">
+<td></td>
+<td data-quarto-table-cell-role="th">coef</td>
+<td data-quarto-table-cell-role="th">std err</td>
+<td data-quarto-table-cell-role="th">t</td>
+<td data-quarto-table-cell-role="th">P&gt;|t|</td>
+<td data-quarto-table-cell-role="th">[0.025</td>
+<td data-quarto-table-cell-role="th">0.975]</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">Intercept</td>
+<td>85.0828</td>
+<td>12.133</td>
+<td>7.012</td>
+<td>0.000</td>
+<td>60.597</td>
+<td>109.568</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">Ne12</td>
+<td>-5.2469</td>
+<td>1.008</td>
+<td>-5.204</td>
+<td>0.000</td>
+<td>-7.281</td>
+<td>-3.212</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">N12</td>
+<td>0.2932</td>
+<td>1.352</td>
+<td>0.217</td>
+<td>0.829</td>
+<td>-2.435</td>
+<td>3.022</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">S12</td>
+<td>2.6226</td>
+<td>1.887</td>
+<td>1.390</td>
+<td>0.172</td>
+<td>-1.186</td>
+<td>6.431</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">E12</td>
+<td>0.4653</td>
+<td>2.021</td>
+<td>0.230</td>
+<td>0.819</td>
+<td>-3.614</td>
+<td>4.545</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">W12</td>
+<td>1.4222</td>
+<td>2.020</td>
+<td>0.704</td>
+<td>0.485</td>
+<td>-2.653</td>
+<td>5.498</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">Vx</td>
+<td>0.4364</td>
+<td>0.497</td>
+<td>0.878</td>
+<td>0.385</td>
+<td>-0.567</td>
+<td>1.439</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">O3v</td>
+<td>0.2765</td>
+<td>0.100</td>
+<td>2.773</td>
+<td>0.008</td>
+<td>0.075</td>
+<td>0.478</td>
+</tr>
+</tbody>
+</table>
+
+
+<table class="simpletable caption-top table table-sm table-striped small" data-quarto-postprocess="true">
+<tbody>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">Omnibus:</td>
+<td>0.296</td>
+<td data-quarto-table-cell-role="th">Durbin-Watson:</td>
+<td>1.843</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">Prob(Omnibus):</td>
+<td>0.863</td>
+<td data-quarto-table-cell-role="th">Jarque-Bera (JB):</td>
+<td>0.383</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">Skew:</td>
+<td>0.169</td>
+<td data-quarto-table-cell-role="th">Prob(JB):</td>
+<td>0.826</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">Kurtosis:</td>
+<td>2.735</td>
+<td data-quarto-table-cell-role="th">Cond. No.</td>
+<td>549.</td>
+</tr>
+</tbody>
+</table>
+<br><br>Notes:<br>[1] Standard Errors assume that the covariance matrix of the errors is correctly specified.
+</div>
+</div></li>
+</ol>
+</div>
+<div id="exr-2-11" class="theorem exercise">
+<p><span class="theorem-title"><strong>Exercice 11 (Régression orthogonale)</strong></span> Les vecteurs étant orthogonaux, nous avons <span class="math inline">\(\mathcal M_X = \mathcal M_U \stackrel{\perp}{\oplus} \mathcal M_V\)</span>. Nous pouvons alors écrire <span class="math display">\[\begin{eqnarray*}
+\hat Y_X = P_X Y &amp;=&amp; (P_U + P_{U^{\perp}})P_X Y \\
+&amp;=&amp; P_U P_X Y + P_{U^{\perp}}P_X Y =  P_U Y + P_{U^{\perp}\cap X} Y \\
+&amp;=&amp; \hat Y_U + \hat Y_V.
+\end{eqnarray*}\]</span> La suite de l’exercice est identique. En conclusion, effectuer une régression multiple sur des variables orthogonales revient à effectuer <span class="math inline">\(p\)</span> régressions simples.</p>
+</div>
+<div id="exr-2-12" class="theorem exercise">
+<p><span class="theorem-title"><strong>Exercice 12 (Centrage, centrage-réduction et coefficient constant)</strong></span> &nbsp;</p>
+</div>
+<div id="exr-2-13" class="theorem exercise">
+<p><span class="theorem-title"><strong>Exercice 13 (Moindres carrés contraints)</strong></span> &nbsp;</p>
+<ol type="1">
+<li><p>L’estimateur des MC vaut <span class="math display">\[\begin{eqnarray*}
+\hat \beta = (X'X)^{-1}X'Y,
+\end{eqnarray*}\]</span></p></li>
+<li><p>Calculons maintenant l’estimateur contraint. Nous pouvons procéder de deux manières différentes.</p>
+<p>La première consiste à écrire le lagrangien <span class="math display">\[\begin{eqnarray*}
+\mathcal{L} = S(\beta) - \lambda'(R\beta-r).
+\end{eqnarray*}\]</span> Les conditions de Lagrange permettent d’obtenir un minimum <span class="math display">\[\begin{eqnarray*}
+\left\{
+\begin{array}{l}
+\displaystyle\frac{\partial \mathcal{L}}{\partial \beta} = -2X'Y+2X'X\hat{\beta}_c-
+R'\hat{\lambda}=0,\\
+\displaystyle\frac{\partial \mathcal{L}}{\partial \lambda} = R\hat{\beta}_c-r=0,
+\end{array}
+\right.
+\end{eqnarray*}\]</span> Multiplions à gauche la première égalité par <span class="math inline">\(R(X'X)^{-1}\)</span>, nous obtenons <span class="math display">\[\begin{eqnarray*}
+-2 R(X'X)^{-1}X'Y+2R(X'X)^{-1}X'X \hat{\beta}_c-R(X'X)^{-1}R'\hat{\lambda}&amp;=&amp;0\\
+-2 R(X'X)^{-1}X'Y+2R\hat{\beta}_c-R(X'X)^{-1}R'\hat{\lambda}&amp;=&amp;0\\
+-2 R(X'X)^{-1}X'Y+2r-R(X'X)^{-1}R'\hat{\lambda}&amp;=&amp;0.
+\end{eqnarray*}\]</span> Nous obtenons alors pour <span class="math inline">\(\hat \lambda\)</span> <span class="math display">\[\begin{eqnarray*}
+\hat \lambda = 2 \left[R(X'X)^{-1}R'\right]^{-1}\left[r-R(X'X)^{-1}X'Y\right].
+\end{eqnarray*}\]</span> Remplaçons ensuite <span class="math inline">\(\hat \lambda\)</span> <span class="math display">\[\begin{eqnarray*}
+-2X'Y+2X'X\hat{\beta}_c-R'\hat{\lambda}&amp;=&amp;0\\
+-2X'Y+2X'X\hat{\beta}_c-2R'\left[R(X'X)^{-1}R'\right]^{-1}\left[r-R(X'X)^{-1}X'Y\right]&amp;=&amp; 0,
+\end{eqnarray*}\]</span> d’où nous calculons <span class="math inline">\(\hat \beta_c\)</span> <span class="math display">\[\begin{eqnarray*}
+\hat \beta_c &amp;=&amp; (X'X)^{-1}X'Y+(X'X)^{-1}R'\left[R(X'X)^{-1}R'\right]^{-1}
+(r-R\hat \beta)\\
+&amp;=&amp; \hat \beta + (X'X)^{-1}R'\left[R(X'X)^{-1}R'\right]^{-1}(r-R\hat \beta).
+\end{eqnarray*}\]</span> La fonction <span class="math inline">\(S(\beta)\)</span> à minimiser est une fonction convexe sur un ensemble convexe (contraintes linéaires), le minimum est donc unique.</p>
+<p>Une autre façon de procéder consiste à utiliser les projecteurs. Supposons pour commencer que <span class="math inline">\(r=0\)</span>, la contrainte vaut donc <span class="math inline">\(R\beta=0\)</span>. Calculons analytiquement le projecteur orthogonal sur <span class="math inline">\(\mathcal M_0\)</span>. Rappelons que <span class="math inline">\(\dim(\mathcal M_0)=p-q\)</span>, nous avons de plus <span class="math display">\[\begin{eqnarray*}
+R \beta &amp;=&amp; 0 \quad \quad
+\Leftrightarrow \quad \beta \in Ker(R)\\
+R (X'X)^{-1}X'X \beta &amp;=&amp; 0\\
+U' X \beta &amp;=&amp; 0\quad \quad \hbox{où} \quad \quad U = X (X'X)^{-1}R'.
+\end{eqnarray*}\]</span> Nous avons donc que <span class="math inline">\(\forall \beta \in \ker(R)\)</span>, <span class="math inline">\(U' X \beta = 0\)</span>, c’est-à-dire que <span class="math inline">\(\mathcal M_U\)</span>, l’espace engendré par les colonnes de <span class="math inline">\(U\)</span>, est orthogonal à l’espace engendré par <span class="math inline">\(X\beta\)</span>, <span class="math inline">\(\forall \beta \in \ker(R)\)</span>. Nous avons donc que <span class="math inline">\(\mathcal M_U \perp \mathcal M_0\)</span>. Comme <span class="math inline">\(U=X[(X'X)^{-1}R']\)</span>, <span class="math inline">\(\mathcal M_U \subset \mathcal M_X\)</span>. En résumé, nous avons <span class="math display">\[\begin{eqnarray*}
+\mathcal M_U \subset \mathcal M_X \quad  \hbox{et}
+\quad  \mathcal M_U \perp \mathcal M_0 \quad \hbox{donc}
+\quad \mathcal M_U \subset  (\mathcal M_X \cap \mathcal M_0^{\perp}).
+\end{eqnarray*}\]</span> Afin de montrer que les colonnes de <span class="math inline">\(U\)</span> engendrent <span class="math inline">\(\mathcal M_X \cap \mathcal M_0^{\perp}\)</span>, il faut démontrer que la dimension des deux sous-espaces est égale. Or le rang de <span class="math inline">\(U\)</span> vaut <span class="math inline">\(q\)</span> (<span class="math inline">\(R'\)</span> est de rang <span class="math inline">\(q\)</span>, <span class="math inline">\((X'X)^{-1}\)</span> est de rang <span class="math inline">\(p\)</span> et <span class="math inline">\(X\)</span> est de rang <span class="math inline">\(p\)</span>) donc la dimension de <span class="math inline">\(\mathcal M_U\)</span> vaut <span class="math inline">\(q\)</span>. De plus, nous avons vu que <span class="math display">\[\begin{eqnarray*}
+\mathcal M_X = \mathcal M_0 \stackrel{\perp}{\oplus}\left(\mathcal M_0^{\perp} \cap \mathcal M_X \right)
+\end{eqnarray*}\]</span> et donc, en passant aux dimensions des sous-espaces, nous en déduisons que <span class="math inline">\(\dim(\mathcal M_0^{\perp} \cap \mathcal M_X )=q\)</span>. Nous venons de démontrer que <span class="math display">\[\begin{eqnarray*}
+\mathcal M_U = \mathcal M_X \cap \mathcal M_0^{\perp}.
+\end{eqnarray*}\]</span> Le projecteur orthogonal sur <span class="math inline">\(\mathcal M_U=\mathcal M_X \cap \mathcal M_0^{\perp}\)</span> s’écrit <span class="math display">\[\begin{eqnarray*}
+P_{U} = U (U'U)^{-1} U'= X (X'X)^{-1} R' [R(X'X)^{-1}R']^{-1}R(X'X)^{-1}X'.
+\end{eqnarray*}\]</span> Nous avons alors <span class="math display">\[\begin{eqnarray*}
+\hat Y - \hat Y_0 &amp;=&amp; P_U Y\\
+X \hat \beta - X \hat \beta_0 &amp;=&amp; X (X'X)^{-1} R' [R(X'X)^{-1}R']^{-1}R(X'X)^{-1}X'Y\\
+&amp;=&amp; X (X'X)^{-1} R [R(X'X)^{-1}R']^{-1}R \hat \beta.
+\end{eqnarray*}\]</span> Cela donne <span class="math display">\[\begin{eqnarray*}
+\hat \beta_0 = \hat \beta - (X'X)^{-1} R [R(X'X)^{-1}R']^{-1}R \hat \beta.
+\end{eqnarray*}\]</span> Si maintenant <span class="math inline">\(r\neq 0\)</span>, nous avons alors un sous-espace affine défini par <span class="math inline">\(\{\beta\in \mathbb R^p : R\beta=r\}\)</span> dans lequel nous cherchons une solution qui minimise les moindres carrés. Un sous-espace affine peut être défini de manière équivalente par un point particulier <span class="math inline">\(\beta_p \in \mathbb R^p\)</span> tel que <span class="math inline">\(R\beta_p=r\)</span> et le sous-espace vectoriel associé <span class="math inline">\(\mathcal M_0^v=\{\beta\in \mathbb R^p : R\beta=0\}\)</span>. Les points du sous-espace affine sont alors <span class="math inline">\(\{\beta_0 \in \mathbb R^p : \beta_0=\beta_p+\beta_0^v, \beta_0^v \in \mathcal M_0^v
+\quad et \quad \beta_p : R\beta_p=r\}\)</span>. La solution qui minimise les moindres carrés, notée <span class="math inline">\(\hat \beta_0\)</span>, est élément de ce sous-espace affine et est définie par <span class="math inline">\(\hat \beta_0=\beta_p+\hat \beta_0^v\)</span> où <span class="math display">\[\begin{eqnarray*}
+\hat \beta_0^v = \hat \beta - (X'X)^{-1}R'[R(X'X)^{-1}R']^{-1}R\hat \beta.
+\end{eqnarray*}\]</span> Nous savons que <span class="math inline">\(R\beta_p=r\)</span> donc <span class="math display">\[\begin{eqnarray*}
+R\beta_p = [R(X'X)^{-1}R'][R(X'X)^{-1}R']^{-1}r
+\end{eqnarray*}\]</span> donc une solution particulière est <span class="math inline">\(\beta_p = (X'X)^{-1}R'[R(X'X)^{-1}R']^{-1}r\)</span>. La solution <span class="math inline">\(\hat \beta_0\)</span> qui minimise les moindres carrés sous la contrainte <span class="math inline">\(R\beta=r\)</span> est alors <span id="eq-betacontraint"><span class="math display">\[
+\begin{align}
+\hat \beta_0 &amp;= \beta_p+\hat \beta_0^v\\\nonumber
+&amp;=(X'X)^{-1}R'[R(X'X)^{-1}R']^{-1}r +
+\hat \beta - (X'X)^{-1}R'[R(X'X)^{-1}R']^{-1}R\hat \beta\\\nonumber
+&amp;=\hat \beta + (X'X)^{-1}R'[R(X'X)^{-1}R']^{-1}(r-R\hat \beta).
+\end{align}
+\tag{1}\]</span></span></p></li>
+<li><p>Calculons l’EQM de <span class="math inline">\(\hat \beta\)</span> qui vaut selon la formule classique: <span class="math display">\[\begin{align*}
+      \mathop{\mathrm{EQM}}&amp;= (\mathbf E(\hat \beta) - \beta) (\mathbf E(\hat \beta) - \beta)' + \mathop{\mathrm{V}}(\hat\beta)
+    \end{align*}\]</span> avec <span class="math inline">\(\mathbf E(\hat \beta)=\beta\)</span> (sous l’hypothèse que <span class="math inline">\(Y\)</span> est généré par le modèle de régression) et<span class="math inline">\(\mathop{\mathrm{V}}(\hat\beta) =\sigma^{2} (X'X)^{-1}\)</span>.</p>
+<p>Pour l’EQM de <span class="math inline">\(\hat \beta_0\)</span> qui vaut selon la formule classique: <span class="math display">\[\begin{align*}
+      \mathop{\mathrm{EQM}}&amp;= (\mathbf E(\hat \beta_0) - \beta_0) (\mathbf E(\hat \beta_0) - \beta_0)' + \mathop{\mathrm{V}}(\hat\beta_0)
+    \end{align*}\]</span> calculons d’abord <span class="math inline">\(\mathbf E(\hat \beta_0)\)</span> en utilisant l’équation (<a href="#eq-betacontraint" class="quarto-xref">équation&nbsp;1</a>): <span class="math display">\[\begin{align*}
+      \mathbf E(\hat \beta_0)&amp;=\mathbf E(\hat \beta) + \mathbf E[(X'X)^{-1}R'[R(X'X)^{-1}R']^{-1}(r-R\hat \beta)]\\
+      &amp;=\beta + (X'X)^{-1}R'[R(X'X)^{-1}R']^{-1}(r-R\beta)
+    \end{align*}\]</span> puisque <span class="math inline">\(\hat \beta\)</span> est sans biais. Si nous supposons que le modèle satisfait la contrainte (<span class="math inline">\(R\beta=r\)</span>) alors là encore le biais est nul.</p>
+<p>Calculons maintemant la variance: <span class="math display">\[\begin{align*}
+      \mathop{\mathrm{V}}(\hat\beta_0) &amp;=  \mathop{\mathrm{V}}[\hat \beta + (X'X)^{-1}R'[R(X'X)^{-1}R']^{-1}(r-R\hat \beta)]\\
+                      &amp;=\mathop{\mathrm{V}}(\hat\beta) + \mathop{\mathrm{V}}[(X'X)^{-1}R'[R(X'X)^{-1}R']^{-1}(r-R\hat \beta)] +\\
+                      &amp;\quad \quad 2\mathop{\mathrm{Cov}}[\hat\beta ; (X'X)^{-1}R'[R(X'X)^{-1}R']^{-1}(r-R\hat \beta)]\\
+      &amp;=   \sigma^{2}V_{X}^{-1} + (\mathrm{II}) +  (\mathrm{III})
+    \end{align*}\]</span> Intéressons nous à la seconde partie <span class="math inline">\((\mathrm{II})\)</span>. Comme <span class="math inline">\(X\)</span> est déterministe ainsi que <span class="math inline">\(R\)</span> et <span class="math inline">\(r\)</span> on a en posant pour alléger <span class="math inline">\(V_{X}=(X'X)\)</span> (matrice symétrique) <span class="math display">\[\begin{align*}
+      (\mathrm{II}) &amp;= V_{X}^{-1}R'[RV_{X}^{-1}R']^{-1} \mathop{\mathrm{V}}(r-R\hat \beta)
+                        [RV_{X}^{-1}R']^{-1} R V_{X}^{-1}\\
+                    &amp;= V_{X}^{-1}R'[RV_{X}^{-1}R']^{-1} \mathop{\mathrm{V}}(R\hat \beta)[RV_{X}^{-1}R']^{-1} R V_{X}^{-1}\\
+                    &amp;= V_{X}^{-1}R'[RV_{X}^{-1}R']^{-1} R\sigma^{2}V_{X}^{-1}R'[RV_{X}^{-1}R']^{-1} R V_{X}^{-1}\\
+       &amp;= \sigma^{2}V_{X}^{-1}R'[RV_{X}^{-1}R']^{-1} R V_{X}^{-1}
+    \end{align*}\]</span> La troisième partie est <span class="math display">\[\begin{align*}
+      (\mathrm{III}) &amp;= 2V_{X}^{-1}R'[RV_{X}^{-1}R']^{-1}\mathop{\mathrm{Cov}}[\hat\beta ; (r-R\hat \beta)]\\
+                     &amp;=-2V_{X}^{-1}R'[RV_{X}^{-1}R']^{-1}R\mathop{\mathrm{Cov}}[\hat\beta ;\hat\beta]\\
+      &amp;= -2V_{X}^{-1}R'[RV_{X}^{-1}R']^{-1}R\sigma^{2}V_{X}^{-1}
+    \end{align*}\]</span> Ce qui donne au final <span class="math display">\[\begin{align*}
+      \mathop{\mathrm{V}}(\hat\beta_0) &amp;=\sigma^{2}(X'X)^{-1} - \sigma^{2}(X'X)^{-1}R'[R(X'X)^{-1}R']^{-1}R(X'X)^{-1}
+    \end{align*}\]</span> L’écart entre les 2 variances est donc de <span class="math inline">\(\sigma^{2}(X'X)^{-1}R'[R(X'X)^{-1}R']^{-1}R(X'X)^{-1}\)</span> qui est une matrice de la forme <span class="math inline">\(A'A\)</span> donc semi-définie positive.</p></li>
+</ol>
+</div>
+
+
+
+<a onclick="window.scrollTo(0, 0); return false;" role="button" id="quarto-back-to-top"><i class="bi bi-arrow-up"></i> Retour au sommet</a></main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const isCodeAnnotation = (el) => {
+    for (const clz of el.classList) {
+      if (clz.startsWith('code-annotation-')) {                     
+        return true;
+      }
+    }
+    return false;
+  }
+  const onCopySuccess = function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copié");
+    let tooltip;
+    if (window.bootstrap) {
+      button.setAttribute("data-bs-toggle", "tooltip");
+      button.setAttribute("data-bs-placement", "left");
+      button.setAttribute("data-bs-title", "Copié");
+      tooltip = new bootstrap.Tooltip(button, 
+        { trigger: "manual", 
+          customClass: "code-copy-button-tooltip",
+          offset: [0, -8]});
+      tooltip.show();    
+    }
+    setTimeout(function() {
+      if (tooltip) {
+        tooltip.hide();
+        button.removeAttribute("data-bs-title");
+        button.removeAttribute("data-bs-toggle");
+        button.removeAttribute("data-bs-placement");
+      }
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  }
+  const getTextToCopy = function(trigger) {
+      const codeEl = trigger.previousElementSibling.cloneNode(true);
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+  }
+  const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+    text: getTextToCopy
+  });
+  clipboard.on('success', onCopySuccess);
+  if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+    // For code content inside modals, clipBoardJS needs to be initialized with a container option
+    // TODO: Check when it could be a function (https://github.com/zenorocha/clipboard.js/issues/860)
+    const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+      text: getTextToCopy,
+      container: window.document.getElementById('quarto-embedded-source-code-modal')
+    });
+    clipboardModal.on('success', onCopySuccess);
+  }
+    var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+    var mailtoRegex = new RegExp(/^mailto:/);
+      var filterRegex = new RegExp('/' + window.location.host + '/');
+    var isInternal = (href) => {
+        return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+    }
+    // Inspect non-navigation links and adorn them if external
+ 	var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+    for (var i=0; i<links.length; i++) {
+      const link = links[i];
+      if (!isInternal(link.href)) {
+        // undo the damage that might have been done by quarto-nav.js in the case of
+        // links that we want to consider external
+        if (link.dataset.originalHref !== undefined) {
+          link.href = link.dataset.originalHref;
+        }
+      }
+    }
+  function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+    const config = {
+      allowHTML: true,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start',
+    };
+    if (contentFn) {
+      config.content = contentFn;
+    }
+    if (onTriggerFn) {
+      config.onTrigger = onTriggerFn;
+    }
+    if (onUntriggerFn) {
+      config.onUntrigger = onUntriggerFn;
+    }
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      if (note) {
+        return note.innerHTML;
+      } else {
+        return "";
+      }
+    });
+  }
+  const xrefs = window.document.querySelectorAll('a.quarto-xref');
+  const processXRef = (id, note) => {
+    // Strip column container classes
+    const stripColumnClz = (el) => {
+      el.classList.remove("page-full", "page-columns");
+      if (el.children) {
+        for (const child of el.children) {
+          stripColumnClz(child);
+        }
+      }
+    }
+    stripColumnClz(note)
+    if (id === null || id.startsWith('sec-')) {
+      // Special case sections, only their first couple elements
+      const container = document.createElement("div");
+      if (note.children && note.children.length > 2) {
+        container.appendChild(note.children[0].cloneNode(true));
+        for (let i = 1; i < note.children.length; i++) {
+          const child = note.children[i];
+          if (child.tagName === "P" && child.innerText === "") {
+            continue;
+          } else {
+            container.appendChild(child.cloneNode(true));
+            break;
+          }
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(container);
+        }
+        return container.innerHTML
+      } else {
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        return note.innerHTML;
+      }
+    } else {
+      // Remove any anchor links if they are present
+      const anchorLink = note.querySelector('a.anchorjs-link');
+      if (anchorLink) {
+        anchorLink.remove();
+      }
+      if (window.Quarto?.typesetMath) {
+        window.Quarto.typesetMath(note);
+      }
+      // TODO in 1.5, we should make sure this works without a callout special case
+      if (note.classList.contains("callout")) {
+        return note.outerHTML;
+      } else {
+        return note.innerHTML;
+      }
+    }
+  }
+  for (var i=0; i<xrefs.length; i++) {
+    const xref = xrefs[i];
+    tippyHover(xref, undefined, function(instance) {
+      instance.disable();
+      let url = xref.getAttribute('href');
+      let hash = undefined; 
+      if (url.startsWith('#')) {
+        hash = url;
+      } else {
+        try { hash = new URL(url).hash; } catch {}
+      }
+      if (hash) {
+        const id = hash.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note !== null) {
+          try {
+            const html = processXRef(id, note.cloneNode(true));
+            instance.setContent(html);
+          } finally {
+            instance.enable();
+            instance.show();
+          }
+        } else {
+          // See if we can fetch this
+          fetch(url.split('#')[0])
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.getElementById(id);
+            if (note !== null) {
+              const html = processXRef(id, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      } else {
+        // See if we can fetch a full url (with no hash to target)
+        // This is a special case and we should probably do some content thinning / targeting
+        fetch(url)
+        .then(res => res.text())
+        .then(html => {
+          const parser = new DOMParser();
+          const htmlDoc = parser.parseFromString(html, "text/html");
+          const note = htmlDoc.querySelector('main.content');
+          if (note !== null) {
+            // This should only happen for chapter cross references
+            // (since there is no id in the URL)
+            // remove the first header
+            if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+              note.children[0].remove();
+            }
+            const html = processXRef(null, note);
+            instance.setContent(html);
+          } 
+        }).finally(() => {
+          instance.enable();
+          instance.show();
+        });
+      }
+    }, function(instance) {
+    });
+  }
+      let selectedAnnoteEl;
+      const selectorForAnnotation = ( cell, annotation) => {
+        let cellAttr = 'data-code-cell="' + cell + '"';
+        let lineAttr = 'data-code-annotation="' +  annotation + '"';
+        const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+        return selector;
+      }
+      const selectCodeLines = (annoteEl) => {
+        const doc = window.document;
+        const targetCell = annoteEl.getAttribute("data-target-cell");
+        const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+        const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+        const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+        const lineIds = lines.map((line) => {
+          return targetCell + "-" + line;
+        })
+        let top = null;
+        let height = null;
+        let parent = null;
+        if (lineIds.length > 0) {
+            //compute the position of the single el (top and bottom and make a div)
+            const el = window.document.getElementById(lineIds[0]);
+            top = el.offsetTop;
+            height = el.offsetHeight;
+            parent = el.parentElement.parentElement;
+          if (lineIds.length > 1) {
+            const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+            const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+            height = bottom - top;
+          }
+          if (top !== null && height !== null && parent !== null) {
+            // cook up a div (if necessary) and position it 
+            let div = window.document.getElementById("code-annotation-line-highlight");
+            if (div === null) {
+              div = window.document.createElement("div");
+              div.setAttribute("id", "code-annotation-line-highlight");
+              div.style.position = 'absolute';
+              parent.appendChild(div);
+            }
+            div.style.top = top - 2 + "px";
+            div.style.height = height + 4 + "px";
+            div.style.left = 0;
+            let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+            if (gutterDiv === null) {
+              gutterDiv = window.document.createElement("div");
+              gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+              gutterDiv.style.position = 'absolute';
+              const codeCell = window.document.getElementById(targetCell);
+              const gutter = codeCell.querySelector('.code-annotation-gutter');
+              gutter.appendChild(gutterDiv);
+            }
+            gutterDiv.style.top = top - 2 + "px";
+            gutterDiv.style.height = height + 4 + "px";
+          }
+          selectedAnnoteEl = annoteEl;
+        }
+      };
+      const unselectCodeLines = () => {
+        const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+        elementsIds.forEach((elId) => {
+          const div = window.document.getElementById(elId);
+          if (div) {
+            div.remove();
+          }
+        });
+        selectedAnnoteEl = undefined;
+      };
+        // Handle positioning of the toggle
+    window.addEventListener(
+      "resize",
+      throttle(() => {
+        elRect = undefined;
+        if (selectedAnnoteEl) {
+          selectCodeLines(selectedAnnoteEl);
+        }
+      }, 10)
+    );
+    function throttle(fn, ms) {
+    let throttle = false;
+    let timer;
+      return (...args) => {
+        if(!throttle) { // first call gets through
+            fn.apply(this, args);
+            throttle = true;
+        } else { // all the others get throttled
+            if(timer) clearTimeout(timer); // cancel #2
+            timer = setTimeout(() => {
+              fn.apply(this, args);
+              timer = throttle = false;
+            }, ms);
+        }
+      };
+    }
+      // Attach click handler to the DT
+      const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+      for (const annoteDlNode of annoteDls) {
+        annoteDlNode.addEventListener('click', (event) => {
+          const clickedEl = event.target;
+          if (clickedEl !== selectedAnnoteEl) {
+            unselectCodeLines();
+            const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+            if (activeEl) {
+              activeEl.classList.remove('code-annotation-active');
+            }
+            selectCodeLines(clickedEl);
+            clickedEl.classList.add('code-annotation-active');
+          } else {
+            // Unselect the line
+            unselectCodeLines();
+            clickedEl.classList.remove('code-annotation-active');
+          }
+        });
+      }
+  const findCites = (el) => {
+    const parentEl = el.parentElement;
+    if (parentEl) {
+      const cites = parentEl.dataset.cites;
+      if (cites) {
+        return {
+          el,
+          cites: cites.split(' ')
+        };
+      } else {
+        return findCites(el.parentElement)
+      }
+    } else {
+      return undefined;
+    }
+  };
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const citeInfo = findCites(ref);
+    if (citeInfo) {
+      tippyHover(citeInfo.el, function() {
+        var popup = window.document.createElement('div');
+        citeInfo.cites.forEach(function(cite) {
+          var citeDiv = window.document.createElement('div');
+          citeDiv.classList.add('hanging-indent');
+          citeDiv.classList.add('csl-entry');
+          var biblioDiv = window.document.getElementById('ref-' + cite);
+          if (biblioDiv) {
+            citeDiv.innerHTML = biblioDiv.innerHTML;
+          }
+          popup.appendChild(citeDiv);
+        });
+        return popup.innerHTML;
+      });
+    }
+  }
+});
+</script>
+<nav class="page-navigation">
+  <div class="nav-page nav-page-previous">
+      <a href="../correction/chap1.html" class="pagination-link" aria-label="1 La régression linéaire simple">
+        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text">1 La régression linéaire simple</span>
+      </a>          
+  </div>
+  <div class="nav-page nav-page-next">
+      <a href="../correction/chap3.html" class="pagination-link" aria-label="3 Validation du modèle">
+        <span class="nav-page-text">3 Validation du modèle</span> <i class="bi bi-arrow-right-short"></i>
+      </a>
+  </div>
+</nav>
+</div> <!-- /content -->
+
+
+
+
+</body></html>

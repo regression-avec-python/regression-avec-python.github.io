@@ -1,0 +1,269 @@
+---
+title: "3 Validation du modèle"
+toc: true
+---
+
+::: {.content-hidden}
+{{< include ../macros.tex >}}
+:::
+
+::: {#exr-3-1 name="Questions de cours"}
+C si $\1$ fait partie des variables ou si $\1 \in \Im(X)$, A, C, C, A.
+:::
+
+::: {#exr-3-2 name="Propriétés d'une matrice de projection"}
+La trace d'un projecteur vaut la dimension de l'espace sur lequel s'effectue 
+la projection, donc $\tr(P_X)=p$. Le second point découle de la propriété 
+$P^2=P$.
+
+Les matrices $P_X$ et $P_XP_X$ sont égales, nous avons que 
+$(P_X)_{ii}$ vaut $(P_XP_X)_{ii}$. Cela s'écrit 
+\begin{eqnarray*}
+h_{ii} &=&  \sum_{k=1}^n h_{ik} h_{ki}\\
+&=& h_{ii}^2 + \sum_{k=1, k \neq i}^n h_{ik}^2\\
+h_{ii}(1-h_{ii}) &=& \sum_{k=1, k \neq i}^n h_{ik}^2.
+\end{eqnarray*}
+La dernière quantité de droite de l'égalité est positive et 
+donc le troisième point est démontré. En nous servant de cet
+écriture les deux derniers points sont aussi démontrés.
+
+Nous pouvons écrire 
+\begin{eqnarray*}
+h_{ii}(1-h_{ii}) &=& h_{ij}^2 + \sum_{k=1, k \neq i ,j }^n h_{ik}^2.
+\end{eqnarray*}
+La quantité de gauche est maximum lorsque $h_{ii}=0.5$ et vaut 
+alors $0.25$. Le quatrième point est démontré.
+:::
+
+::: {#exr-3-3 name="Lemme d'invertion matricielle"}
+Commençons par effectuer les calculs en notant que la quantité 
+$u'M^{-1}v$ est un scalaire que nous noterons $k$. Nous avons
+\begin{eqnarray*}
+\left(M+uv'\right)\left(M^{-1}-\frac{M^{-1}uv'M^{-1}}{1+u'M^{-1}v}\right)
+&=&MM^{-1}-\frac{MM^{-1}uv'M^{-1}}{1+k}+uv'M^{-1}
+-\frac{uv'M^{-1}uv'M^{-1}}{1+k}\\
+&=&I+\frac{-uv'M^{-1}+uv'M^{-1}+kuv'M^{-1}-ukv'M^{-1}}{1+k}.
+\end{eqnarray*}
+Le résultat est démontré.
+:::
+
+::: {#exr-3-4 name="Résidus studentisés"}
+
+2.  Il suffit d'utiliser la définition du produit matriciel et de la somme matricielle et d'identifier les 2 membres des égalités.
+
+3.  En utilisant maintenant l'égalité de l'exercice précédent sur les 
+inverses, avec $u=-x_i$ et $v=x_i'$, nous avons 
+\begin{eqnarray*}
+(\ssli{X'}{i}\ssli{X}{i})^{-1}=(X'X-\li{x}{i}\li{x}{i}')^{-1}=(X'X)^{-1}+
+\frac{(X'X)^{-1}\li{x}{i}\li{x}{i}'(X'X)^{-1}}
+{1-\li{x}{i}'(X'X)^{-1}\li{x}{i}}.%\label{eq:hiieta}
+\end{eqnarray*}
+    La définition de $h_{ii}=\li{x}{i}'(X'X)^{-1}\li{x}{i}$
+donne le résultat.
+
+4.  Calculons la prévision où $\hat \beta_{(i)}$ est l'estimateur de 
+$\beta$ obtenu sans la $i^e$ observation
+
+\begin{eqnarray*}
+\hat y_i^p 
+= \li{x}{i}'\hat \beta_{(i)} 
+&=& \li{x}{i}' (\ssli{X'}{i}\ssli{X}{i})^{-1}\ssli{X'}{i}Y_{(i)}\\
+&=& \li{x}{i}'\left[(X'X)^{-1} 
++ \frac{(X'X)^{-1}\li{x}{i}\li{x}{i}'(X'X)^{-1}}{1-h_{ii}}
+\right]\left(X'Y-\li{x}{i}'y_i\right)\\
+&=& \li{x}{i}' \hat \beta + \frac{h_{ii}}{1-h_{ii}}\li{x}{i}' \hat \beta 
+- h_{ii}y_i -\frac{h_{ii}^2}{1-h_{ii}}y_i\\
+&=& \frac{1}{1-h_{ii}}\hat y_i - \frac{h_{ii}}{1-h_{ii}}y_i.
+\end{eqnarray*}
+
+5.  Ce dernier résultat donne
+\begin{eqnarray*}
+\hat \varepsilon_i = (1-h_{ii})(y_i-\hat y^p_i).
+\end{eqnarray*}
+Nous avons alors
+\begin{eqnarray*}
+t^*_i &=& \frac{\hat \varepsilon_i}{\hat \sigma_{(i)}\sqrt{1-h_{ii}}}\\
+&=&\frac{\sqrt{(1-h_{ii})}(y_i - \hat y_i^p)}{\hat \sigma_{(i)}}.
+\end{eqnarray*}
+Pour terminer, remarquons qu'en multipliant l'égalité de la question 3 
+à gauche par $\li{x}{i}'$ et à droite par $\li{x}{i}$ 
+\begin{eqnarray*}
+\li{x}{i}'(\ssli{X'}{i}\ssli{X}{i})^{-1}\li{x}{i} 
+&=& h_{ii}+ \frac{h_{ii}^2}{1-h_{ii}}.\\
+1+\li{x}{i}'(\ssli{X'}{i}\ssli{X}{i})^{-1}\li{x}{i} 
+&=& 1 +\frac{h_{ii}}{1-h_{ii}}=\frac{h_{ii}}{1-h_{ii}}.
+\end{eqnarray*}
+
+6.   Utilisons l'expression
+\begin{eqnarray*}
+t^*_i=\frac{y_i-\hat y_i^p }
+{\hat \sigma_{(i)}\sqrt{1+\li{x}{i}'(\ssli{X'}{i}\ssli{X}{i})^{-1}\li{x}{i}}}.
+\end{eqnarray*}
+Nous pouvons alors appliquer la preuve de la proposition 5.4
+page 97, en constatant que la $i^e$ observation 
+est une nouvelle observation. Nous avons donc $n-1$ observations 
+pour estimer les paramètres, cela donne donc un Student à $n-1-p$ 
+paramètres.
+:::
+
+::: {#exr-3-5 name="Distance de Cook"}
+1.  Nous reprenons une partie des calculs de l'exercice précédent :
+\begin{eqnarray*}
+\hat \beta_{(i)} &=& (\ssli{X'}{i}\ssli{X}{i})^{-1}\ssli{X'}{i}\ssli{Y}{i}\\
+&=& (X'X)^{-1}[X'Y-\li{x}{i}y_i]+\frac{1}{1-h_{ii}}
+(X'X)^{-1}\li{x}{i}\li{x}{i}'(X'X)^{-1}[X'Y-\li{x}{i}y_i]\\
+&=& \hat \beta - (X'X)^{-1}\li{x}{i}y_i + \frac{1}{1-h_{ii}}
+(X'X)^{-1}\li{x}{i}\li{x}{i}'\hat \beta - \frac{h_{ii}}{1-h_{ii}}
+(X'X)^{-1}\li{x}{i}y_i,
+\end{eqnarray*}
+    d'où le résultat. 
+    
+2.  Pour obtenir la seconde écriture de la distance de Cook, nous écrivons d'abord que 
+\begin{eqnarray*}
+\hat \beta_{(i)} - \hat \beta = \frac{- \hat \varepsilon_i}{1-h_{ii}}
+(X'X)^{-1}\li{x}{i}.
+\end{eqnarray*}
+    Puis nous développons
+\begin{eqnarray*}
+C_i &=& \frac{1}{p \hat \sigma^2}(\hat \beta_{[i]}-\hat \beta)'
+X'X(\hat \beta_{(i)}-\hat \beta)\\
+&=& \frac{1}{p \hat \sigma^2} \left(\frac{- \hat \varepsilon_i}{1-h_{ii}}\right)^2 \li{x}{i}' (X'X)^{-1}(X'X)(X'X)^{-1}\li{x}{i}.
+\end{eqnarray*}
+    Le résultat est démontré.
+:::
+
+::: {#exr-3-6 name="Régression partielle"}
+Nous avons le modèle suivant :
+\begin{eqnarray*}
+P_{X_{\bar{j}}^\perp} Y&=&\beta_jP_{X_{\bar{j}}^\perp} X_j + \eta.
+\end{eqnarray*}
+L'estimateur des moindres carrés $\tilde\beta_j$ issu de ce 
+modèle vaut
+\begin{eqnarray*}
+\tilde \beta_j = (X'_j P_{X_{\bar{j}}^\perp} X_j)^{-1}
+X'_j P_{X_{\bar{j}}^\perp} Y.
+\end{eqnarray*}
+La projection de $Y$ sur $\Im(X_{\bar{j}})$ (i.e. la prévision par 
+le modèle sans la variable $X_j$) peut s'écrire comme la projection $Y$ 
+sur $\Im(X)$ qui est ensuite projetée sur $\Im(X_{\bar{j}})$, 
+puisque $\Im(X_{\bar{j}})\subset \Im(X)$. Ceci s'écrit
+\begin{eqnarray*}
+P_{X_{\bar{j}}}Y&=&P_{X_{\bar{j}}}P_{X}Y=P_{X_{\bar{j}}}X\hat{\beta}
+=P_{X_{\bar{j}}}(X_{\bar{j}}\hat\beta_{\bar{j}}+\hat\beta_jX_j)
+=X_{\bar{j}}\hat\beta_{\bar{j}}+\hat\beta_jP_{X_{\bar{j}}}X_j,
+\end{eqnarray*}
+et donc
+\begin{eqnarray*}
+X_{\bar{j}}\hat\beta_{\bar{j}} = P_{X_{\bar{j}}} Y - 
+\hat\beta_jP_{X_{\bar{j}}}X_j.
+\end{eqnarray*}
+Récrivons les résidus 
+\begin{eqnarray*}
+\hat{\varepsilon}&=&P_{X^\perp} Y=Y-X\hat\beta
+=Y-X_{\bar{j}}\hat\beta_{\bar{j}}-\hat\beta_jX_j\nonumber\\
+&=&Y-P_{X_{\bar{j}}}Y + \hat\beta_jP_{X_{\bar{j}}}X_j  -\hat\beta_j X_j\nonumber\\
+&=&(I-P_{X_{\bar{j}}})Y - \hat\beta_j(I-P_{X_{\bar{j}}})X_j\nonumber\\
+&=&P_{X_{\bar{j}}^\perp} Y-\hat\beta_jP_{X_{\bar{j}}^\perp} X_j.%\label{eq:origine:residpartiel}
+\end{eqnarray*}
+En réordonnant cette dernière égalité, nous pouvons écrire
+\begin{eqnarray}
+P_{X_{\bar{j}}^\perp} Y&=&\hat\beta_jP_{X_{\bar{j}}^\perp} X_j+\hat{\varepsilon}.\nonumber
+\end{eqnarray}
+Nous avons alors
+\begin{eqnarray*}
+\tilde\beta_j &=& (X'_j P_{X_{\bar{j}}^\perp} X_j)^{-1}
+X'_j P_{X_{\bar{j}}^\perp} Y\\
+&=& (X'_j P_{X_{\bar{j}}^\perp} X_j)^{-1}
+X'_j(\hat\beta_jP_{X_{\bar{j}}^\perp} X_j+\hat{\varepsilon})\\
+&=& \hat\beta_j +(X'_j P_{X_{\bar{j}}^\perp} X_j)^{-1} X'_j\hat{\varepsilon}).
+\end{eqnarray*}
+Le produit scalaire $X'_j\hat{\varepsilon} = \langle X_j,\hat{\varepsilon} \rangle$ 
+est nul car les deux vecteurs appartiennent à des sous-espaces orthogonaux, d'où le 
+résultat.
+
+:::
+
+::: {#exr-3-7 name="TP : Résidus partiels"}
+
+```{python}
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+import seaborn as sns
+import statsmodels.api as sm
+from patsy import dmatrices
+```
+
+1.  Importation
+
+    ```{python}
+    don = pd.read_csv("../donnees/tprespartiel.dta", sep=";")
+    ```
+
+2.  Estimation du modèle
+
+    ```{python}
+    X = don[['X1', 'X2', 'X3', 'X4']]
+    X = sm.add_constant(X)
+    Y = don['Y']
+    mod = sm.OLS(Y, X).fit()
+    ```
+
+3.  Analyse des résidus partiels. Commençons par visualiser les résidus partiels :
+
+    ```{python}
+    fig = sm.graphics.plot_ccpr_grid(mod)
+    plt.show()
+    ```
+
+    Les 3 premières variables montrent des tendances linéaires (ou aucune pour la troisième) alors que la troisième semble montrer plutôt une tendance quadratique.
+
+4.  Refaisons le modèle avec `X5` :
+
+    ```{python}
+    don['X5'] = don['X4'] ** 2
+    X2 = don[['X1', 'X2', 'X3', 'X5']]
+    X2 = sm.add_constant(X2)
+    mod2 = sm.OLS(Y, X2).fit()
+    fig2 = sm.graphics.plot_ccpr_grid(mod2)
+    plt.show()
+    ```
+
+    et nous constatons que les résidus partiels sont tous à tendance linéaire. Les 2 modèles ayant le même nombre de variables nous pouvons les comparer via leur $\leR$ qui valent
+    ```{python}
+    print(mod.rsquared)
+    print(mod2.rsquared)
+    ```
+
+    La seconde modélisation est la meilleure tant pour la qualité globale que pour l'analyse des résidus.
+
+
+5.  Avec le second jeu de données
+
+    ```{python}
+    donbis = pd.read_csv("../donnees/tpbisrespartiel.dta", sep=";")
+    X = donbis[['X1', 'X2', 'X3', 'X4']]
+    X = sm.add_constant(X)
+    Y = donbis['Y']
+    mod3 = sm.OLS(Y, X).fit()
+    fig = sm.graphics.plot_ccpr_grid(mod3)
+    plt.show()
+    ```
+
+    Nous voyons clairement une sinusoïde de type $\sin(-2\pi X_4)$ sur le dernier graphique. Changeons `X4`
+
+    ```{python}
+    donbis['X5'] = np.sin(-2*np.pi*donbis['X4'])
+    X2 = donbis[['X1', 'X2', 'X3', 'X5']]
+    X2 = sm.add_constant(X2)
+    mod4 = sm.OLS(Y, X2).fit()
+    fig2 = sm.graphics.plot_ccpr_grid(mod4)
+    plt.show()
+    ```
+
+    ```{python}
+    print(mod3.rsquared)
+    print(mod4.rsquared)
+    ```
+
+:::

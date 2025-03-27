@@ -1,0 +1,46 @@
+---
+title: "Présentation"
+---
+
+
+:::: {.columns}
+
+::: {.column width="50%" }
+
+
+#### Les auteurs
+
+-   [Pierre-André Cornillon](https://perso.univ-rennes2.fr/pierre-andre.cornillon)
+-   Nicolas Hengartner
+-   [Éric Matzner-Løber](https://www.researchgate.net/profile/E-Matzner-Lober)
+-   [Laurent Rouvière](https://rouviere.pages.math.cnrs.fr)
+
+#### Descriptif
+
+-   [4e de couverture](quatriemeV3.pdf)
+-   [Avant-propos](avant-propos.pdf)
+-   [Sommaire détaillé](tdm.pdf)
+
+#### Boutique en ligne
+
+[Par ici](https://laboutique.edpsciences.fr/produit/1335/9782759831463/regression-avec-r)
+
+:::
+
+::: {.column width="50%"}
+
+![](couverture.jpg){width=50%}
+
+:::
+
+####    Descriptif
+
+Cette première édition de **régression avec python** est une adaptation
+de la version [régression avec R](https://regression-avec-r.github.io). 
+On trouvera notamment sur ce site :
+
+-   les [jeux de données](donnees.qmd) ;
+-   les [lignes de code](codes/index.qmd) ;
+-   les [corrections des exercices](correction/index.qmd).
+
+::::

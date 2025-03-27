@@ -1,0 +1,112 @@
+project:
+  type: website
+  output-dir: docs
+  render: 
+    - "*.qmd"
+    - "!questions.md"
+   # - "!codes/chap11.qmd"
+
+
+website:
+  title: "Régression avec Python"
+  page-navigation: true
+  back-to-top-navigation: true
+  navbar:
+    left:
+      - href: index.qmd
+        text: Home
+      #- about.qmd
+      - resume.qmd
+      - donnees.qmd
+      - codes/index.qmd
+      - correction/index.qmd
+    right: 
+      - icon: github
+        text: github
+        href: https://github.com/lrouviere/site_regression_python
+    search: true
+    background: info
+  sidebar: 
+    - id: codes
+      background: "#D9E3E4"
+      collapse-level: 1
+      contents: 
+        - section: "Codes"
+          href: codes/index.qmd
+          contents:
+            - section: I Introduction au modèle linéaire
+              contents:
+                - codes/chap1.qmd   
+                - codes/chap2.qmd
+                - codes/chap3.qmd
+                - codes/chap4.qmd
+                - codes/chap5.qmd     
+            - section: II Inférence
+              contents: 
+                - codes/chap6.qmd
+                - codes/chap7.qmd
+            - section: III Réduction de dimension
+              contents: 
+                - codes/chap8.qmd
+                - codes/chap9.qmd
+                - codes/chap10.qmd
+                - codes/chap11.qmd 
+            - section: IV Le modèle linéaire généralisé
+              contents: 
+                - codes/chap12.qmd
+                - codes/chap13.qmd
+                - codes/chap14.qmd
+                - codes/chap15.qmd
+                - codes/chap16.qmd
+    - id: correction
+      background: "#D9E3E4"
+      collapse-level: 1
+      contents: 
+        - section: "Corrections"
+          href: correction/index.qmd
+          contents: 
+            - section: I Introduction au modèle linéaire
+              contents:
+                - correction/chap1.qmd
+                - correction/chap2.qmd
+                - correction/chap3.qmd
+                - correction/chap4.qmd
+                - correction/chap5.qmd
+            - section: II Inférence
+              contents:
+                - correction/chap6.qmd
+                - correction/chap7.qmd
+            - section: III Réduction de dimension
+              contents:
+                - correction/chap8.qmd 
+                - correction/chap9.qmd
+            - section: IV Le modèle linéaire généralisé
+              contents: 
+                - correction/chap12.qmd
+                - correction/chap13.qmd
+                - correction/chap14.qmd
+                - correction/chap16.qmd
+   
+
+
+format:
+  html:
+    theme: flatly #united
+    css: styles.css
+    toc: true
+    #backgroundcolor: "#D9E3E4"
+    fontsize: 12pt
+    crossref: 
+      exr-prefix: exercice
+      eq-prefix: équation
+execute: 
+  warning: false
+  echo: true
+  cache: true
+  freeze: auto
+
+
+
+lang: fr
+editor: source
+

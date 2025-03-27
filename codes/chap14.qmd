@@ -1,0 +1,210 @@
+---
+title: "14 Régularisation de la vraisemblance"
+toc: true
+---
+
+
+```{python}
+import pandas as pd; import numpy as np
+import matplotlib.pyplot as plt
+from sklearn.preprocessing import StandardScaler
+from sklearn.linear_model import LogisticRegressionCV, LogisticRegression
+from sklearn.pipeline import Pipeline
+from sklearn.model_selection import StratifiedKFold
+from patsy import dmatrix
+```
+
+#   Regressions ridge, lasso et elastic-net
+
+```{python}
+SAh = pd.read_csv("../donnees/SAh.csv", header=0, sep=",")
+```
+
+```{python}
+nomsvar = list(SAh.columns.difference(["chd"]))
+formule = "~ 1 +" + "+".join(nomsvar)
+dsX = dmatrix(formule, data=SAh)
+X = dmatrix(formule, data=SAh, return_type="dataframe").\
+    iloc[:,1:].to_numpy()
+Y = SAh["chd"].to_numpy()
+```
+
+```{python}
+scalerX = StandardScaler().fit(X)
+Xcr= scalerX.transform(X)
+l0 = np.abs(Xcr.transpose().dot((Y  - Y.mean()))).max()/X.shape[0]
+llc = np.linspace(0,-4,100)
+ll = l0*10**llc
+Cs_lasso = 1/ 0.9/ X.shape[0] / (l0*10**(llc))
+Cs_ridge = 1/ 0.9/ X.shape[0] / ((l0*10**(llc)) * 100)
+Cs_enet =  1/ 0.9/ X.shape[0] / ((l0*10**(llc)) / 0.5)
+```
+
+```{python}
+coefs_lasso = []
+coefs_enet = []
+coefs_ridge = []
+```
+
+```{python}
+Xcr = StandardScaler().fit(X).transform(X)
+for a, b, c in zip(Cs_lasso, Cs_ridge, Cs_enet) :
+    ## lasso
+    lasso = LogisticRegression(penalty="l1", C=a, solver="liblinear", warm_start=True).fit(Xcr, Y)
+    coefs_lasso.append(lasso.coef_[0])
+    ## ridge
+    ridge = LogisticRegression(penalty="l2", C=b, warm_start=True).fit(Xcr, Y)
+    coefs_ridge.append(ridge.coef_[0])
+    ## enet
+    enet = LogisticRegression(penalty="elasticnet", C=c, solver="saga", l1_ratio=0.5, warm_start=True).fit(Xcr, Y)
+    coefs_enet.append(enet.coef_[0])
+```
+
+```{python}
+fig, (ax1, ax2, ax3) = plt.subplots(1, 3)
+ax1.plot(np.log(Cs_lasso), coefs_lasso)
+ax2.plot(np.log(Cs_enet), coefs_enet)
+ax3.plot(np.log(Cs_ridge), coefs_ridge)
+fig.tight_layout()
+```
+
+#   Choix du paramètre de régularisation $\lambda$
+
+```{python}
+skf = StratifiedKFold(n_splits=10, shuffle=True, random_state=0)
+```
+
+```{python}
+cr = StandardScaler()
+lassocvM1 =  LogisticRegressionCV(cv=skf, penalty="l1", n_jobs=3, solver="liblinear", Cs=Cs_lasso, scoring="neg_log_loss")
+ridgecvM1 = LogisticRegressionCV(cv=skf, penalty="l2", n_jobs=3, Cs=Cs_ridge, scoring="neg_log_loss")
+enetcvM1 = LogisticRegressionCV(cv=skf, penalty="elasticnet", n_jobs=3, Cs= Cs_enet, solver="saga", l1_ratios=[0.5], scoring="neg_log_loss")
+```
+
+```{python}
+pipe_lassocvM1 = Pipeline(steps=[("cr", cr), ("lassocv", lassocvM1)])
+pipe_ridgecvM1 = Pipeline(steps=[("cr", cr), ("ridgecv", ridgecvM1)])
+pipe_enetcvM1 = Pipeline(steps=[("cr", cr), ("enetcv", enetcvM1)])
+```
+
+```{python}
+pipe_lassocvM1.fit(X,Y)
+pipe_ridgecvM1.fit(X,Y)
+pipe_enetcvM1.fit(X,Y)
+```
+
+```{python}
+cr = StandardScaler()
+lassocvM2 =  LogisticRegressionCV(cv=skf, penalty="l1", n_jobs=3, solver="liblinear", Cs=Cs_lasso, scoring="accuracy")
+ridgecvM2 = LogisticRegressionCV(cv=skf, penalty="l2", n_jobs=3, Cs=Cs_ridge, scoring="accuracy")
+enetcvM2 = LogisticRegressionCV(cv=skf, penalty="elasticnet", n_jobs=3, Cs= Cs_enet, solver="saga", l1_ratios=[0.5], scoring="accuracy")
+pipe_lassocvM2 = Pipeline(steps=[("cr", cr), ("lassocv", lassocvM2)])
+pipe_ridgecvM2 = Pipeline(steps=[("cr", cr), ("ridgecv", ridgecvM2)])
+pipe_enetcvM2 = Pipeline(steps=[("cr", cr), ("enetcv", enetcvM2)])
+pipe_lassocvM2.fit(X,Y)
+pipe_ridgecvM2.fit(X,Y)
+pipe_enetcvM2.fit(X,Y)
+
+
+cr = StandardScaler()
+lassocvM3 =  LogisticRegressionCV(cv=skf, penalty="l1", n_jobs=3, solver="liblinear", Cs=Cs_lasso, scoring="roc_auc")
+ridgecvM3 = LogisticRegressionCV(cv=skf, penalty="l2", n_jobs=3, Cs=Cs_ridge, scoring="roc_auc")
+enetcvM3 = LogisticRegressionCV(cv=skf, penalty="elasticnet", n_jobs=3, Cs= Cs_enet, solver="saga", l1_ratios=[0.5], scoring="roc_auc")
+pipe_lassocvM3 = Pipeline(steps=[("cr", cr), ("lassocv", lassocvM3)])
+pipe_ridgecvM3 = Pipeline(steps=[("cr", cr), ("ridgecv", ridgecvM3)])
+pipe_enetcvM3 = Pipeline(steps=[("cr", cr), ("enetcv", enetcvM3)])
+pipe_lassocvM3.fit(X,Y)
+pipe_ridgecvM3.fit(X,Y)
+pipe_enetcvM3.fit(X,Y)
+etape_lassoM3 = pipe_lassocvM3.named_steps["lassocv"]
+etape_lassoM3.Cs_
+etape_lassoM3.scores_[1]
+etape_lassoM3.scores_[1].mean(axis=0)
+etape_lassoM3.scores_[1].std(axis=0)/np.sqrt(10)
+
+etape_lassoM1 = pipe_lassocvM1.named_steps["lassocv"]
+etape_lassoM2 = pipe_lassocvM2.named_steps["lassocv"]
+etape_lassoM3 = pipe_lassocvM3.named_steps["lassocv"]
+etape_ridgeM1 = pipe_ridgecvM1.named_steps["ridgecv"]
+etape_ridgeM2 = pipe_ridgecvM2.named_steps["ridgecv"]
+etape_ridgeM3 = pipe_ridgecvM3.named_steps["ridgecv"]
+etape_enetM1 = pipe_enetcvM1.named_steps["enetcv"]
+etape_enetM2 = pipe_enetcvM2.named_steps["enetcv"]
+etape_enetM3 = pipe_enetcvM3.named_steps["enetcv"]
+
+```
+
+```{python}
+fig, axs = plt.subplots(3, 3)
+axs[0,0].errorbar(np.log(Cs_lasso), etape_lassoM1.scores_[1].mean(axis=0), etape_lassoM1.scores_[1].std(axis=0)/np.sqrt(10), fmt="-o", mec="black", mfc="black", ms=0.2, color="#80808077")
+axs[0,0].text(.99, .1, "Lasso - Vraisemblance", ha="right", va="top",transform=axs[0,0].transAxes)
+axs[0,1].errorbar(np.log(Cs_ridge), etape_ridgeM1.scores_[1].mean(axis=0), etape_ridgeM1.scores_[1].std(axis=0)/np.sqrt(10), fmt="-o", mec="black", mfc="black", ms=0.2, color="#80808077")
+axs[0,1].text(.99, .1, "Ridge - Vraisemblance", ha="right", va="top",transform=axs[0,1].transAxes)
+axs[0,2].errorbar(np.log(Cs_enet), etape_enetM1.scores_[1][:,:,0].mean(axis=0), etape_enetM1.scores_[1][:,:,0].std(axis=0)/np.sqrt(10), fmt="-o", mec="black", mfc="black", ms=0.2, color="#80808077")
+axs[0,2].text(.99, .1, "ElasticNet - Vraisemblance", ha="right", va="top",transform=axs[0,2].transAxes)
+##
+axs[1,0].errorbar(np.log(Cs_lasso), etape_lassoM2.scores_[1].mean(axis=0), etape_lassoM2.scores_[1].std(axis=0)/np.sqrt(10), fmt="-o", mec="black", mfc="black", ms=0.2, color="#80808077")
+axs[1,0].text(.99, .1, "Lasso - Bien classés", ha="right", va="top",transform=axs[1,0].transAxes)
+axs[1,1].errorbar(np.log(Cs_ridge), etape_ridgeM2.scores_[1].mean(axis=0), etape_ridgeM2.scores_[1].std(axis=0)/np.sqrt(10), fmt="-o", mec="black", mfc="black", ms=0.2, color="#80808077")
+axs[1,1].text(.99, .1, "Ridge - Bien classés", ha="right", va="top",transform=axs[1,1].transAxes)
+axs[1,2].errorbar(np.log(Cs_enet), etape_enetM2.scores_[1][:,:,0].mean(axis=0), etape_enetM2.scores_[1][:,:,0].std(axis=0)/np.sqrt(10), fmt="-o", mec="black", mfc="black", ms=0.2, color="#80808077")
+axs[1,2].text(.99, .1, "ElasticNet - Bien classés", ha="right", va="top",transform=axs[1,2].transAxes)
+##
+axs[2,0].errorbar(np.log(Cs_lasso), etape_lassoM3.scores_[1].mean(axis=0), etape_lassoM3.scores_[1].std(axis=0)/np.sqrt(10), fmt="-o", mec="black", mfc="black", ms=0.2, color="#80808077")
+axs[2,0].text(.99, .1, "Lasso - AUC", ha="right", va="top",transform=axs[2,0].transAxes)
+axs[2,1].errorbar(np.log(Cs_ridge), etape_ridgeM3.scores_[1].mean(axis=0), etape_ridgeM3.scores_[1].std(axis=0)/np.sqrt(10), fmt="-o", mec="black", mfc="black", ms=0.2, color="#80808077")
+axs[2,1].text(.99, .1, "Ridge - AUC", ha="right", va="top",transform=axs[2,1].transAxes)
+axs[2,2].errorbar(np.log(Cs_enet), etape_enetM3.scores_[1][:,:,0].mean(axis=0), etape_enetM3.scores_[1][:,:,0].std(axis=0)/np.sqrt(10), fmt="-o", mec="black", mfc="black", ms=0.2, color="#80808077")
+axs[2,2].text(.99, .1, "ElasticNet - AUC", ha="right", va="top",transform=axs[2,2].transAxes)
+
+```
+
+```{python}
+pipe_lassocvM3.predict_proba(X[[14,49],:])
+```
+
+#   Group lasso
+
+```{python}
+X1 = np.concatenate((np.repeat("A", 60), np.repeat("B", 90), np.repeat("C", 50)))
+X2 = np.concatenate((np.repeat("E", 40), np.repeat("F", 60), np.repeat("G", 55), np.repeat("H",45)))
+rng = np.random.default_rng(1298)
+X3 = rng.uniform(low=0.0, high=1.0, size=200)
+rng = np.random.default_rng(2381)
+Y = rng.uniform(low=0.0, high=1.0, size=200).round(0)
+Y1 = np.sign(2*Y-1)
+donnees = pd.DataFrame({"X1": X1, "X2": X2, "X3": X3, "Y": Y, "Y1": Y1})
+```
+
+
+
+
+```{python}
+#| eval: false
+#| echo: false
+
+import group_lasso
+coefs_lasso = []
+coefs_glasso = np.zeros((alphas.shape[0], 6))
+Cs_lasso = 1/ X.shape[0] / alphas
+for index, (a, b) in enumerate(zip(Cs_lasso, alphas)) :
+    lasso = LogisticRegression(penalty="l1", C=a, solver="liblinear", warm_start=True).fit(Xcr, donnees.Y)
+    coefs_lasso.append(lasso.coef_[0])
+    glasso = LogisticGroupLasso(groups=[1, 1, 2, 2, 2, 3], group_reg=b, l1_reg=0, scale_reg="group_size").fit(Xcr, donnees.Y)
+    ## c"est la difference des coef des 2 classes
+    coefs_glasso[index,:] = (glasso.coef_[:, 1] - glasso.coef_[:, 0])
+```
+
+```{python}
+#| eval: false
+#| echo: false
+
+fig, (ax1, ax2) = plt.subplots(1, 2)
+ax1.plot(np.log(Cs_lasso), coefs_lasso)
+for j, g in enumerate([1, 1, 2, 2, 2, 3]):
+    # sur l"echelle des Cs et des alphas...
+    ax2.plot(np.log(Cs_lasso), coefs_glasso[:,j], color="C"+str(g), \
+             ls=["-", "--", "-.",":" ][g])
+fig.tight_layout()
+
+```

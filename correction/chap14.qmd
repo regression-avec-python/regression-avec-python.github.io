@@ -1,0 +1,153 @@
+---
+title: "14 Régularisation de la vraisemblance"
+toc: true
+---
+
+::: {.content-hidden}
+{{< include ../macros.tex >}}
+:::
+
+```{python}
+import pandas as pd; import numpy as np
+import matplotlib.pyplot as plt
+from sklearn.preprocessing import StandardScaler
+from sklearn.linear_model import LogisticRegressionCV, LogisticRegression
+from sklearn.pipeline import Pipeline
+from sklearn.model_selection import StratifiedKFold
+from patsy import dmatrix
+```
+
+::: {#exr-14-1 name="Questions de cours"}
+1.  A, B
+2.  C
+3.  A
+4.  C, D
+:::
+
+::: {#exr-14-2 name="Choix du paramètre $\lambda$ sur une grille"}
+
+```{python}
+SAh = pd.read_csv("../donnees/SAh.csv", header=0, sep=",")
+```
+```{python}
+nomsvar = list(SAh.columns.difference(["chd"]))
+formule = "~ 1 +" + "+".join(nomsvar)
+dsX = dmatrix(formule, data=SAh)
+X = dmatrix(formule, data=SAh, return_type="dataframe").\
+    iloc[:,1:].to_numpy()
+Y = SAh["chd"].to_numpy()
+```
+
+```{python}
+scalerX = StandardScaler().fit(X)
+Xcr= scalerX.transform(X)
+l0 = np.abs(Xcr.transpose().dot((Y  - Y.mean()))).max()/X.shape[0]
+llc = np.linspace(0,-4,100)
+ll = l0*10**llc
+Cs_lasso = 1/ 0.9/ X.shape[0] / (l0*10**(llc))
+Cs_ridge = 1/ 0.9/ X.shape[0] / ((l0*10**(llc)) * 100)
+Cs_enet =  1/ 0.9/ X.shape[0] / ((l0*10**(llc)) / 0.5)
+```
+
+
+```{python}
+skf = StratifiedKFold(n_splits=10, shuffle=True, random_state=0)
+```
+
+```{python}
+cr = StandardScaler()
+lassocvM1 =  LogisticRegressionCV(cv=skf, penalty="l1", n_jobs=3, solver="liblinear", Cs=Cs_lasso, scoring="neg_log_loss")
+ridgecvM1 = LogisticRegressionCV(cv=skf, penalty="l2", n_jobs=3, Cs=Cs_ridge, scoring="neg_log_loss")
+enetcvM1 = LogisticRegressionCV(cv=skf, penalty="elasticnet", n_jobs=3, Cs= Cs_enet, solver="saga", l1_ratios=[0.5], scoring="neg_log_loss")
+```
+
+```{python}
+pipe_lassocvM1 = Pipeline(steps=[("cr", cr), ("lassocv", lassocvM1)])
+pipe_ridgecvM1 = Pipeline(steps=[("cr", cr), ("ridgecv", ridgecvM1)])
+pipe_enetcvM1 = Pipeline(steps=[("cr", cr), ("enetcv", enetcvM1)])
+```
+
+```{python}
+pipe_lassocvM1.fit(X,Y)
+pipe_ridgecvM1.fit(X,Y)
+pipe_enetcvM1.fit(X,Y)
+```
+
+```{python}
+cr = StandardScaler()
+lassocvM2 =  LogisticRegressionCV(cv=skf, penalty="l1", n_jobs=3, solver="liblinear", Cs=Cs_lasso, scoring="accuracy")
+ridgecvM2 = LogisticRegressionCV(cv=skf, penalty="l2", n_jobs=3, Cs=Cs_ridge, scoring="accuracy")
+enetcvM2 = LogisticRegressionCV(cv=skf, penalty="elasticnet", n_jobs=3, Cs= Cs_enet, solver="saga", l1_ratios=[0.5], scoring="accuracy")
+pipe_lassocvM2 = Pipeline(steps=[("cr", cr), ("lassocv", lassocvM2)])
+pipe_ridgecvM2 = Pipeline(steps=[("cr", cr), ("ridgecv", ridgecvM2)])
+pipe_enetcvM2 = Pipeline(steps=[("cr", cr), ("enetcv", enetcvM2)])
+pipe_lassocvM2.fit(X,Y)
+pipe_ridgecvM2.fit(X,Y)
+pipe_enetcvM2.fit(X,Y)
+
+
+cr = StandardScaler()
+lassocvM3 =  LogisticRegressionCV(cv=skf, penalty="l1", n_jobs=3, solver="liblinear", Cs=Cs_lasso, scoring="roc_auc")
+ridgecvM3 = LogisticRegressionCV(cv=skf, penalty="l2", n_jobs=3, Cs=Cs_ridge, scoring="roc_auc")
+enetcvM3 = LogisticRegressionCV(cv=skf, penalty="elasticnet", n_jobs=3, Cs= Cs_enet, solver="saga", l1_ratios=[0.5], scoring="roc_auc")
+pipe_lassocvM3 = Pipeline(steps=[("cr", cr), ("lassocv", lassocvM3)])
+pipe_ridgecvM3 = Pipeline(steps=[("cr", cr), ("ridgecv", ridgecvM3)])
+pipe_enetcvM3 = Pipeline(steps=[("cr", cr), ("enetcv", enetcvM3)])
+pipe_lassocvM3.fit(X,Y)
+pipe_ridgecvM3.fit(X,Y)
+pipe_enetcvM3.fit(X,Y)
+etape_lassoM3 = pipe_lassocvM3.named_steps["lassocv"]
+etape_lassoM3.Cs_
+etape_lassoM3.scores_[1]
+etape_lassoM3.scores_[1].mean(axis=0)
+etape_lassoM3.scores_[1].std(axis=0)/np.sqrt(10)
+
+etape_lassoM1 = pipe_lassocvM1.named_steps["lassocv"]
+etape_lassoM2 = pipe_lassocvM2.named_steps["lassocv"]
+etape_lassoM3 = pipe_lassocvM3.named_steps["lassocv"]
+etape_ridgeM1 = pipe_ridgecvM1.named_steps["ridgecv"]
+etape_ridgeM2 = pipe_ridgecvM2.named_steps["ridgecv"]
+etape_ridgeM3 = pipe_ridgecvM3.named_steps["ridgecv"]
+etape_enetM1 = pipe_enetcvM1.named_steps["enetcv"]
+etape_enetM2 = pipe_enetcvM2.named_steps["enetcv"]
+etape_enetM3 = pipe_enetcvM3.named_steps["enetcv"]
+
+```
+
+```{python}
+fig, axs = plt.subplots(3, 3)
+axs[0,0].errorbar(np.log(Cs_lasso), etape_lassoM1.scores_[1].mean(axis=0), etape_lassoM1.scores_[1].std(axis=0)/np.sqrt(10), fmt="-o", mec="black", mfc="black", ms=0.2, color="#80808077")
+axs[0,0].text(.99, .1, "Lasso - Vraisemblance", ha="right", va="top",transform=axs[0,0].transAxes)
+axs[0,1].errorbar(np.log(Cs_ridge), etape_ridgeM1.scores_[1].mean(axis=0), etape_ridgeM1.scores_[1].std(axis=0)/np.sqrt(10), fmt="-o", mec="black", mfc="black", ms=0.2, color="#80808077")
+axs[0,1].text(.99, .1, "Ridge - Vraisemblance", ha="right", va="top",transform=axs[0,1].transAxes)
+axs[0,2].errorbar(np.log(Cs_enet), etape_enetM1.scores_[1][:,:,0].mean(axis=0), etape_enetM1.scores_[1][:,:,0].std(axis=0)/np.sqrt(10), fmt="-o", mec="black", mfc="black", ms=0.2, color="#80808077")
+axs[0,2].text(.99, .1, "ElasticNet - Vraisemblance", ha="right", va="top",transform=axs[0,2].transAxes)
+##
+axs[1,0].errorbar(np.log(Cs_lasso), etape_lassoM2.scores_[1].mean(axis=0), etape_lassoM2.scores_[1].std(axis=0)/np.sqrt(10), fmt="-o", mec="black", mfc="black", ms=0.2, color="#80808077")
+axs[1,0].text(.99, .1, "Lasso - Bien classés", ha="right", va="top",transform=axs[1,0].transAxes)
+axs[1,1].errorbar(np.log(Cs_ridge), etape_ridgeM2.scores_[1].mean(axis=0), etape_ridgeM2.scores_[1].std(axis=0)/np.sqrt(10), fmt="-o", mec="black", mfc="black", ms=0.2, color="#80808077")
+axs[1,1].text(.99, .1, "Ridge - Bien classés", ha="right", va="top",transform=axs[1,1].transAxes)
+axs[1,2].errorbar(np.log(Cs_enet), etape_enetM2.scores_[1][:,:,0].mean(axis=0), etape_enetM2.scores_[1][:,:,0].std(axis=0)/np.sqrt(10), fmt="-o", mec="black", mfc="black", ms=0.2, color="#80808077")
+axs[1,2].text(.99, .1, "ElasticNet - Bien classés", ha="right", va="top",transform=axs[1,2].transAxes)
+##
+axs[2,0].errorbar(np.log(Cs_lasso), etape_lassoM3.scores_[1].mean(axis=0), etape_lassoM3.scores_[1].std(axis=0)/np.sqrt(10), fmt="-o", mec="black", mfc="black", ms=0.2, color="#80808077")
+axs[2,0].text(.99, .1, "Lasso - AUC", ha="right", va="top",transform=axs[2,0].transAxes)
+axs[2,1].errorbar(np.log(Cs_ridge), etape_ridgeM3.scores_[1].mean(axis=0), etape_ridgeM3.scores_[1].std(axis=0)/np.sqrt(10), fmt="-o", mec="black", mfc="black", ms=0.2, color="#80808077")
+axs[2,1].text(.99, .1, "Ridge - AUC", ha="right", va="top",transform=axs[2,1].transAxes)
+axs[2,2].errorbar(np.log(Cs_enet), etape_enetM3.scores_[1][:,:,0].mean(axis=0), etape_enetM3.scores_[1][:,:,0].std(axis=0)/np.sqrt(10), fmt="-o", mec="black", mfc="black", ms=0.2, color="#80808077")
+axs[2,2].text(.99, .1, "ElasticNet - AUC", ha="right", va="top",transform=axs[2,2].transAxes)
+
+```
+
+
+:::
+
+::: {#exr-14-3 name="Comparaison de méthodes et courbes ROC"}
+
+```{python}
+don = pd.read_csv("../donnees/regulglm_exo3.csv", header=0, sep=",")
+```
+
+
+
+:::
