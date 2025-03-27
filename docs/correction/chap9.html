@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 
-<title>Régularisation des moindres carrés : ridge, lasso, elastic-net – Régression avec Python</title>
+<title>9 Régularisation des moindres carrés : ridge, lasso, elastic-net – Régression avec Python</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -191,7 +191,7 @@ window.Quarto = {
       <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Basculer la barre latérale" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
         <i class="bi bi-layout-text-sidebar-reverse"></i>
       </button>
-        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../correction/index.html">Corrections</a></li><li class="breadcrumb-item"><a href="../correction/chap8.html">III Réduction de dimension</a></li><li class="breadcrumb-item"><a href="../correction/chap9.html">Régularisation des moindres carrés : ridge, lasso, elastic-net</a></li></ol></nav>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../correction/index.html">Corrections</a></li><li class="breadcrumb-item"><a href="../correction/chap8.html">III Réduction de dimension</a></li><li class="breadcrumb-item"><a href="../correction/chap9.html">9 Régularisation des moindres carrés : ridge, lasso, elastic-net</a></li></ol></nav>
         <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Basculer la barre latérale" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
         </a>
     </div>
@@ -294,7 +294,7 @@ window.Quarto = {
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="../correction/chap9.html" class="sidebar-item-text sidebar-link active">
- <span class="menu-text">Régularisation des moindres carrés : ridge, lasso, elastic-net</span></a>
+ <span class="menu-text">9 Régularisation des moindres carrés : ridge, lasso, elastic-net</span></a>
   </div>
 </li>
       </ul>
@@ -311,7 +311,7 @@ window.Quarto = {
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="../correction/chap12.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Régression logistique</span></a>
+ <span class="menu-text">12 Régression logistique</span></a>
   </div>
 </li>
           <li class="sidebar-item">
@@ -347,9 +347,9 @@ window.Quarto = {
 <!-- main -->
 <main class="content" id="quarto-document-content">
 
-<header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../correction/index.html">Corrections</a></li><li class="breadcrumb-item"><a href="../correction/chap8.html">III Réduction de dimension</a></li><li class="breadcrumb-item"><a href="../correction/chap9.html">Régularisation des moindres carrés : ridge, lasso, elastic-net</a></li></ol></nav>
+<header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../correction/index.html">Corrections</a></li><li class="breadcrumb-item"><a href="../correction/chap8.html">III Réduction de dimension</a></li><li class="breadcrumb-item"><a href="../correction/chap9.html">9 Régularisation des moindres carrés : ridge, lasso, elastic-net</a></li></ol></nav>
 <div class="quarto-title">
-<h1 class="title">Régularisation des moindres carrés : ridge, lasso, elastic-net</h1>
+<h1 class="title">9 Régularisation des moindres carrés : ridge, lasso, elastic-net</h1>
 </div>
 
 
@@ -366,7 +366,7 @@ window.Quarto = {
 </header>
 
 
-<div id="b1bab4a9" class="cell" data-execution_count="1">
+<div id="b9471a96" class="cell" data-execution_count="1">
 <div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> pandas <span class="im">as</span> pd</span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> matplotlib.pyplot <span class="im">as</span> plt</span>
 <span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
@@ -530,7 +530,7 @@ D =
 <div id="exr-9-8" class="theorem exercise">
 <p><span class="theorem-title"><strong>Exercice 8 (Traitement d’un signal)</strong></span> &nbsp;</p>
 <ol type="1">
-<li><div id="4fb3a631" class="cell" data-execution_count="2">
+<li><div id="c3860fcf" class="cell" data-execution_count="2">
 <div class="sourceCode cell-code" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>signal <span class="op">=</span> pd.read_csv(<span class="st">"../donnees/courbe_lasso.csv"</span>)</span>
 <span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>donnees <span class="op">=</span> pd.read_csv(<span class="st">"../donnees/echan_lasso.csv"</span>)</span>
 <span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a></span>
@@ -561,7 +561,7 @@ m(x)\approx \sum_{j=1}^K \beta_j\psi_j(x).
 \tag{1}\]</span></span> Le problème est toujours d’estimer les paramètres <span class="math inline">\(\beta_j\)</span> mais les variables sont maintenant définies par les éléments du dictionnaire. Il existe différents types de dictionnaire, dans cet exercice nous proposons de considérer la base de Fourier définie par <span class="math display">\[
 \psi_0(x)=1,\quad \psi_{2j-1}(x)=\cos(2j\pi x)\quad\text{et}\quad \psi_{2j}(x)=\sin(2j\pi x),\quad j=1,\dots,K.
 \]</span></p></li>
-<li><div id="1e9888f9" class="cell" data-execution_count="3">
+<li><div id="00c343dc" class="cell" data-execution_count="3">
 <div class="sourceCode cell-code" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> mat_dict(K, x):</span>
 <span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Initialiser une matrice de zéros avec la taille appropriée</span></span>
 <span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>    res <span class="op">=</span> np.zeros((<span class="bu">len</span>(x), <span class="dv">2</span> <span class="op">*</span> K))</span>
@@ -577,7 +577,7 @@ m(x)\approx \sum_{j=1}^K \beta_j\psi_j(x).
 <span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> res_df</span></code><button title="Copier vers le presse-papier" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div></li>
 <li><p>Il suffit d’ajuster le modèle linéaire où les variables explicatives sont données par le dictionnaire :</p>
-<div id="4eb18776" class="cell" data-execution_count="4">
+<div id="be69e9ab" class="cell" data-execution_count="4">
 <div class="sourceCode cell-code" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Créer le dictionnaire pour les données</span></span>
 <span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>D25 <span class="op">=</span> mat_dict(<span class="dv">25</span>, donnees[<span class="st">'X'</span>])</span>
 <span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>D25[<span class="st">'Y'</span>] <span class="op">=</span> donnees[<span class="st">'Y'</span>]</span>
@@ -621,7 +621,7 @@ m(x)\approx \sum_{j=1}^K \beta_j\psi_j(x).
 </div>
 <p>Le signal estimé a tendance à surajuster les données. Cela vient du fait qu’on estime 51 paramètres avec seulement 60 observations.</p></li>
 <li><p>On regarde tout d’abord le <code>chemin de régularisation</code> des estimateurs <strong>lasso</strong></p>
-<div id="512fc2f5" class="cell" data-execution_count="5">
+<div id="2b67fe52" class="cell" data-execution_count="5">
 <div class="sourceCode cell-code" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>X_25 <span class="op">=</span> D25.drop(columns<span class="op">=</span><span class="st">'Y'</span>).values</span>
 <span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>y_25 <span class="op">=</span> D25[<span class="st">'Y'</span>].values</span>
 <span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a></span>
@@ -648,7 +648,7 @@ m(x)\approx \sum_{j=1}^K \beta_j\psi_j(x).
 </div>
 </div>
 <p>Il semble que quelques coefficients quittent la valeur 0 bien avant les autres. On effectue maintenant la validation croisée pour sélectionner le paramètre <span class="math inline">\(\lambda\)</span>.</p>
-<div id="d81f11f8" class="cell" data-execution_count="6">
+<div id="58dd3264" class="cell" data-execution_count="6">
 <div class="sourceCode cell-code" id="cb6"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>lasso_cv <span class="op">=</span> LassoCV(cv<span class="op">=</span><span class="dv">10</span>, random_state<span class="op">=</span><span class="dv">1234</span>).fit(X_25, y_25)</span>
 <span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a><span class="co"># Tracer les résultats de la validation croisée</span></span>
@@ -673,7 +673,7 @@ m(x)\approx \sum_{j=1}^K \beta_j\psi_j(x).
 </div>
 </div>
 </div>
-<div id="9ae50fe5" class="cell" data-execution_count="7">
+<div id="3775ee7e" class="cell" data-execution_count="7">
 <div class="sourceCode cell-code" id="cb7"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>S25 <span class="op">=</span> mat_dict(<span class="dv">25</span>, signal[<span class="st">'x'</span>])</span>
 <span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>prev_lasso <span class="op">=</span> lasso_cv.predict(S25)</span>
 <span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>signal1[<span class="st">'lasso'</span>] <span class="op">=</span> prev_lasso</span>
@@ -1148,8 +1148,8 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
       </a>          
   </div>
   <div class="nav-page nav-page-next">
-      <a href="../correction/chap12.html" class="pagination-link" aria-label="Régression logistique">
-        <span class="nav-page-text">Régression logistique</span> <i class="bi bi-arrow-right-short"></i>
+      <a href="../correction/chap12.html" class="pagination-link" aria-label="12 Régression logistique">
+        <span class="nav-page-text">12 Régression logistique</span> <i class="bi bi-arrow-right-short"></i>
       </a>
   </div>
 </nav>

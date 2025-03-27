@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 
-<title>Régression logistique – Régression avec Python</title>
+<title>12 Régression logistique – Régression avec Python</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -194,7 +194,7 @@ window.Quarto = {
       <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Basculer la barre latérale" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
         <i class="bi bi-layout-text-sidebar-reverse"></i>
       </button>
-        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../correction/index.html">Corrections</a></li><li class="breadcrumb-item"><a href="../correction/chap12.html">IV Le modèle linéaire généralisé</a></li><li class="breadcrumb-item"><a href="../correction/chap12.html">Régression logistique</a></li></ol></nav>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../correction/index.html">Corrections</a></li><li class="breadcrumb-item"><a href="../correction/chap12.html">IV Le modèle linéaire généralisé</a></li><li class="breadcrumb-item"><a href="../correction/chap12.html">12 Régression logistique</a></li></ol></nav>
         <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Basculer la barre latérale" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
         </a>
     </div>
@@ -297,7 +297,7 @@ window.Quarto = {
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="../correction/chap9.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Régularisation des moindres carrés : ridge, lasso, elastic-net</span></a>
+ <span class="menu-text">9 Régularisation des moindres carrés : ridge, lasso, elastic-net</span></a>
   </div>
 </li>
       </ul>
@@ -314,7 +314,7 @@ window.Quarto = {
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="../correction/chap12.html" class="sidebar-item-text sidebar-link active">
- <span class="menu-text">Régression logistique</span></a>
+ <span class="menu-text">12 Régression logistique</span></a>
   </div>
 </li>
           <li class="sidebar-item">
@@ -350,9 +350,9 @@ window.Quarto = {
 <!-- main -->
 <main class="content" id="quarto-document-content">
 
-<header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../correction/index.html">Corrections</a></li><li class="breadcrumb-item"><a href="../correction/chap12.html">IV Le modèle linéaire généralisé</a></li><li class="breadcrumb-item"><a href="../correction/chap12.html">Régression logistique</a></li></ol></nav>
+<header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../correction/index.html">Corrections</a></li><li class="breadcrumb-item"><a href="../correction/chap12.html">IV Le modèle linéaire généralisé</a></li><li class="breadcrumb-item"><a href="../correction/chap12.html">12 Régression logistique</a></li></ol></nav>
 <div class="quarto-title">
-<h1 class="title">Régression logistique</h1>
+<h1 class="title">12 Régression logistique</h1>
 </div>
 
 
@@ -369,7 +369,7 @@ window.Quarto = {
 </header>
 
 
-<div id="822b9bd8" class="cell" data-execution_count="1">
+<div id="f32152cf" class="cell" data-execution_count="1">
 <div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> pandas <span class="im">as</span> pd</span>
 <span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> statsmodels.api <span class="im">as</span> sm</span>
@@ -396,7 +396,7 @@ window.Quarto = {
 <p><span class="theorem-title"><strong>Exercice 2 (Interprétation des coefficients)</strong></span> &nbsp;</p>
 <ol type="1">
 <li><p>On génère l’échantillon.</p>
-<div id="b9830709" class="cell" data-execution_count="2">
+<div id="ac7c9ae1" class="cell" data-execution_count="2">
 <div class="sourceCode cell-code" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>n <span class="op">=</span> <span class="dv">100</span></span>
 <span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>np.random.seed(<span class="dv">48967365</span>)</span>
 <span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>X <span class="op">=</span> np.random.choice([<span class="st">'A'</span>, <span class="st">'B'</span>, <span class="st">'C'</span>], size<span class="op">=</span>n, replace<span class="op">=</span><span class="va">True</span>)</span>
@@ -419,7 +419,7 @@ window.Quarto = {
 </div>
 </div></li>
 <li><p>On ajuste le modèle avec les contraintes par défaut.</p>
-<div id="295305d1" class="cell" data-execution_count="3">
+<div id="e5b213d2" class="cell" data-execution_count="3">
 <div class="sourceCode cell-code" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>model1 <span class="op">=</span> smf.logit(<span class="st">'Y ~ X'</span>, data<span class="op">=</span>donnees).fit()</span>
 <span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(model1.summary())</span></code><button title="Copier vers le presse-papier" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
@@ -431,8 +431,8 @@ window.Quarto = {
 Dep. Variable:                      Y   No. Observations:                  100
 Model:                          Logit   Df Residuals:                       97
 Method:                           MLE   Df Model:                            2
-Date:                Tue, 04 Feb 2025   Pseudo R-squ.:                  0.5521
-Time:                        12:22:32   Log-Likelihood:                -29.745
+Date:                Thu, 27 Mar 2025   Pseudo R-squ.:                  0.5521
+Time:                        16:24:03   Log-Likelihood:                -29.745
 converged:                       True   LL-Null:                       -66.406
 Covariance Type:            nonrobust   LLR p-value:                 1.197e-16
 ==============================================================================
@@ -446,7 +446,7 @@ X[T.C]        -4.6868      0.872     -5.373      0.000      -6.396      -2.977
 </div>
 <p>On obtient les résultats du <strong>test de Wald</strong> sur la nullité des paramètres <span class="math inline">\(\beta_0,\beta_2\)</span> et <span class="math inline">\(\beta_3\)</span>.</p></li>
 <li><p>On change la modalité de référence.</p>
-<div id="decd4891" class="cell" data-execution_count="4">
+<div id="d91e12df" class="cell" data-execution_count="4">
 <div class="sourceCode cell-code" id="cb6"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>model2 <span class="op">=</span> smf.logit(<span class="st">'Y ~ C(X, Treatment(reference="C"))'</span>, data<span class="op">=</span>donnees).fit()</span>
 <span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(model2.summary())</span></code><button title="Copier vers le presse-papier" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
@@ -458,8 +458,8 @@ X[T.C]        -4.6868      0.872     -5.373      0.000      -6.396      -2.977
 Dep. Variable:                      Y   No. Observations:                  100
 Model:                          Logit   Df Residuals:                       97
 Method:                           MLE   Df Model:                            2
-Date:                Tue, 04 Feb 2025   Pseudo R-squ.:                  0.5521
-Time:                        12:22:32   Log-Likelihood:                -29.745
+Date:                Thu, 27 Mar 2025   Pseudo R-squ.:                  0.5521
+Time:                        16:24:03   Log-Likelihood:                -29.745
 converged:                       True   LL-Null:                       -66.406
 Covariance Type:            nonrobust   LLR p-value:                 1.197e-16
 =======================================================================================================
@@ -479,7 +479,7 @@ C(X, Treatment(reference="C"))[T.B]     5.2666      1.035      5.086      0.000 
 <li><span class="math inline">\(\beta_1=\beta_2=0\)</span> dans <strong>model2</strong>.</li>
 </ul>
 <p>On peut effectuer les tests de <strong>Wald</strong> ou du <strong>rapport de vraisemblance</strong>. On obtient les résultats du <strong>rapport de vraisemblance</strong> avec :</p>
-<div id="62143931" class="cell" data-execution_count="5">
+<div id="8935373d" class="cell" data-execution_count="5">
 <div class="sourceCode cell-code" id="cb8"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>lr_test_model1 <span class="op">=</span> model1.llr</span>
 <span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>lr_test_model2 <span class="op">=</span> model2.llr</span>
 <span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a></span>
@@ -503,7 +503,7 @@ LR stat: 73.3227, p-value: 0.0000</code></pre>
 <p><span class="theorem-title"><strong>Exercice 3 (Séparabilité)</strong></span> &nbsp;</p>
 <ol type="1">
 <li><p>On génère l’échantillon demandé.</p>
-<div id="0bc3e4a5" class="cell" data-execution_count="6">
+<div id="103d4ffa" class="cell" data-execution_count="6">
 <div class="sourceCode cell-code" id="cb10"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>np.random.seed(<span class="dv">1234</span>)</span>
 <span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>X <span class="op">=</span> np.concatenate([np.random.uniform(<span class="op">-</span><span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">50</span>), np.random.uniform(<span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">50</span>)])</span>
 <span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a>Y <span class="op">=</span> np.concatenate([np.zeros(<span class="dv">50</span>), np.ones(<span class="dv">50</span>)])</span>
@@ -519,7 +519,7 @@ LR stat: 73.3227, p-value: 0.0000</code></pre>
 </div>
 </div></li>
 <li><p>Le graphe s’obtient avec :</p>
-<div id="f600f279" class="cell" data-execution_count="7">
+<div id="582b4436" class="cell" data-execution_count="7">
 <div class="sourceCode cell-code" id="cb12"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a>beta <span class="op">=</span> np.arange(<span class="dv">0</span>, <span class="dv">100</span>, <span class="fl">0.01</span>)</span>
 <span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> log_vrais(X, Y, beta):</span>
 <span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a>    LV <span class="op">=</span> np.zeros(<span class="bu">len</span>(beta))</span>
@@ -529,7 +529,7 @@ LR stat: 73.3227, p-value: 0.0000</code></pre>
 <span id="cb12-7"><a href="#cb12-7" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> LV</span>
 <span id="cb12-8"><a href="#cb12-8" aria-hidden="true" tabindex="-1"></a>LL <span class="op">=</span> log_vrais(df[<span class="st">'X'</span>], df[<span class="st">'Y'</span>], beta)</span></code><button title="Copier vers le presse-papier" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<div id="49d3a164" class="cell" data-execution_count="8">
+<div id="b1c48f52" class="cell" data-execution_count="8">
 <div class="sourceCode cell-code" id="cb13"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a>plt.plot(beta,LL)</span>
 <span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a>plt.xlabel(<span class="st">'beta'</span>)</span>
 <span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a>plt.ylabel(<span class="st">'Log-vraisemblance'</span>)</span>
@@ -544,7 +544,7 @@ LR stat: 73.3227, p-value: 0.0000</code></pre>
 </div>
 </div></li>
 <li><p>On obtient un avertissement qui nous dit que l’algorithme d’optimisation n’a pas convergé.</p>
-<div id="2ffe54b3" class="cell" data-message="true" data-execution_count="9">
+<div id="975b9ff6" class="cell" data-message="true" data-execution_count="9">
 <div class="sourceCode cell-code" id="cb14"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a>model <span class="op">=</span> smf.logit(<span class="st">'Y ~ X - 1'</span>, data<span class="op">=</span>df).fit()</span>
 <span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(model.params)</span></code><button title="Copier vers le presse-papier" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
@@ -562,7 +562,7 @@ dtype: float64</code></pre>
 </div>
 </div></li>
 <li><p>Le changement proposé supprime la séparabilité des données. On obtient bien un maximum fini pour cette nouvelle vraisemblance.</p>
-<div id="57913488" class="cell" data-execution_count="10">
+<div id="f6cc1356" class="cell" data-execution_count="10">
 <div class="sourceCode cell-code" id="cb17"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a>Y1 <span class="op">=</span> Y.copy()</span>
 <span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a>Y1[<span class="dv">0</span>] <span class="op">=</span> <span class="dv">1</span></span>
 <span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a>LL1 <span class="op">=</span> log_vrais(X, Y1, beta)</span>
@@ -592,7 +592,7 @@ dtype: float64</code></pre>
 </div>
 <div id="exr-12-5" class="theorem exercise">
 <p><span class="theorem-title"><strong>Exercice 5 (Modèles avec R)</strong></span> On importe les données :</p>
-<div id="5a4447af" class="cell" data-execution_count="11">
+<div id="b7867c27" class="cell" data-execution_count="11">
 <div class="sourceCode cell-code" id="cb18"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a>panne <span class="op">=</span> pd.read_csv(<span class="st">"../donnees/panne.txt"</span>, sep<span class="op">=</span><span class="st">" "</span>)</span>
 <span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(panne.head())</span></code><button title="Copier vers le presse-papier" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
@@ -606,7 +606,7 @@ dtype: float64</code></pre>
 </div>
 <ol type="1">
 <li><p>La commande</p>
-<div id="e588e1e8" class="cell" data-execution_count="12">
+<div id="7c08f27b" class="cell" data-execution_count="12">
 <div class="sourceCode cell-code" id="cb20"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a>model <span class="op">=</span> smf.logit(<span class="st">'etat ~ age+marque'</span>, data<span class="op">=</span>panne).fit()</span></code><button title="Copier vers le presse-papier" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>Optimization terminated successfully.
@@ -615,7 +615,7 @@ dtype: float64</code></pre>
 </div>
 </div>
 <p>ajuste le modèle <span class="math display">\[\log\left(\frac{p_\beta(x)}{1-p_\beta(x)}\right)=\beta_0+\beta_1x_1+\beta_2\mathsf{1}_{x_2=B}+\beta_3\mathsf{1}_{x_2=C}\]</span> où <span class="math inline">\(x_1\)</span> et <span class="math inline">\(x_2\)</span> désigne respectivement les variables <strong>age</strong> et <strong>marque</strong>. On obtient les estimateurs avec</p>
-<div id="d4625094" class="cell" data-execution_count="13">
+<div id="b50f23c6" class="cell" data-execution_count="13">
 <div class="sourceCode cell-code" id="cb22"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(model.summary())</span></code><button title="Copier vers le presse-papier" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>                           Logit Regression Results                           
@@ -623,8 +623,8 @@ dtype: float64</code></pre>
 Dep. Variable:                   etat   No. Observations:                   33
 Model:                          Logit   Df Residuals:                       29
 Method:                           MLE   Df Model:                            3
-Date:                Tue, 04 Feb 2025   Pseudo R-squ.:                 0.04845
-Time:                        12:22:41   Log-Likelihood:                -21.751
+Date:                Thu, 27 Mar 2025   Pseudo R-squ.:                 0.04845
+Time:                        16:24:11   Log-Likelihood:                -21.751
 converged:                       True   LL-Null:                       -22.859
 Covariance Type:            nonrobust   LLR p-value:                    0.5290
 ===============================================================================
@@ -638,7 +638,7 @@ age             0.0139      0.094      0.148      0.883      -0.170       0.198
 </div>
 </div></li>
 <li><p>Il s’agit des tests de Wald pour tester l’effet des variables dans le modèle. Pour l’effet de marque, on va par exemple tester <span class="math display">\[H_0:\beta_2=\beta_3=0\quad\text{contre}\quad H_1:\beta_2\neq 0\text{ ou }\beta_3\neq 0.\]</span> Sous <span class="math inline">\(H_0\)</span> la statistique de Wald suit une loi du <span class="math inline">\(\chi^2\)</span> à 4-2=2 degrés de liberté. Pour le test de la variable <strong>age</strong> le nombre de degrés de liberté manquant est 1. On retrouve cela dans la sortie</p>
-<div id="9bdac9a6" class="cell" data-execution_count="14">
+<div id="6c6d2bfe" class="cell" data-execution_count="14">
 <div class="sourceCode cell-code" id="cb24"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a>wald_tests <span class="op">=</span> model.wald_test_terms()</span>
 <span id="cb24-2"><a href="#cb24-2" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"Tests de Wald pour chaque coefficient:"</span>)</span>
 <span id="cb24-3"><a href="#cb24-3" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(wald_tests)</span></code><button title="Copier vers le presse-papier" class="code-copy-button"><i class="bi"></i></button></pre></div>
@@ -655,7 +655,7 @@ age        [[0.02182485519152971]]  0.8825539788968159              1</code></pr
 3.  Il s'agit cette fois du test du rapport de vraisemblance. Les degrés de liberté manquants sont identiques.
 
 
-    ::: {#224d016f .cell execution_count=15}
+    ::: {#868704e6 .cell execution_count=15}
     ``` {.python .cell-code}
     def lr_test(full_model, reduced_model):
         lr_stat = 2 * (full_model.llf - reduced_model.llf)
@@ -714,7 +714,7 @@ age        [[0.02182485519152971]]  0.8825539788968159              1</code></pr
     \widehat\beta_2=1.05 \\
     \end{cases}
 \]</span> On peut retrouver ces résultats avec</p>
-<div id="c1ee341c" class="cell" data-execution_count="16">
+<div id="43f6516f" class="cell" data-execution_count="16">
 <div class="sourceCode cell-code" id="cb26"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a>model1 <span class="op">=</span> smf.logit(<span class="st">'etat ~ C(marque, Treatment(reference="C"))'</span>, data<span class="op">=</span>panne).fit()</span>
 <span id="cb26-2"><a href="#cb26-2" aria-hidden="true" tabindex="-1"></a>model1.summary()</span></code><button title="Copier vers le presse-papier" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
@@ -746,13 +746,13 @@ age        [[0.02182485519152971]]  0.8825539788968159              1</code></pr
 </tr>
 <tr class="even">
 <td data-quarto-table-cell-role="th">Date:</td>
-<td>Tue, 04 Feb 2025</td>
+<td>Thu, 27 Mar 2025</td>
 <td data-quarto-table-cell-role="th">Pseudo R-squ.:</td>
 <td>0.04798</td>
 </tr>
 <tr class="odd">
 <td data-quarto-table-cell-role="th">Time:</td>
-<td>12:22:41</td>
+<td>16:24:11</td>
 <td data-quarto-table-cell-role="th">Log-Likelihood:</td>
 <td>-21.762</td>
 </tr>
@@ -830,7 +830,7 @@ age        [[0.02182485519152971]]  0.8825539788968159              1</code></pr
 \end{cases}
 \]</span></p>
 <p>On déduit les valeurs des estimateurs que l’on peut retrouver avec la commande :</p>
-<div id="afd6301e" class="cell" data-execution_count="17">
+<div id="a71b3f96" class="cell" data-execution_count="17">
 <div class="sourceCode cell-code" id="cb28"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a>model2 <span class="op">=</span> smf.logit(<span class="st">'etat ~ -1 + marque + marque:age'</span>, data<span class="op">=</span>panne).fit()</span>
 <span id="cb28-2"><a href="#cb28-2" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(model2.summary())</span></code><button title="Copier vers le presse-papier" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
@@ -842,8 +842,8 @@ age        [[0.02182485519152971]]  0.8825539788968159              1</code></pr
 Dep. Variable:                   etat   No. Observations:                   33
 Model:                          Logit   Df Residuals:                       27
 Method:                           MLE   Df Model:                            5
-Date:                Tue, 04 Feb 2025   Pseudo R-squ.:                 0.06773
-Time:                        12:22:41   Log-Likelihood:                -21.310
+Date:                Thu, 27 Mar 2025   Pseudo R-squ.:                 0.06773
+Time:                        16:24:11   Log-Likelihood:                -21.310
 converged:                       True   LL-Null:                       -22.859
 Covariance Type:            nonrobust   LLR p-value:                    0.6851
 =================================================================================
@@ -862,7 +862,7 @@ marque[C]:age     0.2723      0.367      0.742      0.458      -0.447       0.99
 </div>
 <div id="exr-12-6" class="theorem exercise">
 <p><span class="theorem-title"><strong>Exercice 6 (Interprétation)</strong></span> &nbsp;</p>
-<div id="18d653b5" class="cell" data-execution_count="18">
+<div id="ad2afe39" class="cell" data-execution_count="18">
 <div class="sourceCode cell-code" id="cb30"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a>df <span class="op">=</span> pd.read_csv(<span class="st">"../donnees/logit_exo6.csv"</span>)</span>
 <span id="cb30-2"><a href="#cb30-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb30-3"><a href="#cb30-3" aria-hidden="true" tabindex="-1"></a><span class="co"># Ajuster le modèle de régression logistique avec toutes les variables explicatives</span></span>
@@ -886,8 +886,8 @@ Optimization terminated successfully.
 Dep. Variable:                      Y   No. Observations:                  500
 Model:                          Logit   Df Residuals:                      497
 Method:                           MLE   Df Model:                            2
-Date:                Tue, 04 Feb 2025   Pseudo R-squ.:                  0.1080
-Time:                        12:22:41   Log-Likelihood:                -309.13
+Date:                Thu, 27 Mar 2025   Pseudo R-squ.:                  0.1080
+Time:                        16:24:11   Log-Likelihood:                -309.13
 converged:                       True   LL-Null:                       -346.57
 Covariance Type:            nonrobust   LLR p-value:                 5.469e-17
 ==============================================================================
@@ -902,8 +902,8 @@ X2             0.3190      0.044      7.244      0.000       0.233       0.405
 Dep. Variable:                      Y   No. Observations:                  500
 Model:                          Logit   Df Residuals:                      498
 Method:                           MLE   Df Model:                            1
-Date:                Tue, 04 Feb 2025   Pseudo R-squ.:               0.0002259
-Time:                        12:22:41   Log-Likelihood:                -346.50
+Date:                Thu, 27 Mar 2025   Pseudo R-squ.:               0.0002259
+Time:                        16:24:11   Log-Likelihood:                -346.50
 converged:                       True   LL-Null:                       -346.57
 Covariance Type:            nonrobust   LLR p-value:                    0.6923
 ==============================================================================
@@ -921,7 +921,7 @@ X1            -0.0205      0.052     -0.396      0.692      -0.122       0.081
 <ol type="1">
 <li><p>Le modèle s’écrit <span class="math display">\[log\left(\frac{p_\beta(x)}{1-p_\beta(x)}\right)=\beta_0+\beta_1x.\]</span></p></li>
 <li><p>La log vraisemblance s’obtient avec</p>
-<div id="d6ef065e" class="cell" data-execution_count="19">
+<div id="872d0f5d" class="cell" data-execution_count="19">
 <div class="sourceCode cell-code" id="cb32"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb32-1"><a href="#cb32-1" aria-hidden="true" tabindex="-1"></a>p <span class="op">=</span> np.array([<span class="fl">0.76</span>, <span class="fl">0.4</span>, <span class="fl">0.6</span>, <span class="fl">0.89</span>, <span class="fl">0.35</span>])</span>
 <span id="cb32-2"><a href="#cb32-2" aria-hidden="true" tabindex="-1"></a>Y <span class="op">=</span> np.array([<span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">1</span>])</span>
 <span id="cb32-3"><a href="#cb32-3" aria-hidden="true" tabindex="-1"></a>L1 <span class="op">=</span> np.log(np.prod(p<span class="op">**</span>Y <span class="op">*</span> (<span class="dv">1</span><span class="op">-</span>p)<span class="op">**</span>(<span class="dv">1</span><span class="op">-</span>Y)))</span>
@@ -932,7 +932,7 @@ X1            -0.0205      0.052     -0.396      0.692      -0.122       0.081
 </div></li>
 <li><ol type="a">
 <li><p>On calcule les écart-type des estimateurs</p>
-<div id="1ebb7fb1" class="cell" data-execution_count="20">
+<div id="d2b5f7ce" class="cell" data-execution_count="20">
 <div class="sourceCode cell-code" id="cb34"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb34-1"><a href="#cb34-1" aria-hidden="true" tabindex="-1"></a>p <span class="op">=</span> np.array([<span class="fl">0.76</span>, <span class="fl">0.4</span>, <span class="fl">0.6</span>, <span class="fl">0.89</span>, <span class="fl">0.35</span>])</span>
 <span id="cb34-2"><a href="#cb34-2" aria-hidden="true" tabindex="-1"></a>X1 <span class="op">=</span> np.array([<span class="fl">0.47</span>, <span class="op">-</span><span class="fl">0.55</span>, <span class="op">-</span><span class="fl">0.01</span>, <span class="fl">1.07</span>, <span class="op">-</span><span class="fl">0.71</span>])</span>
 <span id="cb34-3"><a href="#cb34-3" aria-hidden="true" tabindex="-1"></a>X <span class="op">=</span> np.column_stack((np.ones(<span class="dv">5</span>), X1))</span>
@@ -945,7 +945,7 @@ X1            -0.0205      0.052     -0.396      0.692      -0.122       0.081
 </div>
 </div>
 <p>On en déduit les statistiques de test :</p>
-<div id="c8a8b1ca" class="cell" data-execution_count="21">
+<div id="559f3087" class="cell" data-execution_count="21">
 <div class="sourceCode cell-code" id="cb36"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb36-1"><a href="#cb36-1" aria-hidden="true" tabindex="-1"></a>beta <span class="op">=</span> np.array([<span class="fl">0.4383</span>, <span class="fl">1.5063</span>])</span>
 <span id="cb36-2"><a href="#cb36-2" aria-hidden="true" tabindex="-1"></a>result <span class="op">=</span> beta <span class="op">/</span> sig</span>
 <span id="cb36-3"><a href="#cb36-3" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(result)</span></code><button title="Copier vers le presse-papier" class="code-copy-button"><i class="bi"></i></button></pre></div>
@@ -955,14 +955,14 @@ X1            -0.0205      0.052     -0.396      0.692      -0.122       0.081
 </div></li>
 <li><p>On peut faire le test de Wald et du rapport de vraisemblance.</p></li>
 <li><p>La statistique de test vaut 0.8632411, on obtient donc la probabilité critique</p>
-<div id="c2a48e80" class="cell" data-execution_count="22">
+<div id="724a3764" class="cell" data-execution_count="22">
 <div class="sourceCode cell-code" id="cb38"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb38-1"><a href="#cb38-1" aria-hidden="true" tabindex="-1"></a><span class="dv">2</span> <span class="op">*</span> (<span class="dv">1</span> <span class="op">-</span> norm.cdf(<span class="fl">0.8632411</span>))</span></code><button title="Copier vers le presse-papier" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-display" data-execution_count="22">
 <pre><code>0.3880049206652636</code></pre>
 </div>
 </div>
 <p>On peut également effectuer un test du rapport de vraisemblance. Le modèle null sans X1 a pour log-vraisemblance</p>
-<div id="82054446" class="cell" data-execution_count="23">
+<div id="9000c4e4" class="cell" data-execution_count="23">
 <div class="sourceCode cell-code" id="cb40"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb40-1"><a href="#cb40-1" aria-hidden="true" tabindex="-1"></a>p0 <span class="op">=</span> <span class="dv">3</span> <span class="op">/</span> <span class="dv">5</span></span>
 <span id="cb40-2"><a href="#cb40-2" aria-hidden="true" tabindex="-1"></a>Y <span class="op">=</span> np.array([<span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">1</span>])</span>
 <span id="cb40-3"><a href="#cb40-3" aria-hidden="true" tabindex="-1"></a>L0 <span class="op">=</span> np.log(np.prod(p0<span class="op">**</span>Y <span class="op">*</span> (<span class="dv">1</span><span class="op">-</span>p0)<span class="op">**</span>(<span class="dv">1</span><span class="op">-</span>Y)))</span>
@@ -972,21 +972,21 @@ X1            -0.0205      0.052     -0.396      0.692      -0.122       0.081
 </div>
 </div>
 <p>La statistique de test vaut donc</p>
-<div id="1d468d24" class="cell" data-execution_count="24">
+<div id="fcc334bd" class="cell" data-execution_count="24">
 <div class="sourceCode cell-code" id="cb42"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb42-1"><a href="#cb42-1" aria-hidden="true" tabindex="-1"></a><span class="dv">2</span><span class="op">*</span>(L1<span class="op">-</span>L0)</span></code><button title="Copier vers le presse-papier" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-display" data-execution_count="24">
 <pre><code>0.9942983858994943</code></pre>
 </div>
 </div>
 <p>et la probabilité critique est égale à</p>
-<div id="e2f90c18" class="cell" data-execution_count="25">
+<div id="f3b48a50" class="cell" data-execution_count="25">
 <div class="sourceCode cell-code" id="cb44"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb44-1"><a href="#cb44-1" aria-hidden="true" tabindex="-1"></a><span class="dv">1</span> <span class="op">-</span> chi2.cdf(<span class="dv">2</span><span class="op">*</span>(L1<span class="op">-</span>L0), df<span class="op">=</span><span class="dv">1</span>)</span></code><button title="Copier vers le presse-papier" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-display" data-execution_count="25">
 <pre><code>0.31869407584847365</code></pre>
 </div>
 </div>
 <p>On peut retrouver (aux arrondis près) les résultats de l’exercice avec</p>
-<div id="ca21d325" class="cell" data-execution_count="26">
+<div id="134705fe" class="cell" data-execution_count="26">
 <div class="sourceCode cell-code" id="cb46"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb46-1"><a href="#cb46-1" aria-hidden="true" tabindex="-1"></a>X <span class="op">=</span> [<span class="fl">0.47</span>, <span class="op">-</span><span class="fl">0.55</span>, <span class="op">-</span><span class="fl">0.01</span>, <span class="fl">1.07</span>, <span class="op">-</span><span class="fl">0.71</span>]</span>
 <span id="cb46-2"><a href="#cb46-2" aria-hidden="true" tabindex="-1"></a>Y <span class="op">=</span> [<span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">1</span>]</span>
 <span id="cb46-3"><a href="#cb46-3" aria-hidden="true" tabindex="-1"></a>df <span class="op">=</span> pd.DataFrame({<span class="st">'X'</span>: X, <span class="st">'Y'</span>: Y})</span>
@@ -1000,7 +1000,7 @@ X1            -0.0205      0.052     -0.396      0.692      -0.122       0.081
 -2.898765148750008</code></pre>
 </div>
 </div>
-<div id="5168505b" class="cell" data-execution_count="27">
+<div id="54d20266" class="cell" data-execution_count="27">
 <div class="sourceCode cell-code" id="cb48"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb48-1"><a href="#cb48-1" aria-hidden="true" tabindex="-1"></a>wald_test <span class="op">=</span> model.wald_test_terms()</span>
 <span id="cb48-2"><a href="#cb48-2" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(wald_test)</span></code><button title="Copier vers le presse-papier" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
@@ -1009,7 +1009,7 @@ Intercept  [[0.1845505636560877]]   0.6674913759958387              1
 X           [[0.755071501627431]]  0.38487529817766963              1</code></pre>
 </div>
 </div>
-<div id="f3d9f796" class="cell" data-execution_count="28">
+<div id="65a5dd57" class="cell" data-execution_count="28">
 <div class="sourceCode cell-code" id="cb50"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb50-1"><a href="#cb50-1" aria-hidden="true" tabindex="-1"></a>lr_test_model <span class="op">=</span> model.llr</span>
 <span id="cb50-2"><a href="#cb50-2" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"LR stat: </span><span class="sc">{</span>lr_test_model<span class="sc">:.4f}</span><span class="ss">, p-value: </span><span class="sc">{</span>model<span class="sc">.</span>llr_pvalue<span class="sc">:.4f}</span><span class="ss">"</span>)</span></code><button title="Copier vers le presse-papier" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
@@ -1044,16 +1044,16 @@ n_t\\
 <div id="exr-12-9" class="theorem exercise">
 <p><span class="theorem-title"><strong>Exercice 9 (Résidus partiels)</strong></span> &nbsp;</p>
 <ol type="1">
-<li><div id="dc2125f8" class="cell" data-execution_count="29">
+<li><div id="673249ad" class="cell" data-execution_count="29">
 <div class="sourceCode cell-code" id="cb52"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb52-1"><a href="#cb52-1" aria-hidden="true" tabindex="-1"></a>artere <span class="op">=</span> pd.read_csv(<span class="st">'../donnees/artere.txt'</span>, header<span class="op">=</span><span class="dv">0</span>, index_col<span class="op">=</span><span class="dv">0</span>, sep<span class="op">=</span><span class="st">' '</span>)</span>
 <span id="cb52-2"><a href="#cb52-2" aria-hidden="true" tabindex="-1"></a>modele <span class="op">=</span> smf.glm(<span class="st">'chd~age'</span>, data<span class="op">=</span>artere, family<span class="op">=</span>sm.families.Binomial()).fit()</span>
 <span id="cb52-3"><a href="#cb52-3" aria-hidden="true" tabindex="-1"></a>B0 <span class="op">=</span> modele.params</span>
 <span id="cb52-4"><a href="#cb52-4" aria-hidden="true" tabindex="-1"></a>OriginalDeviance <span class="op">=</span> modele.deviance</span></code><button title="Copier vers le presse-papier" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div></li>
-<li><div id="8ff64acd" class="cell" data-execution_count="30">
+<li><div id="c286aa18" class="cell" data-execution_count="30">
 <div class="sourceCode cell-code" id="cb53"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb53-1"><a href="#cb53-1" aria-hidden="true" tabindex="-1"></a>alpha<span class="op">=</span><span class="fl">0.05</span></span></code><button title="Copier vers le presse-papier" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div></li>
-<li><p>::: {#496f8de4 .cell execution_count=31} <code>{.python .cell-code}   stderr = modele.cov_params().iloc[1,1]**0.5   from scipy import stats   delta = stats.chi2.ppf(1-alpha/4, df=1)**0.5*stderr/5   grille = B0[1] + np.arange(-10,11)*delta</code> :::</p></li>
+<li><p>::: {#4ca5c0d7 .cell execution_count=31} <code>{.python .cell-code}   stderr = modele.cov_params().iloc[1,1]**0.5   from scipy import stats   delta = stats.chi2.ppf(1-alpha/4, df=1)**0.5*stderr/5   grille = B0[1] + np.arange(-10,11)*delta</code> :::</p></li>
 <li><p>On a <span class="math display">\[\begin{align*}
 \mathcal D_1&amp;=-2(\mathcal L(Y,\hat\beta)-\mathcal L_{sat})
   \end{align*}\]</span> Pour celle avec l’offset <span class="math inline">\(K_i=x_i\beta_2^*\)</span> elle vaut <span class="math display">\[\begin{align*}
@@ -1061,7 +1061,7 @@ n_t\\
   \end{align*}\]</span> où <span class="math inline">\(\hat \beta_1\)</span> maximise <span class="math inline">\(\mathcal L(Y,K,\hat\beta_1)\)</span> c’est à dire <span class="math inline">\(\mathcal L(Y,K,\hat\beta_1)=l(\beta_2^*)\)</span> et nous avons donc <span class="math display">\[\begin{align*}
 \mathcal D_o - \mathcal D_1= 2(\mathcal L(Y,\hat\beta)-\mathcal L(Y,K,\beta_1)= 2(\mathcal L(Y,\hat\beta)-l(\beta_2^*))=P(\beta_2^*).
   \end{align*}\]</span></p></li>
-<li><div id="2262b8b0" class="cell" data-execution_count="32">
+<li><div id="3707cc08" class="cell" data-execution_count="32">
 <div class="sourceCode cell-code" id="cb54"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb54-1"><a href="#cb54-1" aria-hidden="true" tabindex="-1"></a>profil2 <span class="op">=</span> []</span>
 <span id="cb54-2"><a href="#cb54-2" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> valgrille <span class="kw">in</span> grille:</span>
 <span id="cb54-3"><a href="#cb54-3" aria-hidden="true" tabindex="-1"></a>    modeleo <span class="op">=</span> smf.glm(<span class="st">'chd~1'</span>, data<span class="op">=</span>artere, offset<span class="op">=</span>artere.age<span class="op">*</span>valgrille, family<span class="op">=</span>sm.families.Binomial()).fit()</span>
@@ -1070,12 +1070,12 @@ n_t\\
 <span id="cb54-6"><a href="#cb54-6" aria-hidden="true" tabindex="-1"></a>    <span class="cf">else</span>:</span>
 <span id="cb54-7"><a href="#cb54-7" aria-hidden="true" tabindex="-1"></a>        profil2.append(modeleo.deviance <span class="op">-</span>  OriginalDeviance)    </span></code><button title="Copier vers le presse-papier" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div></li>
-<li><div id="724f0d63" class="cell" data-execution_count="33">
+<li><div id="f3ba0369" class="cell" data-execution_count="33">
 <div class="sourceCode cell-code" id="cb55"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb55-1"><a href="#cb55-1" aria-hidden="true" tabindex="-1"></a>profil <span class="op">=</span> np.sign(np.arange(<span class="op">-</span><span class="dv">10</span>,<span class="dv">11</span>))<span class="op">*</span>np.sqrt(profil2)</span></code><button title="Copier vers le presse-papier" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div></li>
-<li><p>::: {#79a2dfd6 .cell execution_count=34} <code>{.python .cell-code}   f = interpolate.interp1d(profil, grille)   xnew = [-np.sqrt(stats.chi2.ppf(1-alpha, df=1)),           np.sqrt(stats.chi2.ppf(1-alpha, df=1)) ]   print(f(xnew))</code></p>
+<li><p>::: {#05c8054d .cell execution_count=34} <code>{.python .cell-code}   f = interpolate.interp1d(profil, grille)   xnew = [-np.sqrt(stats.chi2.ppf(1-alpha, df=1)),           np.sqrt(stats.chi2.ppf(1-alpha, df=1)) ]   print(f(xnew))</code></p>
 <p>::: {.cell-output .cell-output-stdout} <code>[0.06697424 0.16204287]</code> ::: :::</p></li>
-<li><div id="bd5e7cfc" class="cell" data-execution_count="35">
+<li><div id="9f9c9023" class="cell" data-execution_count="35">
 <div class="sourceCode cell-code" id="cb56"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb56-1"><a href="#cb56-1" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(modele.conf_int().iloc[<span class="dv">1</span>,:])</span></code><button title="Copier vers le presse-papier" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>0    0.063765
@@ -1511,8 +1511,8 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
 </script>
 <nav class="page-navigation">
   <div class="nav-page nav-page-previous">
-      <a href="../correction/chap9.html" class="pagination-link" aria-label="Régularisation des moindres carrés : ridge, lasso, elastic-net">
-        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text">Régularisation des moindres carrés : ridge, lasso, elastic-net</span>
+      <a href="../correction/chap9.html" class="pagination-link" aria-label="9 Régularisation des moindres carrés : ridge, lasso, elastic-net">
+        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text">9 Régularisation des moindres carrés : ridge, lasso, elastic-net</span>
       </a>          
   </div>
   <div class="nav-page nav-page-next">

@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 
-<title>Variables qualitatives : ANCOVA et ANOVA – Régression avec Python</title>
+<title>7 pythonVariables qualitatives : ANCOVA et ANOVA – Régression avec Python</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -165,7 +165,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
       <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Basculer la barre latérale" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
         <i class="bi bi-layout-text-sidebar-reverse"></i>
       </button>
-        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../codes/index.html">Codes</a></li><li class="breadcrumb-item"><a href="../codes/chap6.html">II Inférence</a></li><li class="breadcrumb-item"><a href="../codes/chap7.html">Variables qualitatives : ANCOVA et ANOVA</a></li></ol></nav>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../codes/index.html">Codes</a></li><li class="breadcrumb-item"><a href="../codes/chap6.html">II Inférence</a></li><li class="breadcrumb-item"><a href="../codes/chap7.html">7 pythonVariables qualitatives : ANCOVA et ANOVA</a></li></ol></nav>
         <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Basculer la barre latérale" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
         </a>
     </div>
@@ -239,13 +239,13 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="../codes/chap6.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Inférence dans le modèle gaussien</span></a>
+ <span class="menu-text">6 Inférence dans le modèle gaussien</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="../codes/chap7.html" class="sidebar-item-text sidebar-link active">
- <span class="menu-text">Variables qualitatives : ANCOVA et ANOVA</span></a>
+ <span class="menu-text">7 pythonVariables qualitatives : ANCOVA et ANOVA</span></a>
   </div>
 </li>
       </ul>
@@ -347,9 +347,9 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <!-- main -->
 <main class="content" id="quarto-document-content">
 
-<header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../codes/index.html">Codes</a></li><li class="breadcrumb-item"><a href="../codes/chap6.html">II Inférence</a></li><li class="breadcrumb-item"><a href="../codes/chap7.html">Variables qualitatives : ANCOVA et ANOVA</a></li></ol></nav>
+<header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../codes/index.html">Codes</a></li><li class="breadcrumb-item"><a href="../codes/chap6.html">II Inférence</a></li><li class="breadcrumb-item"><a href="../codes/chap7.html">7 pythonVariables qualitatives : ANCOVA et ANOVA</a></li></ol></nav>
 <div class="quarto-title">
-<h1 class="title">Variables qualitatives : ANCOVA et ANOVA</h1>
+<h1 class="title">7 pythonVariables qualitatives : ANCOVA et ANOVA</h1>
 </div>
 
 
@@ -366,7 +366,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </header>
 
 
-<div id="34e6a31e" class="cell" data-execution_count="1">
+<div id="e6411eee" class="cell" data-execution_count="2">
 <div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> pandas <span class="im">as</span> pd<span class="op">;</span> <span class="im">import</span> numpy <span class="im">as</span> np</span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> matplotlib.pyplot <span class="im">as</span> plt</span>
 <span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> matplotlib.cm <span class="im">as</span> cm</span>
@@ -375,9 +375,9 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> statsmodels.formula.api <span class="im">as</span> smf</span>
 <span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> statsmodels.graphics <span class="im">import</span> regressionplots</span>
 <span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> statsmodels.graphics.api <span class="im">import</span> interaction_plot</span>
-<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> pandas <span class="im">as</span> pd</span></code><button title="Copier vers le presse-papier" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> patsy <span class="im">import</span> dmatrix, ContrastMatrix</span></code><button title="Copier vers le presse-papier" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<div id="f2118b99" class="cell" data-execution_count="2">
+<div id="c5994471" class="cell" data-execution_count="3">
 <div class="sourceCode cell-code" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>fig <span class="op">=</span> plt.figure()</span>
 <span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>eucalypt <span class="op">=</span> pd.read_csv(<span class="st">"../donnees/eucalyptus.txt"</span>, header <span class="op">=</span> <span class="dv">0</span>, sep <span class="op">=</span> <span class="st">";"</span>)</span>
 <span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>eucalypt[<span class="st">"bloc"</span>] <span class="op">=</span> eucalypt[<span class="st">"bloc"</span>].astype(<span class="st">"category"</span>)</span>
@@ -393,7 +393,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </div>
 <section id="la-concentration-en-ozone" class="level1">
 <h1>La concentration en ozone</h1>
-<div id="c6e85668" class="cell" data-execution_count="3">
+<div id="a2923fee" class="cell" data-execution_count="4">
 <div class="sourceCode cell-code" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>ozone <span class="op">=</span> pd.read_csv(<span class="st">"../donnees/ozone.txt"</span>, header <span class="op">=</span> <span class="dv">0</span>, sep <span class="op">=</span> <span class="st">";"</span>)</span>
 <span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>ozone[<span class="st">"vent"</span>]<span class="op">=</span>ozone[<span class="st">"vent"</span>].astype(<span class="st">"category"</span>)</span>
 <span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a></span>
@@ -425,7 +425,7 @@ SUD</code></pre>
 </div>
 </div>
 </div>
-<div id="a446a63c" class="cell" data-execution_count="4">
+<div id="05d3f8fc" class="cell" data-execution_count="5">
 <div class="sourceCode cell-code" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>mod1b <span class="op">=</span> smf.ols(<span class="st">'O3 ~ -1 + vent + T12:vent'</span>, data <span class="op">=</span> ozone).fit()</span>
 <span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>mod1b.summary()</span></code><button title="Copier vers le presse-papier" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-display" data-execution_count="4">
@@ -452,13 +452,13 @@ SUD</code></pre>
 </tr>
 <tr class="even">
 <td data-quarto-table-cell-role="th">Date:</td>
-<td>Fri, 31 Jan 2025</td>
+<td>Thu, 27 Mar 2025</td>
 <td data-quarto-table-cell-role="th">Prob (F-statistic):</td>
 <td>1.61e-08</td>
 </tr>
 <tr class="odd">
 <td data-quarto-table-cell-role="th">Time:</td>
-<td>16:29:15</td>
+<td>16:23:49</td>
 <td data-quarto-table-cell-role="th">Log-Likelihood:</td>
 <td>-201.01</td>
 </tr>
@@ -608,7 +608,7 @@ SUD</code></pre>
 <br><br>Notes:<br>[1] Standard Errors assume that the covariance matrix of the errors is correctly specified.
 </div>
 </div>
-<div id="3db06aca" class="cell" data-execution_count="5">
+<div id="00c334b9" class="cell" data-execution_count="6">
 <div class="sourceCode cell-code" id="cb6"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>mod1 <span class="op">=</span>smf.ols(<span class="st">'O3 ~ vent + T12:vent'</span>, data <span class="op">=</span> ozone).fit()</span>
 <span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>mod1.summary()</span></code><button title="Copier vers le presse-papier" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-display" data-execution_count="5">
@@ -635,13 +635,13 @@ SUD</code></pre>
 </tr>
 <tr class="even">
 <td data-quarto-table-cell-role="th">Date:</td>
-<td>Fri, 31 Jan 2025</td>
+<td>Thu, 27 Mar 2025</td>
 <td data-quarto-table-cell-role="th">Prob (F-statistic):</td>
 <td>1.61e-08</td>
 </tr>
 <tr class="odd">
 <td data-quarto-table-cell-role="th">Time:</td>
-<td>16:29:15</td>
+<td>16:23:49</td>
 <td data-quarto-table-cell-role="th">Log-Likelihood:</td>
 <td>-201.01</td>
 </tr>
@@ -791,7 +791,7 @@ SUD</code></pre>
 <br><br>Notes:<br>[1] Standard Errors assume that the covariance matrix of the errors is correctly specified.
 </div>
 </div>
-<div id="657f1970" class="cell" data-execution_count="6">
+<div id="cd77b7d3" class="cell" data-execution_count="7">
 <div class="sourceCode cell-code" id="cb7"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>mod2 <span class="op">=</span> smf.ols(<span class="st">'O3 ~ vent + T12'</span>, data <span class="op">=</span> ozone).fit()</span>
 <span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>mod2b <span class="op">=</span> smf.ols(<span class="st">'O3 ~ -1 + vent + T12'</span>, data <span class="op">=</span> ozone).fit()</span>
 <span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>mod3 <span class="op">=</span> smf.ols(<span class="st">'O3 ~ vent:T12'</span>, data <span class="op">=</span> ozone).fit()</span>
@@ -838,7 +838,7 @@ SUD</code></pre>
 </div>
 </div>
 </div>
-<div id="8226d0aa" class="cell" data-execution_count="7">
+<div id="9e7f958c" class="cell" data-execution_count="8">
 <div class="sourceCode cell-code" id="cb8"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="bu">round</span>(sm.stats.anova_lm(mod3,mod1),<span class="dv">3</span>)</span></code><button title="Copier vers le presse-papier" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-display" data-execution_count="7">
 <div>
@@ -881,7 +881,7 @@ SUD</code></pre>
 </div>
 </div>
 </div>
-<div id="608adc92" class="cell" data-execution_count="8">
+<div id="1a901965" class="cell" data-execution_count="9">
 <div class="sourceCode cell-code" id="cb9"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>infl <span class="op">=</span> mod2.get_influence()</span>
 <span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>fig <span class="op">=</span> plt.figure()</span>
 <span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>plt.plot(mod2.fittedvalues,infl.resid_studentized_external,<span class="st">"."</span>)</span>
@@ -896,7 +896,7 @@ SUD</code></pre>
 </div>
 </div>
 </div>
-<div id="85c082dd" class="cell" data-execution_count="9">
+<div id="c4d64dee" class="cell" data-execution_count="10">
 <div class="sourceCode cell-code" id="cb10"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>fitted2 <span class="op">=</span> mod2.fittedvalues</span>
 <span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>sns.<span class="bu">set</span>(style<span class="op">=</span><span class="st">"whitegrid"</span>)</span>
 <span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a>fitted3 <span class="op">=</span> <span class="dv">1</span><span class="op">/</span><span class="dv">5</span><span class="op">*</span> <span class="bu">abs</span>(fitted2.<span class="bu">round</span>(<span class="dv">3</span>))</span>
@@ -913,7 +913,7 @@ SUD</code></pre>
 </div>
 </div>
 </div>
-<div id="a3b3cf12" class="cell" data-execution_count="10">
+<div id="dfdf00ad" class="cell" data-execution_count="11">
 <div class="sourceCode cell-code" id="cb11"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>mod <span class="op">=</span> smf.ols(<span class="st">'O3 ~ vent + T12 + T12:vent'</span>, data <span class="op">=</span> ozone).fit()</span>
 <span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>mod.summary()</span></code><button title="Copier vers le presse-papier" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-display" data-execution_count="10">
@@ -940,13 +940,13 @@ SUD</code></pre>
 </tr>
 <tr class="even">
 <td data-quarto-table-cell-role="th">Date:</td>
-<td>Fri, 31 Jan 2025</td>
+<td>Thu, 27 Mar 2025</td>
 <td data-quarto-table-cell-role="th">Prob (F-statistic):</td>
 <td>1.61e-08</td>
 </tr>
 <tr class="odd">
 <td data-quarto-table-cell-role="th">Time:</td>
-<td>16:29:16</td>
+<td>16:23:51</td>
 <td data-quarto-table-cell-role="th">Log-Likelihood:</td>
 <td>-201.01</td>
 </tr>
@@ -1099,7 +1099,7 @@ SUD</code></pre>
 </section>
 <section id="la-hauteur-des-eucalyptus" class="level1">
 <h1>La hauteur des eucalyptus</h1>
-<div id="5cb45994" class="cell" data-execution_count="11">
+<div id="abfb2f09" class="cell" data-execution_count="12">
 <div class="sourceCode cell-code" id="cb12"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a>eucalypt <span class="op">=</span> pd.read_csv(<span class="st">"../donnees/eucalyptus.txt"</span>, header <span class="op">=</span> <span class="dv">0</span>, sep <span class="op">=</span> <span class="st">";"</span>)</span>
 <span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a>eucalypt[<span class="st">"bloc"</span>] <span class="op">=</span> eucalypt[<span class="st">"bloc"</span>].astype(<span class="st">"category"</span>)</span>
 <span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a>m_complet <span class="op">=</span> smf.ols(<span class="st">"ht ~ - 1 + bloc + bloc:circ"</span>, data <span class="op">=</span> eucalypt).fit()</span>
@@ -1147,7 +1147,7 @@ SUD</code></pre>
 </div>
 </div>
 </div>
-<div id="57d7e728" class="cell" data-execution_count="12">
+<div id="8698269f" class="cell" data-execution_count="13">
 <div class="sourceCode cell-code" id="cb13"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="bu">round</span>(sm.stats.anova_lm(m_ordonne, m_complet),<span class="dv">3</span>)</span></code><button title="Copier vers le presse-papier" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-display" data-execution_count="12">
 <div>
@@ -1190,7 +1190,7 @@ SUD</code></pre>
 </div>
 </div>
 </div>
-<div id="8c668e08" class="cell" data-execution_count="13">
+<div id="01933729" class="cell" data-execution_count="14">
 <div class="sourceCode cell-code" id="cb14"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a>m_simple <span class="op">=</span> smf.ols(<span class="st">"ht ~ 1 + circ"</span>, data <span class="op">=</span> eucalypt).fit()</span>
 <span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a><span class="bu">round</span>(sm.stats.anova_lm(m_simple,m_pente),<span class="dv">3</span>)</span></code><button title="Copier vers le presse-papier" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-display" data-execution_count="13">
@@ -1234,7 +1234,7 @@ SUD</code></pre>
 </div>
 </div>
 </div>
-<div id="db24e4ab" class="cell" data-execution_count="14">
+<div id="3ac79686" class="cell" data-execution_count="15">
 <div class="sourceCode cell-code" id="cb15"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a>plt.rc(<span class="st">"lines"</span>, markersize<span class="op">=</span><span class="dv">3</span>) <span class="co">#</span></span>
 <span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a>infl <span class="op">=</span> m_pente.get_influence()</span>
 <span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a>fig <span class="op">=</span> plt.figure()</span>
@@ -1253,7 +1253,7 @@ SUD</code></pre>
 </section>
 <section id="anova" class="level1">
 <h1>ANOVA</h1>
-<div id="aceab9a1" class="cell" data-execution_count="15">
+<div id="c860947d" class="cell" data-execution_count="16">
 <div class="sourceCode cell-code" id="cb16"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a>niveau <span class="op">=</span> ozone[<span class="st">"vent"</span>].cat.categories</span>
 <span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a>O3_parvent <span class="op">=</span> []</span>
 <span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> i <span class="kw">in</span> <span class="bu">range</span>(niveau.size):</span>
@@ -1273,7 +1273,7 @@ SUD</code></pre>
 </div>
 </div>
 </div>
-<div id="7fec3ed8" class="cell" data-execution_count="16">
+<div id="8dcd1695" class="cell" data-execution_count="17">
 <div class="sourceCode cell-code" id="cb17"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a>mod1 <span class="op">=</span> smf.ols(<span class="st">"O3~vent-1"</span>,data<span class="op">=</span>ozone).fit()</span>
 <span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a>mod1.summary()</span></code><button title="Copier vers le presse-papier" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-display" data-execution_count="16">
@@ -1300,13 +1300,13 @@ SUD</code></pre>
 </tr>
 <tr class="even">
 <td data-quarto-table-cell-role="th">Date:</td>
-<td>Fri, 31 Jan 2025</td>
+<td>Thu, 27 Mar 2025</td>
 <td data-quarto-table-cell-role="th">Prob (F-statistic):</td>
 <td>0.000156</td>
 </tr>
 <tr class="odd">
 <td data-quarto-table-cell-role="th">Time:</td>
-<td>16:29:18</td>
+<td>16:23:52</td>
 <td data-quarto-table-cell-role="th">Log-Likelihood:</td>
 <td>-218.28</td>
 </tr>
@@ -1420,7 +1420,7 @@ SUD</code></pre>
 <br><br>Notes:<br>[1] Standard Errors assume that the covariance matrix of the errors is correctly specified.
 </div>
 </div>
-<div id="1be72f25" class="cell" data-execution_count="17">
+<div id="1af43888" class="cell" data-execution_count="18">
 <div class="sourceCode cell-code" id="cb18"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="bu">round</span>(sm.stats.anova_lm(mod1),<span class="dv">3</span>)</span></code><button title="Copier vers le presse-papier" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-display" data-execution_count="17">
 <div>
@@ -1460,7 +1460,7 @@ SUD</code></pre>
 </div>
 </div>
 </div>
-<div id="d565b2b7" class="cell" data-execution_count="18">
+<div id="2fffe101" class="cell" data-execution_count="19">
 <div class="sourceCode cell-code" id="cb19"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a>mod2 <span class="op">=</span> smf.ols(<span class="st">"O3 ~ vent"</span>, data <span class="op">=</span> ozone).fit()</span>
 <span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a>mod2.summary()</span></code><button title="Copier vers le presse-papier" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-display" data-execution_count="18">
@@ -1487,13 +1487,13 @@ SUD</code></pre>
 </tr>
 <tr class="even">
 <td data-quarto-table-cell-role="th">Date:</td>
-<td>Fri, 31 Jan 2025</td>
+<td>Thu, 27 Mar 2025</td>
 <td data-quarto-table-cell-role="th">Prob (F-statistic):</td>
 <td>0.000156</td>
 </tr>
 <tr class="odd">
 <td data-quarto-table-cell-role="th">Time:</td>
-<td>16:29:18</td>
+<td>16:23:52</td>
 <td data-quarto-table-cell-role="th">Log-Likelihood:</td>
 <td>-218.28</td>
 </tr>
@@ -1607,7 +1607,7 @@ SUD</code></pre>
 <br><br>Notes:<br>[1] Standard Errors assume that the covariance matrix of the errors is correctly specified.
 </div>
 </div>
-<div id="9ea5c3b9" class="cell" data-execution_count="19">
+<div id="3a045bfe" class="cell" data-execution_count="20">
 <div class="sourceCode cell-code" id="cb20"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="bu">round</span>(sm.stats.anova_lm(mod2),<span class="dv">3</span>)</span></code><button title="Copier vers le presse-papier" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-display" data-execution_count="19">
 <div>
@@ -1647,7 +1647,7 @@ SUD</code></pre>
 </div>
 </div>
 </div>
-<div id="b3e3d59d" class="cell" data-execution_count="20">
+<div id="9b5a7546" class="cell" data-execution_count="21">
 <div class="sourceCode cell-code" id="cb21"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a>smf.ols(<span class="st">"O3 ~ C(vent,Treatment)"</span>, data <span class="op">=</span> ozone).fit().params</span></code><button title="Copier vers le presse-papier" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-display" data-execution_count="20">
 <pre><code>Intercept                      103.850000
@@ -1657,7 +1657,7 @@ C(vent, Treatment)[T.SUD]       -9.507143
 dtype: float64</code></pre>
 </div>
 </div>
-<div id="f57ab024" class="cell" data-execution_count="21">
+<div id="bbda134c" class="cell" data-execution_count="22">
 <div class="sourceCode cell-code" id="cb23"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a>smf.ols(<span class="st">"O3 ~ C(vent, levels=['NORD', 'EST', 'OUEST', 'SUD'])"</span>, <span class="op">\</span></span>
 <span id="cb23-2"><a href="#cb23-2" aria-hidden="true" tabindex="-1"></a>    data <span class="op">=</span> ozone).fit().params</span></code><button title="Copier vers le presse-papier" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-display" data-execution_count="21">
@@ -1668,14 +1668,13 @@ C(vent, levels=['NORD', 'EST', 'OUEST', 'SUD'])[T.SUD]      16.053968
 dtype: float64</code></pre>
 </div>
 </div>
-<div id="43ffd6c0" class="cell" data-execution_count="22">
-<div class="sourceCode cell-code" id="cb25"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> patsy <span class="im">import</span> dmatrix, ContrastMatrix</span>
-<span id="cb25-2"><a href="#cb25-2" aria-hidden="true" tabindex="-1"></a>II <span class="op">=</span> ozone[<span class="st">"vent"</span>].cat.categories.size</span>
-<span id="cb25-3"><a href="#cb25-3" aria-hidden="true" tabindex="-1"></a>nI <span class="op">=</span> ozone[<span class="st">"vent"</span>].value_counts()[ozone[<span class="st">"vent"</span>].cat.categories]</span>
-<span id="cb25-4"><a href="#cb25-4" aria-hidden="true" tabindex="-1"></a>contr_mat <span class="op">=</span> np.vstack([np.eye(II<span class="op">-</span><span class="dv">1</span>), (<span class="op">-</span>nI[:(II<span class="op">-</span><span class="dv">1</span>)]).divide(nI[<span class="op">-</span><span class="dv">1</span>])])</span>
-<span id="cb25-5"><a href="#cb25-5" aria-hidden="true" tabindex="-1"></a>contraste <span class="op">=</span> ContrastMatrix(contr_mat, [<span class="st">"[a1]"</span>, <span class="st">"[a2]"</span>, <span class="st">"[a3]"</span>])</span>
-<span id="cb25-6"><a href="#cb25-6" aria-hidden="true" tabindex="-1"></a>mod3 <span class="op">=</span> smf.ols(<span class="st">"O3 ~ 1 + C(vent,contraste)"</span>,data<span class="op">=</span>ozone).fit()</span>
-<span id="cb25-7"><a href="#cb25-7" aria-hidden="true" tabindex="-1"></a>mod3.summary()</span></code><button title="Copier vers le presse-papier" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div id="2d6e2909" class="cell" data-execution_count="23">
+<div class="sourceCode cell-code" id="cb25"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a>II <span class="op">=</span> ozone[<span class="st">"vent"</span>].cat.categories.size</span>
+<span id="cb25-2"><a href="#cb25-2" aria-hidden="true" tabindex="-1"></a>nI <span class="op">=</span> ozone[<span class="st">"vent"</span>].value_counts()[ozone[<span class="st">"vent"</span>].cat.categories]</span>
+<span id="cb25-3"><a href="#cb25-3" aria-hidden="true" tabindex="-1"></a>contr_mat <span class="op">=</span> np.vstack([np.eye(II<span class="op">-</span><span class="dv">1</span>), (<span class="op">-</span>nI[:(II<span class="op">-</span><span class="dv">1</span>)]).divide(nI[<span class="op">-</span><span class="dv">1</span>])])</span>
+<span id="cb25-4"><a href="#cb25-4" aria-hidden="true" tabindex="-1"></a>contraste <span class="op">=</span> ContrastMatrix(contr_mat, [<span class="st">"[a1]"</span>, <span class="st">"[a2]"</span>, <span class="st">"[a3]"</span>])</span>
+<span id="cb25-5"><a href="#cb25-5" aria-hidden="true" tabindex="-1"></a>mod3 <span class="op">=</span> smf.ols(<span class="st">"O3 ~ 1 + C(vent,contraste)"</span>,data<span class="op">=</span>ozone).fit()</span>
+<span id="cb25-6"><a href="#cb25-6" aria-hidden="true" tabindex="-1"></a>mod3.summary()</span></code><button title="Copier vers le presse-papier" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-display" data-execution_count="22">
 <table class="simpletable caption-top table table-sm table-striped small" data-quarto-postprocess="true">
 <caption>OLS Regression Results</caption>
@@ -1700,13 +1699,13 @@ dtype: float64</code></pre>
 </tr>
 <tr class="even">
 <td data-quarto-table-cell-role="th">Date:</td>
-<td>Fri, 31 Jan 2025</td>
+<td>Thu, 27 Mar 2025</td>
 <td data-quarto-table-cell-role="th">Prob (F-statistic):</td>
 <td>0.000156</td>
 </tr>
 <tr class="odd">
 <td data-quarto-table-cell-role="th">Time:</td>
-<td>16:29:18</td>
+<td>16:23:52</td>
 <td data-quarto-table-cell-role="th">Log-Likelihood:</td>
 <td>-218.28</td>
 </tr>
@@ -1820,7 +1819,7 @@ dtype: float64</code></pre>
 <br><br>Notes:<br>[1] Standard Errors assume that the covariance matrix of the errors is correctly specified.
 </div>
 </div>
-<div id="d5515230" class="cell" data-execution_count="23">
+<div id="d87c2c72" class="cell" data-execution_count="24">
 <div class="sourceCode cell-code" id="cb26"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a><span class="bu">round</span>(sm.stats.anova_lm(mod3),<span class="dv">3</span>)</span></code><button title="Copier vers le presse-papier" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-display" data-execution_count="23">
 <div>
@@ -1860,7 +1859,7 @@ dtype: float64</code></pre>
 </div>
 </div>
 </div>
-<div id="045d7fcf" class="cell" data-execution_count="24">
+<div id="262ba8c0" class="cell" data-execution_count="25">
 <div class="sourceCode cell-code" id="cb27"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a>mod4 <span class="op">=</span> smf.ols(<span class="st">"O3 ~ 1+ C(vent,Sum)"</span>, data <span class="op">=</span> ozone).fit()</span>
 <span id="cb27-2"><a href="#cb27-2" aria-hidden="true" tabindex="-1"></a><span class="bu">round</span>(sm.stats.anova_lm(mod4),<span class="dv">3</span>)</span></code><button title="Copier vers le presse-papier" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-display" data-execution_count="24">
@@ -1901,7 +1900,7 @@ dtype: float64</code></pre>
 </div>
 </div>
 </div>
-<div id="7b78296e" class="cell" data-execution_count="25">
+<div id="2f2783e6" class="cell" data-execution_count="26">
 <div class="sourceCode cell-code" id="cb28"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(ozone)</span></code><button title="Copier vers le presse-papier" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>        Date     O3   T12   T15  Ne12  N12  S12  E12  W12     Vx    O3v  \
@@ -2009,7 +2008,7 @@ dtype: float64</code></pre>
 49  SOLEIL   NORD  </code></pre>
 </div>
 </div>
-<div id="1311a7d5" class="cell" data-execution_count="26">
+<div id="b924a770" class="cell" data-execution_count="27">
 <div class="sourceCode cell-code" id="cb30"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a>ozone <span class="op">=</span> pd.read_csv(<span class="st">"../donnees/ozone.txt"</span>, header <span class="op">=</span> <span class="dv">0</span>, sep <span class="op">=</span> <span class="st">";"</span>)</span>
 <span id="cb30-2"><a href="#cb30-2" aria-hidden="true" tabindex="-1"></a>ozone[<span class="st">"vent"</span>]<span class="op">=</span>ozone[<span class="st">"vent"</span>].astype(<span class="st">"category"</span>)</span>
 <span id="cb30-3"><a href="#cb30-3" aria-hidden="true" tabindex="-1"></a>ozone[<span class="st">"nebu"</span>]<span class="op">=</span>ozone[<span class="st">"nebu"</span>].astype(<span class="st">"category"</span>)</span>
@@ -2029,7 +2028,7 @@ dtype: float64</code></pre>
 </div>
 </div>
 </div>
-<div id="00faeb19" class="cell" data-execution_count="27">
+<div id="823c2e80" class="cell" data-execution_count="28">
 <div class="sourceCode cell-code" id="cb31"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb31-1"><a href="#cb31-1" aria-hidden="true" tabindex="-1"></a>mod1 <span class="op">=</span> smf.ols(<span class="st">"O3 ~ vent + nebu + vent:nebu"</span>, data <span class="op">=</span> ozone).fit()</span>
 <span id="cb31-2"><a href="#cb31-2" aria-hidden="true" tabindex="-1"></a>mod2 <span class="op">=</span> smf.ols(<span class="st">"O3 ~ vent + nebu "</span>, data <span class="op">=</span> ozone).fit()</span>
 <span id="cb31-3"><a href="#cb31-3" aria-hidden="true" tabindex="-1"></a>sm.stats.anova_lm(mod2,mod1)</span></code><button title="Copier vers le presse-papier" class="code-copy-button"><i class="bi"></i></button></pre></div>
@@ -2074,7 +2073,7 @@ dtype: float64</code></pre>
 </div>
 </div>
 </div>
-<div id="dc6927ca" class="cell" data-execution_count="28">
+<div id="fe605e67" class="cell" data-execution_count="29">
 <div class="sourceCode cell-code" id="cb32"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb32-1"><a href="#cb32-1" aria-hidden="true" tabindex="-1"></a>mod3 <span class="op">=</span> smf.ols(<span class="st">"O3 ~ vent"</span>, data <span class="op">=</span> ozone).fit()</span>
 <span id="cb32-2"><a href="#cb32-2" aria-hidden="true" tabindex="-1"></a><span class="bu">round</span>(sm.stats.anova_lm(mod3,mod2),<span class="dv">3</span>)</span></code><button title="Copier vers le presse-papier" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-display" data-execution_count="28">
@@ -2118,7 +2117,7 @@ dtype: float64</code></pre>
 </div>
 </div>
 </div>
-<div id="b8fee24b" class="cell" data-execution_count="29">
+<div id="bdfc7ae3" class="cell" data-execution_count="30">
 <div class="sourceCode cell-code" id="cb33"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb33-1"><a href="#cb33-1" aria-hidden="true" tabindex="-1"></a><span class="bu">round</span>(sm.stats.anova_lm(mod3, mod2, mod1),<span class="dv">3</span>)</span></code><button title="Copier vers le presse-papier" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-display" data-execution_count="29">
 <div>
@@ -2170,7 +2169,7 @@ dtype: float64</code></pre>
 </div>
 </div>
 </div>
-<div id="a3915a67" class="cell" data-execution_count="30">
+<div id="015a91f3" class="cell" data-execution_count="31">
 <div class="sourceCode cell-code" id="cb34"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb34-1"><a href="#cb34-1" aria-hidden="true" tabindex="-1"></a><span class="bu">round</span>(sm.stats.anova_lm(mod1),<span class="dv">3</span>)</span></code><button title="Copier vers le presse-papier" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-display" data-execution_count="30">
 <div>
@@ -2653,8 +2652,8 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
 </script>
 <nav class="page-navigation">
   <div class="nav-page nav-page-previous">
-      <a href="../codes/chap6.html" class="pagination-link" aria-label="Inférence dans le modèle gaussien">
-        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text">Inférence dans le modèle gaussien</span>
+      <a href="../codes/chap6.html" class="pagination-link" aria-label="6 Inférence dans le modèle gaussien">
+        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text">6 Inférence dans le modèle gaussien</span>
       </a>          
   </div>
   <div class="nav-page nav-page-next">
